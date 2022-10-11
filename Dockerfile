@@ -6,7 +6,7 @@ FROM ubuntu:rolling
 RUN apt-get update && apt-get install -y sudo && apt-get install -y wget && apt-get clean
 
 # soft prereqs: cpan, curl, pigz, vim
-RUN apt-get update && apt-get install -y cpanminus && apt-get install -y curl && apt-get install -y pigz && apt-get install -y vim && apt-get clean
+RUN apt-get update && apt-get install -y cpanminus && apt-get install -y curl && apt-get install -y pigz && apt-get install -y tree && apt-get install -y vim && apt-get clean
 
 # install entrez direct
 RUN sh -c "$(wget -q ftp://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh -O -)"
@@ -20,4 +20,4 @@ ENV PERL5LIB=/perlstuff:/sra-tools-3.0.0/setup:/ncbi-vdb-3.0.0/setup
 RUN INSTALL_PATH=/root/miniconda3 && wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.12.0-Linux-x86_64.sh && sudo bash ./Miniconda3-py37_4.12.0-Linux-x86_64.sh -b -p $INSTALL_PATH && PATH=$INSTALL_PATH/bin:$PATH && conda init && conda install -c "bioconda/label/main" sra-tools
 
 # set path variable (again)
-ENV PATH=/root/miniconda3:/bin:/root/edirect/:/sra-tools-3.0.0:/ncbi-vdb-3.0.0/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH=/root/miniconda3/bin:/bin:/root/edirect/:/sra-tools-3.0.0:/ncbi-vdb-3.0.0/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
