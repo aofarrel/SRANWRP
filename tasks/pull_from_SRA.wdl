@@ -10,7 +10,6 @@ task pull_from_SRA_directly {
 	}
 
 	command {
-		ls
 		prefetch ~{sra_accession}
 		fasterq-dump ~{sra_accession}
 	}
