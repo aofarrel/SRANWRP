@@ -1,15 +1,17 @@
 FROM ubuntu:jammy
 
 # hard prereqs
-# autoconf: install samtools/htslib/bcftools
-# gcc: install samtools/htslib/bcftools
-# lbzip2: install samtools/htslib/bcftools
-# libbz2-dev: install samtools/htslib/bcftools
-# make: install samtools/htslib/bcftools
-# sudo: to wrangle conda's installation (might not be 100% necessary but may sidestep some issues)
-# wget: to pull other stuff from GitHub
-# zlib1g-dev: install samtools/htslib/bcftools
-RUN apt-get update && apt-get install -y autoconf && apt-get install -y gcc && apt-get install -y lbzip2 && apt-get install -y libbz2-dev && apt-get install -y make && apt-get install -y sudo && apt-get install -y wget && apt-get install -y zlib1g-dev && apt-get clean
+# autoconf:        install samtools/htslib/bcftools
+# gcc:             install samtools/htslib/bcftools
+# lbzip2:          install samtools/htslib/bcftools
+# libbz2-dev:      install samtools/htslib/bcftools
+# liblzma-dev:     use cram files
+# libncurses5-dev: use samtools tview
+# make:            install samtools/htslib/bcftools
+# sudo:            wrangle conda's installation (might not be 100% necessary)
+# wget:            install most stuff
+# zlib1g-dev:      install samtools/htslib/bcftools
+RUN apt-get update && apt-get install -y autoconf && apt-get install -y gcc && apt-get install -y lbzip2 && apt-get install -y libbz2-dev && apt-get install -y liblzma-dev && apt-get install -y libncurses5-dev && apt-get install -y make && apt-get install -y sudo && apt-get install -y wget && apt-get install -y zlib1g-dev && apt-get clean
 
 # soft prereqs: cpan, curl, pigz, tree, vim
 RUN apt-get update && apt-get install -y cpanminus && apt-get install -y curl && apt-get install -y pigz && apt-get install -y tree && apt-get install -y vim && apt-get clean
@@ -20,10 +22,9 @@ RUN sh -c "$(wget -q ftp://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edir
 # install bedtools
 RUN apt-get update && apt-get install -y bedtools && apt-get clean
 
-# install the samtools trinity
-RUN wget https://github.com/samtools/htslib/releases/download/1.16/htslib-1.16.tar.bz2 && tar -xf htslib-1.16.tar.bz2 && cd htslib-1.16 && ./configure
-RUN wget https://github.com/samtools/samtools/releases/download/1.16.1/samtools-1.16.1.tar.bz2
-RUN wget https://github.com/samtools/bcftools/releases/download/1.16/bcftools-1.16.tar.bz2
+# install the samtools trinity (htslib will get installed with samtools)
+RUN wget https://github.com/samtools/samtools/releases/download/1.16.1/samtools-1.16.1.tar.bz2 && tar -xf samtools-1.16.1.tar.bz2 && cd samtools-1.16.1 && ./configure && make && make install
+RUN wget https://github.com/samtools/bcftools/releases/download/1.16/bcftools-1.16.tar.bz2 && tar -xf bcftools-1.16.tar.bz2 && cd bcftools-1.16 && ./configure && make && make install
 
 # fix some perl stuff (might not be needed with conda but I'm taking no chances)
 RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recursive && cd ..
