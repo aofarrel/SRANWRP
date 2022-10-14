@@ -16,7 +16,7 @@ task pull_from_SRA_directly {
 
 	runtime {
 		cpu: 4
-		disks: "local-disk " + disk_size + " HDD"
+		disks: "local-disk " + disk_size + " SSD"
 		docker: "ashedpotatoes/sranwrp:1.0.1"
 		memory: 8
 		preemptible: preempt
