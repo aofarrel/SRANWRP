@@ -1,13 +1,14 @@
 version 1.0
 
-import "../tasks/pull_from_SRA.wdl" as sratasks
+#import "../tasks/pull_from_SRA.wdl" as sratasks
+import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/pull_from_SRA.wdl" as sratasks
 
 workflow SRA_YOINK {
 	input {
 		Array[String] sra_accessions
 
 		# per iteration
-		Int? disk_size = 50
+		Int? disk_size = 100
 		Int? preempt = 1
 	}
 
