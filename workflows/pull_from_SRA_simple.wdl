@@ -13,12 +13,16 @@ workflow SRA_YOINK {
 	}
 
 	scatter(sra_accession in sra_accessions) {
-		call sratasks.pull_from_SRA_directly {
+		call sratasks.pull_from_SRA_directly as pull {
 			input:
 				sra_accession = sra_accession,
 				disk_size = disk_size,
 				preempt = preempt
 		}
+	}
+
+	output {
+		Array[Array[File]] all_fastqs = pull.fastqs
 	}
 
 }
