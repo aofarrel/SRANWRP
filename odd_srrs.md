@@ -74,18 +74,41 @@ SRR5153929	fails	1
 SRR5535932	fails	1
 
 ## https://www.ncbi.nlm.nih.gov/sra/SRX3363477[accn]
+```
 SRR6257051	843,944	275M	84.4Mb	2017-11-05	fails	1
+```
 
-SRR6485112	1
-SRR6785397	1
-SRR6797659	1
-SRR6797521	1
-SRR6831799	1
-SRR6832005	1
-SRR6832373	1
-SRR6832746	1
-SRR6856004	1
-SRR6896398	1
+## https://www.ncbi.nlm.nih.gov/sra/SRX3574691[accn]
+```
+SRR6485112	3,656,939	1.1G	548.6Mb	2018-01-19	fails	1
+```
+
+SRR6785397	fails	1
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX3756634[accn]
+```
+SRR6797659	1,577,653	318.5M	130.5Mb	2018-03-02	fails	1
+```
+
+SRR6797521	fails	1
+SRR6831799	fails	1
+SRR6832005	fails	1
+SRR6832373	fails	1
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX3788831[accn]
+```
+SRR6832746	1,555,221	313.8M	143.9Mb	2018-03-14	fails	1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX3811240[accn]
+```
+SRR6856004	774,859	380.6M	227.5Mb	2018-03-20	fails	1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX3846040[accn]
+```
+SRR6896398	1,046,069	567.2M	342.2Mb	2018-03-27	fails	1
+```
 
 ## https://www.ncbi.nlm.nih.gov/sra/SRX3922687[accn]
 SRR6982340	757,801	395.6M	248.8Mb	2018-04-12	fails	1
