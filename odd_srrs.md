@@ -5,37 +5,6 @@ unresolved depedencies: `prefetch` sometimes reports unresolved dependencies, wh
 
 ```SRR	spots	bases	size	published	works?	unresolved_dependencies  ```
 
-SRR1184382 1
-SRR1196504 1
-SRR1640343 1
-SRR2024966 1
-SRR3724745	1
-SRR3724794	1
-SRR3725653	1
-SRR3732698	1
-SRR5152949	1
-SRR5152916	1
-SRR5153088	1
-SRR5153929	1
-SRR5535932	1
-
-SRR6257051	1
-
-SRR6485112	1
-SRR6785397	1
-SRR6797659	1
-SRR6797521	1
-SRR6831799	1
-SRR6832005	1
-SRR6832373	1
-SRR6832746	1
-SRR6856004	1
-SRR6896398	1
-
-SRR6982340	1
-SRR6982158	1
-SRR6982050	1
-SRR6982226	1
 ## https://www.ncbi.nlm.nih.gov/sra/SRX479462[accn]
 ```
 SRR1180138	1,937,834	391.4M	228.2Mb	2014-03-01	works	0  
@@ -53,3 +22,79 @@ SRR1183692	1,922,750	388.4M	227.1Mb	2014-03-05	fails	1
 SRR1180610	1,571,939	317.5M	195Mb	2014-03-01	fails	0  
 SRR1180764	1,559,050	314.9M	193.7Mb	2014-03-01	fails	0  
 ```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX481817[accn]
+```
+SRR1184382	1,082,107	218.6M	92.3Mb	2014-03-06	fails 1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX493346[accn]
+```
+SRR1196504	570,666	115.3M	47.2Mb	2014-03-16	fails 1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX751201[accn]
+```
+SRR1640343	421,212	195.2M	75.5Mb	2014-11-04	fails 1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX1027359[accn]
+```
+SRR2024966	5,949,922	991.8M	323.1Mb	2015-05-18	fails	1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX1881847[accn]
+```
+SRR3724745	3,765,750	760.7M	372.3Mb	2016-06-28	fails	1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX1881896[accn]
+```
+SRR3724794	1,940,879	392.1M	190.6Mb	2016-06-28	fails	1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX1882616[accn]
+```
+SRR3725653	3,048,718	615.8M	192.2Mb	2016-06-28	fails	1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX1888504[accn]
+```
+SRR3732698	2,304,455	465.5M	182.3Mb	2016-06-30	fails	1
+```
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX2470979[accn]
+```
+SRR5152949	3,286,648	663.9M	198.9Mb	2017-01-07	fails	1
+```
+
+SRR5152916	fails	1
+SRR5153088	fails	1
+SRR5153929	fails	1
+SRR5535932	fails	1
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX3363477[accn]
+SRR6257051	843,944	275M	84.4Mb	2017-11-05	fails	1
+
+SRR6485112	1
+SRR6785397	1
+SRR6797659	1
+SRR6797521	1
+SRR6831799	1
+SRR6832005	1
+SRR6832373	1
+SRR6832746	1
+SRR6856004	1
+SRR6896398	1
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX3922687[accn]
+SRR6982340	757,801	395.6M	248.8Mb	2018-04-12	fails	1
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX3922273[accn]
+SRR6982158	196,785	103.1M	63.6Mb	2018-04-12	fails	1
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX3922381[accn]
+SRR6982050	1,655,911	899.6M	614.7Mb	2018-04-12	fails	1
+
+## https://www.ncbi.nlm.nih.gov/sra/SRX3922801[accn]
+SRR6982226	409,146	176.3M	91Mb	2018-04-12	fails	1
