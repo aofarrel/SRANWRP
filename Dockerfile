@@ -36,3 +36,6 @@ RUN INSTALL_PATH=/root/miniconda3 && wget https://repo.anaconda.com/miniconda/Mi
 
 # set path variable (again)
 ENV PATH=/root/miniconda3/bin:/bin:/root/edirect/:/sra-tools-3.0.0:/ncbi-vdb-3.0.0/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# cleanup
+RUN rm Miniconda3-py37_4.12.0-Linux-x86_64.sh && rm bcftools-1.16.tar.bz2 && rm samtools-1.16.1.tar.bz2
