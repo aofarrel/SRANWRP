@@ -26,9 +26,9 @@ RUN apt-get update && apt-get install -y bedtools && apt-get clean
 RUN wget https://github.com/samtools/samtools/releases/download/1.16.1/samtools-1.16.1.tar.bz2 && tar -xf samtools-1.16.1.tar.bz2 && cd samtools-1.16.1 && ./configure && make && make install
 RUN wget https://github.com/samtools/bcftools/releases/download/1.16/bcftools-1.16.tar.bz2 && tar -xf bcftools-1.16.tar.bz2 && cd bcftools-1.16 && ./configure && make && make install
 
-# fix some perl stuff (might not be needed with conda but I'm taking no chances)
+# fix some perl stuff (might not be needed but I'm taking no chances)
 RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recursive && cd ..
-ENV PERL5LIB=/perlstuff:/sra-tools-3.0.0/setup:/ncbi-vdb-3.0.0/setup
+ENV PERL5LIB=/perlstuff:
 
 # installing the SRA toolkit the traditional way is messy; we'll use conda instead
 # we need to be specific about the label or else we'll get a version that throws SSL errors
