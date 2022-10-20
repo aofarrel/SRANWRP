@@ -19,7 +19,7 @@ task pull_from_SRA_directly {
 			echo "Even number of fastqs."
 		else
 			echo "Odd number of fastqs. This may break later steps."
-			if [ ~{exit_on_odd_number} == "true" ]
+			if [ ~{fail_on_odd_number} == "true" ]
 			then
 				exit 1
 			else
