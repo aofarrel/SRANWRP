@@ -5,19 +5,33 @@ task pull_from_SRA_directly {
 	input {
 		String sra_accession
 
-		Int? disk_size = 50
-		Int? preempt = 1
+		Boolean fail_on_odd_number = false
+		Int disk_size = 50
+		Int preempt = 1
 	}
 
-	command {
+	command <<<
 		prefetch ~{sra_accession}
 		fasterq-dump ~{sra_accession}
-	}
+		NUMBER_OF_FQ=$(ls -dq *fastq* | wc -l)
+		if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
+		then
+			echo "Even number of fastqs."
+		else
+			echo "Odd number of fastqs. This may break later steps."
+			if [ ~{exit_on_odd_number} == "true" ]
+			then
+				exit 1
+			else
+				exit 0
+			fi
+		fi
+	>>>
 
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.1"
+		docker: "ashedpotatoes/sranwrp:1.0.4"
 		memory: 8
 		preemptible: preempt
 	}
@@ -48,7 +62,7 @@ task pull_from_SRA_by_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.1"
+		docker: "ashedpotatoes/sranwrp:1.0.4"
 		memory: 8
 		preemptible: preempt
 	}
