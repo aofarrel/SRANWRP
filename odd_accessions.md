@@ -1,7 +1,6 @@
-# Hmmm!
+# Accessions that don't work on version 2.10.0 of fasterq-dump
 
-works: does it work on my code?
-unresolved depedencies: `prefetch` sometimes reports unresolved dependencies, which may or may not be relevent to debugging
+*This is not relevent to the latest versions of SRANWRP, which now use version 3.0.0 of the sra-toolkit (which includes fasterq-dump)*
 
 ```SRR	spots	bases	size	published	works?	unresolved_dependencies  ```
 
