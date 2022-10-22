@@ -21,8 +21,9 @@ Non-exhaustive list:
 * make-latest
 * miniconda-4.12.0
 * pigz-latest
+* python-3.10
 * samtools-1.16 
-* sra-tools-latest from conda, currently sra-tools-3.0.0 (aka SRAtools, SRA-tools, SRA toolkit, etc)
+* sra-tools-3.0.0 (aka SRAtools, SRA-tools, SRA toolkit, etc)
 * sudo-latest
 * tree-latest
 * vim-latest

@@ -1,7 +1,7 @@
 version 1.0
 
-#import "../tasks/pull_from_SRA.wdl" as sratasks
-import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/pull_from_SRA.wdl" as sratasks
+import "../tasks/pull_from_SRA.wdl" as sratasks
+#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/pull_from_SRA.wdl" as sratasks
 
 workflow SRA_YOINK {
 	input {
@@ -22,7 +22,7 @@ workflow SRA_YOINK {
 	}
 
 	output {
-		Array[Array[File]] all_fastqs = pull.fastqs
+		Array[Array[File]?] all_fastqs = pull.fastqs
 	}
 
 }

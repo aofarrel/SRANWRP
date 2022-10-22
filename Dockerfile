@@ -11,10 +11,28 @@ FROM ubuntu:jammy
 # sudo:            wrangle conda's installation (might not be 100% necessary)
 # wget:            install most stuff
 # zlib1g-dev:      install samtools/htslib/bcftools
-RUN apt-get update && apt-get install -y autoconf && apt-get install -y gcc && apt-get install -y lbzip2 && apt-get install -y libbz2-dev && apt-get install -y liblzma-dev && apt-get install -y libncurses5-dev && apt-get install -y make && apt-get install -y sudo && apt-get install -y wget && apt-get install -y zlib1g-dev && apt-get clean
+RUN apt-get update && \
+apt-get install -y autoconf && \
+apt-get install -y gcc && \
+apt-get install -y lbzip2 && \
+apt-get install -y libbz2-dev && \
+apt-get install -y liblzma-dev && \
+apt-get install -y libncurses5-dev && \
+apt-get install -y make && \
+apt-get install -y sudo && \
+apt-get install -y wget && \
+apt-get install -y zlib1g-dev && \
+apt-get clean
 
-# soft prereqs: cpan, curl, pigz, tree, vim
-RUN apt-get update && apt-get install -y cpanminus && apt-get install -y curl && apt-get install -y pigz && apt-get install -y tree && apt-get install -y vim && apt-get clean
+# soft prereqs: cpan, curl, pigz, python, tree, vim
+RUN apt-get update && \
+apt-get install -y cpanminus && \
+apt-get install -y curl && \
+apt-get install -y pigz && \
+apt-get install -y python3.10 && \
+apt-get install -y tree && \
+apt-get install -y vim && \
+apt-get clean
 
 # install entrez direct
 RUN sh -c "$(wget -q ftp://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh -O -)"
