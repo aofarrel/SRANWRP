@@ -3,9 +3,9 @@ Not all accessions work on all versions of fasterq-dump. Here's some examples.
 
 ## Test data
 All test data is tuberculosis data for the time being.
-* full: List of 156 SRA accessions; superset of problematic + pass_DL + pass_map_reads + pass_var_call
-* fail: List of SRA accessions which fail fasterq-dump
-* pass: List of SRA accessions which pass fasterq-dump
+* full: List of 156 SRA accessions; superset of fail + pass_DL
+* fail_DL: List of SRA accessions which fail fasterq-dump
+* pass_DL: List of SRA accessions which pass fasterq-dump
 * pass_map_reads: List of SRA accessions which pass DL + myco map_reads step
 * pass_var_call: List of SRA accessions which pass DL + myco map_reads step + myco var_call step
 
