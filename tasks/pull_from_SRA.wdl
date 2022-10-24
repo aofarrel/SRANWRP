@@ -29,7 +29,6 @@ task pull_from_SRA_directly {
 					exit 1
 				else
 					# don't fail, but give no output
-					rm *.fq
 					rm *.fastq
 					exit 0
 				fi
@@ -44,7 +43,6 @@ task pull_from_SRA_directly {
 						exit 1
 					else
 						# could probably adapt the 3-case
-						rm *.fq
 						rm *.fastq
 						exit 0
 					fi
