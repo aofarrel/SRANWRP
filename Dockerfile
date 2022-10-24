@@ -1,3 +1,9 @@
+########################## WARNING ##########################
+# This code exits an interactive program improperly.
+# It may cause your terminal to act in unexpected ways...
+# The image itself is fine, but be cautious when building it!
+#############################################################
+
 FROM ubuntu:jammy
 
 # hard prereqs
@@ -8,7 +14,7 @@ FROM ubuntu:jammy
 # liblzma-dev:     use cram files
 # libncurses5-dev: use samtools tview
 # make:            install samtools/htslib/bcftools
-# sudo:            wrangle conda's installation (might not be 100% necessary)
+# sudo:            wrangle some installations (might not be 100% necessary)
 # wget:            install most stuff
 # zlib1g-dev:      install samtools/htslib/bcftools
 RUN apt-get update && apt-get install -y autoconf && apt-get install -y gcc && apt-get install -y lbzip2 && apt-get install -y libbz2-dev && apt-get install -y liblzma-dev && apt-get install -y libncurses5-dev && apt-get install -y make && apt-get install -y sudo && apt-get install -y wget && apt-get install -y zlib1g-dev && apt-get clean
@@ -34,7 +40,7 @@ ENV PERL5LIB=/perlstuff:
 RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.0/sratoolkit.3.0.0-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.0-ubuntu64.tar.gz
 
 # set path variable (again)
-ENV PATH=/root/miniconda3/bin:/bin:/root/edirect/:/bin/sratoolkit.3.0.0-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH=/bin:/root/edirect/:/bin/sratoolkit.3.0.0-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # attempt configure vdb
 # !!this will cause a segfault!!
