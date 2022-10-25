@@ -73,8 +73,34 @@ task pull_from_SRA_directly {
 
 	output {
 		Array[File]? fastqs = glob("*.fastq")
+		String sra_accession_out = sra_accession
 		Int num_fastqs = read_int("number_of_reads.txt")
 	}
+}
+
+# This task removes invalid output from pull_from_SRA_directly.
+# Array[Array[File]?] will return empty subarrays sometimes, such
+# as with SRR11947402. We can handle that in later tasks, but why
+# keep creating garbage instances of a scattered task when we can
+# just call a single task to generate known output for us?
+# Note: This relies on file-->string-->file coercion working...
+task take_names {
+	input {
+		Array[Array[String]?] all_fastqs
+		Array[String] sra_accessions
+	}
+
+	command <<<
+	python3 CODE <<
+	print('~sep="," sra_accessions')
+	print('~{sep="," all_fastqs}')
+	CODE
+	>>>
+
+	#output {
+		#Array[Array[String]] good_fastqs
+		#Array[String] good_accessions
+	#}
 }
 
 # NOTE: This hasn't been throughly tested. It is based on this gist:
