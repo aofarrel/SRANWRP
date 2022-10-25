@@ -88,6 +88,9 @@ task take_names {
 	input {
 		Array[Array[String]?] all_fastqs
 		Array[String] sra_accessions
+
+		Int disk_size = 50
+		Int preempt = 1
 	}
 
 	command <<<
@@ -96,6 +99,14 @@ task take_names {
 	print('~{sep="," all_fastqs}')
 	CODE
 	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " SSD"
+		docker: "ashedpotatoes/sranwrp:1.0.5"
+		memory: 8
+		preemptible: preempt
+	}
 
 	#output {
 		#Array[Array[String]] good_fastqs
