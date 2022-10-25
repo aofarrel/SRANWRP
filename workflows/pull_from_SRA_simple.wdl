@@ -23,7 +23,7 @@ workflow SRA_YOINK {
 
 	call sratasks.take_names {
 		input:
-			all_fastqs = pull.fastqs,
+			all_fastqs = select_all(pull.fastqs),
 			sra_accessions = pull.sra_accession_out
 	}
 

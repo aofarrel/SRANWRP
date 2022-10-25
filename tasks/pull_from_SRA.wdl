@@ -86,7 +86,7 @@ task pull_from_SRA_directly {
 # Note: This relies on file-->string-->file coercion working...
 task take_names {
 	input {
-		Array[Array[String]?] all_fastqs
+		Array[Array[String]] all_fastqs
 		Array[String] sra_accessions
 
 		Int disk_size = 50
