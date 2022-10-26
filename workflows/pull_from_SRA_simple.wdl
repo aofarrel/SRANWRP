@@ -20,15 +20,8 @@ workflow SRA_YOINK {
 				preempt = preempt
 		}
 	}
-
-	call sratasks.take_names {
-		input:
-			all_fastqs = select_all(pull.fastqs),
-			sra_accessions = pull.sra_accession_out
-	}
-
 	output {
-		Array[Array[File]?] all_fastqs = pull.fastqs
+		Array[Array[File]] all_fastqs = select_all(pull.fastqs)
 		Array[Int] number_of_fastqs_per_accession = pull.num_fastqs
 	}
 
