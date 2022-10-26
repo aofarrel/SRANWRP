@@ -30,10 +30,11 @@ apt-get install -y wget && \
 apt-get install -y zlib1g-dev && \
 apt-get clean
 
-# soft prereqs: cpan, curl, pigz, python, tree, vim
+# soft prereqs: cpan, curl, fd-find, pigz, python, tree, vim
 RUN apt-get update && \
 apt-get install -y cpanminus && \
 apt-get install -y curl && \
+apt-get install -y fd-find && \
 apt-get install -y pigz && \
 apt-get install -y python3.10 && \
 apt-get install -y tree && \

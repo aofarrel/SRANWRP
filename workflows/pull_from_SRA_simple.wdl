@@ -1,7 +1,7 @@
 version 1.0
 
-#import "../tasks/pull_from_SRA.wdl" as sratasks
-import "https://raw.githubusercontent.com/aofarrel/SRANWRP/handle-odd-numbers/tasks/pull_from_SRA.wdl" as sratasks
+import "../tasks/pull_from_SRA.wdl" as sratasks
+#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/handle-odd-numbers/tasks/pull_from_SRA.wdl" as sratasks
 
 workflow SRA_YOINK {
 	input {
@@ -23,7 +23,7 @@ workflow SRA_YOINK {
 
 	call sratasks.take_names {
 		input:
-			all_fastqs = select_all(pull.fastqs),
+			all_fastqs = pull.fastqs,
 			sra_accessions = pull.sra_accession_out
 	}
 
