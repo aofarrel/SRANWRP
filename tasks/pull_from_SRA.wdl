@@ -19,6 +19,7 @@ task pull_from_SRA_directly {
 		if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
 		then
 			echo "Even number of fastqs"
+			echo "~{sra_accession}" > accession.txt
 		else
 			echo "Odd number of fastqs; checking if we can still use them..."
 			if [ `expr $NUMBER_OF_FQ` == 1 ]
@@ -30,6 +31,7 @@ task pull_from_SRA_directly {
 				else
 					# don't fail, but give no output
 					rm *.fastq
+					echo "" > accession.txt
 					exit 0
 				fi
 			else
@@ -44,6 +46,7 @@ task pull_from_SRA_directly {
 					else
 						# could probably adapt the 3-case
 						rm *.fastq
+						echo "" > accession.txt
 						exit 0
 					fi
 
@@ -59,6 +62,7 @@ task pull_from_SRA_directly {
 				rm $BARCODE
 				mv temp/$READ1 ./$READ1
 				mv temp/$READ2 ./$READ2
+				echo "~{sra_accession}" > accession.txt
 			fi
 		fi
 	>>>
@@ -75,7 +79,7 @@ task pull_from_SRA_directly {
 		# Use select_all() in the workflow to coerce resulting Array[Array[File]?] 
 		# into Array[Array[File]]
 		Array[File]? fastqs = glob("*.fastq")
-		String sra_accession_out = sra_accession
+		String sra_accession_out = read_string("accession.txt")
 		Int num_fastqs = read_int("number_of_reads.txt")
 	}
 }
