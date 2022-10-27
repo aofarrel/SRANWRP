@@ -31,8 +31,8 @@ task pull_from_SRA_directly {
 				else
 					# don't fail, but give no output
 					rm *.fastq
-					touch DONOTUSE.fastq
-					echo "" > accession.txt
+					#touch DONOTUSE.fastq
+					#echo "" > accession.txt
 					exit 0
 				fi
 			else
@@ -47,8 +47,8 @@ task pull_from_SRA_directly {
 					else
 						# could probably adapt the 3-case
 						rm *.fastq
-						touch DONOTUSE.fastq
-						echo "" > accession.txt
+						#touch DONOTUSE.fastq
+						#echo "" > accession.txt
 						exit 0
 					fi
 
@@ -72,13 +72,13 @@ task pull_from_SRA_directly {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.5"
+		docker: "ashedpotatoes/sranwrp:1.0.7"
 		memory: 8
 		preemptible: preempt
 	}
 
 	output {
-		Array[File] fastqs = glob("*.fastq")
+		Array[File]? fastqs = glob("*.fastq")
 		String sra_accession_out = read_string("accession.txt")
 		Int num_fastqs = read_int("number_of_reads.txt")
 	}
@@ -102,13 +102,14 @@ task take_names {
 	command <<<
 	python << CODE
 	print('~{sep="," sra_accessions}')
+	print('~{sep="," all_fastqs}')
 	CODE
 	>>>
 
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.6"
+		docker: "ashedpotatoes/sranwrp:1.0.7"
 		memory: 8
 		preemptible: preempt
 	}
