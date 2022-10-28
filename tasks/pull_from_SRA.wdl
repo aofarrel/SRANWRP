@@ -78,7 +78,7 @@ task pull_from_SRA_directly {
 	}
 
 	output {
-		Array[File]? fastqs = glob("*.fastq")
+		Array[File?] fastqs = glob("*.fastq")
 		#String sra_accession_out = read_string("accession.txt")
 		Int num_fastqs = read_int("number_of_reads.txt")
 	}
