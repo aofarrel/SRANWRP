@@ -19,16 +19,19 @@ workflow SRA_YOINK {
 				disk_size = disk_size,
 				preempt = preempt
 		}
+		if(defined(pull.fastqs)) {
+    		Array[File] paired_fastqs=select_all(pull.fastqs)
+  		}
 	}
 
-	call sratasks.take_names {
-		input:
-			all_fastqs = pull.fastqs,
-			sra_accessions = pull.sra_accession_out
-	}
+	#call sratasks.take_names {
+	#	input:
+	#		all_fastqs = pull.fastqs,
+	#		sra_accessions = pull.sra_accession_out
+	#}
 
 	output {
-		Array[Array[File]?] all_fastqs = pull.fastqs
+		Array[Array[File]?] all_fastqs = select_all(paired_fastqs)
 		Array[Int] number_of_fastqs_per_accession = pull.num_fastqs
 	}
 
