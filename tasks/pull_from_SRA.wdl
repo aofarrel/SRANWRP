@@ -1,6 +1,5 @@
 version 1.0
 
-# prefetch is not always required, but is good practice
 task pull_from_SRA_directly {
 	input {
 		String sra_accession
@@ -12,7 +11,7 @@ task pull_from_SRA_directly {
 
 	command <<<
 		set -eux pipefail
-		prefetch ~{sra_accession}
+		prefetch ~{sra_accession}  # prefetch is not always required, but is good practice
 		fasterq-dump ~{sra_accession}
 		NUMBER_OF_FQ=$(ls -dq *fastq* | wc -l)
 		echo $NUMBER_OF_FQ > number_of_reads.txt
