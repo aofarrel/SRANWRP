@@ -2,22 +2,26 @@
 SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Docker image.
 
 ## Where?
-You can find the Docker image at [ashedpotatoes/sranwrp](https://hub.docker.com/repository/docker/ashedpotatoes/sranwrp).
+You can find the Docker image at [ashedpotatoes/sranwrp](https://hub.docker.com/repository/docker/ashedpotatoes/sranwrp). You can find a WDL task in [tasks/pull_from_SRA.wdl](./tasks/pull_from_SRA.wdl) and a WDL workflow in [workflows/pull_from_SRA_simple.wdl](workflows/pull_from_SRA_simple.wdl).
+
+## WDL?
+[More information here.](./WDL.md)
 
 ## What's Included?
 Non-exhaustive list:
-* bedtools-latest
-* bcftools-1.16
+* [bedtools-latest](https://bedtools.readthedocs.io/en/latest/index.html)
+* [bcftools-1.16](https://github.com/samtools/bcftools)
 * cpan-latest
 * curl-latest
-* entrez-direct-latest (aka edirect)
+* [entrez-direct-latest](https://www.ncbi.nlm.nih.gov/books/NBK179288/) (aka edirect)
+* [fd-latest](https://github.com/sharkdp/fd) (aka fd-find)
 * gcc-latest
-* htslib-1.16
+* [htslib-1.16](https://github.com/samtools/htslib)
 * make-latest
-* pigz-latest
+* [pigz-latest](https://github.com/madler/pigz)
 * python-3.10
-* samtools-1.16 
-* sra-tools-3.0.0 (aka SRAtools, SRA tools, SRA toolkit, etc)
+* [samtools-1.16](https://github.com/samtools/samtools) 
+* [sra-tools-3.0.0](https://github.com/ncbi/sra-tools) (aka SRAtools, SRA tools, SRA toolkit, etc)
 	* align-info, fastq-dump, fasterq-dump, prefetch, sam-dump, sra-pileup, etc
 	* Note that [ncbi/ncbi-vdb](https://github.com/ncbi/ncbi-vdb) was merged with sra-tools in sra-tools-3.0.0
 * sudo-latest
