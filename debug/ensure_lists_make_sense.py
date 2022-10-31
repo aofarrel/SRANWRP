@@ -1,4 +1,4 @@
-with open("working.txt") as f:
+with open("pass.txt") as f:
 	for a in f.readlines():
 		in_g = 0
 		with open("full.txt") as g:
