@@ -1,7 +1,7 @@
 version 1.0
 
-import "" as sratasks
-import "" as processingtasks
+import "../tasks/pull_from_SRA.wdl" as sratasks
+import "../tasks/processing_tasks.wdl" as processingtasks
 
 # How to use:
 # 1. Use NCBI's web search to look for what you want, such as:
@@ -25,6 +25,11 @@ workflow IS_THIS_TUBERCULOSIS {
 			input:
 				bioproject_accession = bioproject_accession
 		}
+	}
+
+	call processingtasks.cat_files as cat {
+		input:
+			files = get_organism_names.organisms_and_SRA_accessions
 	}
 
 }

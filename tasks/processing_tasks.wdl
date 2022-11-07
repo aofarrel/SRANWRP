@@ -46,19 +46,23 @@ task extract_accessions_from_file {
 	output {
 		Array[String] bioproject_accessions = read_lines("valid.txt")
 	}
+}
 
-task cat_files
+task cat_files {
 	# Concatenate Array[File] into a single File.
 
 	input {
 		Array[File] files
+		String? out_filename = "all.txt"
 		Int? preempt = 1
 	}
 	Int disk_size = ceil(size(files, "GB")) * 2
 
 	command <<<
 
-	# for file, do: cat 
+	touch ~{out_filename}
+	cat ~{sep=" " files} >> ~{out_filename}
+
 	>>>
 
 	runtime {
@@ -70,7 +74,7 @@ task cat_files
 	}
 
 	output {
-		File accessions = "~{bioproject_accession}.txt"
+		File outfile = "~{out_filename}"
 	}
 }
 

@@ -156,6 +156,7 @@ task get_SRA_accession_IDs_by_bioproject {
 	input {
 		String bioproject_accession
 		Int? preempt = 1
+		Int? disk_size = 50
 	}
 
 	command {
@@ -178,12 +179,19 @@ task get_SRA_accession_IDs_by_bioproject {
 	}
 }
 
-# based on https://www.biostars.org/p/411975/#412033
-
 task get_organism_per_SRA_accession_from_bioproject {
+	# Based on https://www.biostars.org/p/411975/#412033
+	# Example: Input "PRJNA46769" --> one line file:
+	# SRR039106	748227	Mycobacterium tuberculosis 210_8C6
+	#
+	# Note that some projects such as "PRJEB21680" would
+	# instead result in a file with about 12,000 lines, since
+	# it links to about 12,000 SRA accessions of many
+	# different species (even though most are S. pneumoniae)
 	input {
 		String bioproject_accession
 		Int? preempt = 1
+		Int? disk_size = 50
 	}
 
 
@@ -202,6 +210,6 @@ task get_organism_per_SRA_accession_from_bioproject {
 	}
 
 	output {
-		File accessions = "~{bioproject_accession}.txt"
+		File organisms_and_SRA_accessions = "~{bioproject_accession}_organisms.txt"
 	}
 }
