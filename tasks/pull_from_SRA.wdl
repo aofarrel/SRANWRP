@@ -1,6 +1,6 @@
 version 1.0
 
-task pull_from_SRA_directly {
+task pull_fq_from_SRA_accession {
 	input {
 		String sra_accession
 
@@ -82,7 +82,7 @@ task pull_from_SRA_directly {
 	}
 }
 
-# This task removes invalid output from pull_from_SRA_directly.
+# This task removes invalid output from pull_from_SRA_accession.
 # Array[Array[File]?] will return empty subarrays sometimes, such
 # as with SRR11947402. We can handle that in later tasks, but why
 # keep creating garbage instances of a scattered task when we can
@@ -120,6 +120,7 @@ task take_names {
 
 # NOTE: This hasn't been throughly tested. It is based on this gist:
 # https://gist.github.com/dianalow/5223b77c05b9780c30c633cb255e9fb2
+# It doesn't work on DRR or ERR accessions.
 task pull_from_SRA_by_bioproject {
 	input {
 		String bioproject_accession
@@ -146,5 +147,61 @@ task pull_from_SRA_by_bioproject {
 
 	output {
 		Array[File] fastqs = glob("*.fastq")
+	}
+}
+
+# based on https://github.com/NCBI-Hackathons/EDirectCookbook/issues/9
+# does NOT attempt to pull the accessions
+task get_SRA_accession_IDs_by_bioproject {
+	input {
+		String bioproject_accession
+		Int? preempt = 1
+	}
+
+	command {
+		esearch -db bioproject -query ~{bioproject_accession} | \
+			elink -target sra | \
+			efetch -format docsum | \
+			xtract -pattern DocumentSummary -ACC @acc -block DocumentSummary -element "&ACC" >> ~{bioproject_accession}.txt
+	}
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " SSD"
+		docker: "ashedpotatoes/sranwrp:1.0.4"
+		memory: 8
+		preemptible: preempt
+	}
+
+	output {
+		File accessions = "~{bioproject_accession}.txt"
+	}
+}
+
+# based on https://www.biostars.org/p/411975/#412033
+
+task get_organism_per_SRA_accession_from_bioproject {
+	input {
+		String bioproject_accession
+		Int? preempt = 1
+	}
+
+
+	command {
+		esearch -db sra -query ~{bioproject_accession} | \
+			esummary | \
+			xtract -pattern DocumentSummary -element Run@acc,Organism@taxid,Organism@ScientificName >> ~{bioproject_accession}.txt 
+	}
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " SSD"
+		docker: "ashedpotatoes/sranwrp:1.0.4"
+		memory: 8
+		preemptible: preempt
+	}
+
+	output {
+		File accessions = "~{bioproject_accession}.txt"
 	}
 }
