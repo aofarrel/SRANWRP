@@ -198,7 +198,7 @@ task get_organism_per_SRA_accession_from_bioproject {
 	command {
 		esearch -db sra -query ~{bioproject_accession} | \
 			esummary | \
-			xtract -pattern DocumentSummary -element Run@acc,Organism@taxid,Organism@ScientificName >> ~{bioproject_accession}.txt 
+			xtract -pattern DocumentSummary -element Run@acc,Organism@taxid,Organism@ScientificName >> ~{bioproject_accession}_organisms.txt 
 	}
 
 	runtime {
