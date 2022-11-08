@@ -19,12 +19,12 @@ task extract_accessions_from_file {
 	Int disk_size = ceil(size(bioprojects_file, "GB")) * 2
 
 	command <<<
-	python CODE <<
+	python3.10 << CODE
 	import os
 	f = open("~{bioprojects_file}", "r")
 	valid = []
 	for line in (f.readlines()):
-		if line = "":
+		if line == "":
 			pass
 		else:
 			valid.append(line)
@@ -33,12 +33,13 @@ task extract_accessions_from_file {
 	g = open("valid.txt", "a")
 	g.writelines(valid)
 	g.close
+	CODE
 	>>>
 
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.4"
+		docker: "ashedpotatoes/sranwrp:1.0.7"
 		memory: 8
 		preemptible: preempt
 	}
@@ -68,7 +69,7 @@ task cat_files {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.4"
+		docker: "ashedpotatoes/sranwrp:1.0.7"
 		memory: 8
 		preemptible: preempt
 	}

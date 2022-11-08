@@ -20,6 +20,7 @@ Non-exhaustive list:
 * [pigz-latest](https://github.com/madler/pigz)
 * python-3.10
 	* aliased to python and python3
+	* **note:** when running non-interactively, the aliases will not be read. you must call Python invoking `python3.10`
 * [samtools-1.16](https://github.com/samtools/samtools) 
 * [sra-tools-3.0.0](https://github.com/ncbi/sra-tools) (aka SRAtools, SRA tools, SRA toolkit, etc)
 	* align-info, fastq-dump, fasterq-dump, prefetch, sam-dump, sra-pileup, etc
