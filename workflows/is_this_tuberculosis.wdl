@@ -34,4 +34,8 @@ workflow IS_THIS_TUBERCULOSIS {
 			files = get_organism_names.organisms_and_SRA_accessions
 	}
 
+	output {
+		Array[File] all_organism_files = get_organism_names.organisms_and_SRA_accessions # useful if cat takes too long
+	}
+
 }
