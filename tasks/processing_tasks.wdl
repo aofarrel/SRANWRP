@@ -40,7 +40,7 @@ task extract_accessions_from_file {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
 		docker: "ashedpotatoes/sranwrp:1.0.7"
-		memory: 8
+		memory: "8 GB"
 		preemptible: preempt
 	}
 
@@ -70,7 +70,7 @@ task cat_files {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
 		docker: "ashedpotatoes/sranwrp:1.0.7"
-		memory: 8
+		memory: "8 GB"
 		preemptible: preempt
 	}
 

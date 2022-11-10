@@ -1,9 +1,9 @@
 version 1.0
 
-#import "../tasks/pull_from_SRA.wdl" as sratasks
-#import "../tasks/processing_tasks.wdl" as processingtasks
-import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bioproject_stuff/tasks/pull_from_SRA.wdl" as sratasks
-import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bioproject_stuff/tasks/processing_tasks.wdl" as processingtasks
+import "../tasks/pull_from_SRA.wdl" as sratasks
+import "../tasks/processing_tasks.wdl" as processingtasks
+#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bioproject_stuff/tasks/pull_from_SRA.wdl" as sratasks
+#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bioproject_stuff/tasks/processing_tasks.wdl" as processingtasks
 
 # How to use:
 # 1. Use NCBI's web search to look for what you want, such as:

@@ -140,8 +140,8 @@ task pull_from_SRA_by_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.4"
-		memory: 8
+		docker: "ashedpotatoes/sranwrp:1.0.7"
+		memory: "8 GB"
 		preemptible: preempt
 	}
 
@@ -169,8 +169,8 @@ task get_SRA_accession_IDs_by_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.4"
-		memory: 8
+		docker: "ashedpotatoes/sranwrp:1.0.7"
+		memory: "8 GB"
 		preemptible: preempt
 	}
 
@@ -204,8 +204,8 @@ task get_organism_per_SRA_accession_from_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.4"
-		memory: 8
+		docker: "ashedpotatoes/sranwrp:1.0.7"
+		memory: "8 GB"
 		preemptible: preempt
 	}
 
