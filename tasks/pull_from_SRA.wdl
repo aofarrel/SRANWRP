@@ -72,7 +72,7 @@ task pull_fq_from_SRA_accession {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
 		docker: "ashedpotatoes/sranwrp:1.0.7"
-		memory: 8
+		memory: "8 GB"
 		preemptible: preempt
 	}
 
