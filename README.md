@@ -4,10 +4,16 @@ SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethyl
 ## Where?
 You can find the Docker image on Docker Hub as [ashedpotatoes/sranwrp](https://hub.docker.com/r/ashedpotatoes/sranwrp) and Quay.io as [aofarrel/sranwrp](quay.io/aofarrel/sranwrp). You can find a WDL task in [tasks/pull_from_SRA.wdl](./tasks/pull_from_SRA.wdl) and a WDL workflow in [workflows/pull_from_SRA_simple.wdl](workflows/pull_from_SRA_simple.wdl).
 
+## Which tasks can it perform?
+The combination of e-direct and sra-tools allows it do basically anything you can do from SRA's website. WDL tasks are provided for the following specific functions:
+* [Pull all fastqs from an SRA accession, a biosample accession, or a bioproject accession](./pull_fastqs.wdl)
+* [Get a list of all of a BioProject's SRA accessions and said SRA accessions' species](./get_metadata_from_accession.wdl)
+* [Manipulate outputs into something you can play nicely with using WDL](./processing_tasks.wdl)
+
 ## WDL?
 [More information here.](./wdl.md)
 
-## What's Included?
+## What's included?
 Non-exhaustive list:
 * bedtools-latest
 * bcftools-1.16
@@ -30,7 +36,7 @@ Non-exhaustive list:
 * vim-latest
 * wget-latest
 
-## Who Builds?
+## Who builds?
 Right now, the image is built and pushed manually.
 
 ## Why?

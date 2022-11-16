@@ -1,7 +1,7 @@
 version 1.0
 
-import "../tasks/pull_from_SRA.wdl" as sratasks
-#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/handle-odd-numbers/tasks/pull_from_SRA.wdl" as sratasks
+import "../tasks/pull_fastqs.wdl" as pulltasks
+#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/pull_fastqs.wdl" as pulltasks
 
 workflow SRA_YOINK {
 	input {
@@ -13,7 +13,7 @@ workflow SRA_YOINK {
 	}
 
 	scatter(sra_accession in sra_accessions) {
-		call sratasks.pull_fq_from_SRA_accession as pull {
+		call pulltasks.pull_fq_from_SRA_accession as pull {
 			input:
 				sra_accession = sra_accession,
 				disk_size = disk_size,
@@ -23,12 +23,6 @@ workflow SRA_YOINK {
     		Array[File] paired_fastqs=select_all(pull.fastqs)
   		}
 	}
-
-	#call sratasks.take_names {
-	#	input:
-	#		all_fastqs = pull.fastqs,
-	#		sra_accessions = pull.sra_accession_out
-	#}
 
 	output {
 		Array[Array[File]] all_fastqs = select_all(paired_fastqs)

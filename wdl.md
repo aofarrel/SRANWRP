@@ -1,5 +1,7 @@
 # WDL Information
-Note: You don't enter the Docker container and then run the WDL. Instead, you run the WDL, which then does bash stuff in the Docker container.
+WDL stands for Workflow Description Language. [You can read more about it here](https://openwdl.org/), but essentially is a language made for running batch tasks, usually by leveraging Docker. You don't enter the Docker container and then run the WDL script. Instead, you run the WDL script, which then does bash stuff in the Docker container.
+
+## Common arguments used in this repo
 
 **disk_size** (default: 50 gigabytes)  
 What disk size to use. Treated as a maximum by GCP (including Terra) and a minimum by some other backends.

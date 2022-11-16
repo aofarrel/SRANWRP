@@ -1,8 +1,8 @@
 version 1.0
 
-import "../tasks/pull_from_SRA.wdl" as sratasks
+import "../tasks/get_metadata.wdl" as metatasks
 import "../tasks/processing_tasks.wdl" as processingtasks
-#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bioproject_stuff/tasks/pull_from_SRA.wdl" as sratasks
+#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bioproject_stuff/tasks/get_metadata.wdl" as metatasks
 #import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bioproject_stuff/tasks/processing_tasks.wdl" as processingtasks
 
 # How to use:
@@ -23,7 +23,7 @@ workflow IS_THIS_TUBERCULOSIS {
 
 
 	scatter(bioproject_accession in get_bioproj_IDs.bioproject_accessions) {
-		call sratasks.get_organism_per_SRA_accession_from_bioproject as get_organism_names {
+		call metatasks.get_organism_per_SRA_accession_from_bioproject as get_organism_names {
 			input:
 				bioproject_accession = bioproject_accession
 		}
