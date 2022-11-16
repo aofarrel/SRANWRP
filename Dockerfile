@@ -58,11 +58,16 @@ ENV PERL5LIB=/perlstuff:
 # grab premade sra-tool binaries
 RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.0/sratoolkit.3.0.0-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.0-ubuntu64.tar.gz
 
-# set path variable and some aliases
-RUN echo 'alias fdfind="fd"' >> ~/.bashrc
+# set some fake aliases in attempt to get things working in non-inactive mode
+# this is not a great solution
+RUN echo -e '#!/bin/bash\npython3.10 "$@"' > /usr/bin/python && chmod +x /usr/bin/python
+
+# set some aliases -- not these only work in interactive mode
 RUN echo 'alias python="python3.10"' >> ~/.bashrc
 RUN echo 'alias python3="python3.10"' >> ~/.bashrc
 RUN echo 'alias pydoc3="ydoc3.10"' >> ~/.bashrc
+RUN echo 'alias fdfind="fd"' >> ~/.bashrc
+RUN echo 'alias pydoc3="pydoc3.10"' >> ~/.bashrc
 RUN echo 'alias pygettext3="pygettext3.10"' >> ~/.bashrc
 ENV PATH=/bin:/root/edirect/:/bin/sratoolkit.3.0.0-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
