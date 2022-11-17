@@ -9,6 +9,9 @@ task extract_accessions_from_file {
 	# This allows us to work with NCBI web search's "send to file" output
 	# more easily with WDLs. We can't just use WDL's built in "read_lines"
 	# as the blank lines NCBI throws in would cause issues.
+	#
+	# This can also handle the situation where xtract gives us tab-seperated
+	# accessions all on the same line.
 	input {
 		# It doesn't matter if the input file is sorted by organism or 
 		# uses NCBI's "default order." Either works.
@@ -20,18 +23,23 @@ task extract_accessions_from_file {
 	command <<<
 	python3.10 << CODE
 	import os
-	f = open("~{accessions_file}", "r")
+	try:
+		f = open("~{accessions_file}.txt", "r")
+	except FileNotFoundError:
+		f = open("~{accessions_file}", "r")
 	valid = []
 	for line in (f.readlines()):
 		if line == "":
 			pass
 		else:
-			valid.append(line)
+			split = line.split("\t")
+			for accession in split:
+				valid.append(accession.strip("\n")+"\n")
 	f.close()
 	os.system("touch valid.txt")
 	g = open("valid.txt", "a")
 	g.writelines(valid)
-	g.close
+	g.close()
 	CODE
 	>>>
 
