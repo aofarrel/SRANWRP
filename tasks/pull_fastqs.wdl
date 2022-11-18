@@ -95,20 +95,22 @@ task pull_fq_from_biosample {
 		set -eux pipefail
 
 		# 1. get SRA accessions from biosample
-		SRRS=$(esearch -db biosample -query SRS000422 | \
+		SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
 			elink -target sra | efetch -format docsum | \
 			xtract -pattern DocumentSummary -element Run@acc)
+
+		SRRS_ARRAY=($SRRS_STR)
 
 		# 2. loop through every SRA accession and pull the fastqs
 		# TODO: This loop doesn't work as expected. It's sending the whole array.
 		# fasterq-dump and prefetch can handle that, but it likely messes up the
 		# file check.
-		for SRR in "${SRRS[@]}"
+		for SRR in "${SRRS_ARRAY[@]}"
 		do
 			echo "searching $SRR"
 			prefetch $SRR
 			fasterq-dump $SRR
-			NUMBER_OF_FQ=$(ls -dq *$SRR* | wc -l)
+			NUMBER_OF_FQ=$(ls -dqp $SRR* | grep -v / | wc -l)
 			if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
 			then
 				echo "Even number of fastqs"
@@ -146,11 +148,11 @@ task pull_fq_from_biosample {
 					# do some folder stuff to avoid confusion with other accessions
 					mkdir temp
 					THIS_SRA_FQS=$(ls -dq *$SRR*)
-					for THING in "${THIS_SRA_FQS[@]}"
-					do
-						mv $THING temp/$THING
+					THIS_SRA_FQS_ARR=($THIS_SRA_FQS)
+					for THING in "${THIS_SRA_FQS_ARR[@]}"
+						do mv $THING temp/$THING
 					done
-					cd temptemp
+					cd temp
 					READ1=$(ls -dq *_1*)
 					READ2=$(ls -dq *_2*)
 					mkdir temptemp
