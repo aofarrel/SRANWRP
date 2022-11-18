@@ -14,3 +14,11 @@
 ```
 (#34) AND "Mycobacterium tuberculosis complex sp."[orgn] AND ("biomol dna"[Properties] AND "library layout paired"[Properties] AND "strategy wgs"[Properties] OR "strategy wga"[Properties] OR "strategy wcs"[Properties] OR "strategy clone"[Properties] OR "strategy finishing"[Properties] OR "strategy validation"[Properties] AND "filetype fastq"[Properties])
 ```
+
+```
+txid77643[Organism:exp] AND "Mycobacterium tuberculosis complex sp."[orgn] AND ("biomol dna"[Properties] AND "library layout paired"[Properties] AND "strategy wgs"[Properties] OR "strategy wga"[Properties] OR "strategy wcs"[Properties] OR "strategy clone"[Properties] OR "strategy finishing"[Properties] OR "strategy validation"[Properties] AND "filetype fastq"[Properties])
+```
+
+```
+txid77643[Organism:exp] AND ("biomol dna"[Properties] AND "library layout paired"[Properties] AND "strategy wgs"[Properties] OR "strategy wga"[Properties] OR "strategy wcs"[Properties] OR "strategy clone"[Properties] OR "strategy finishing"[Properties] OR "strategy validation"[Properties] AND "filetype fastq"[Properties]) AND ("biomol dna"[Properties] AND "library layout paired"[Properties] AND "strategy wgs"[Properties] OR "strategy wga"[Properties] OR "strategy wcs"[Properties] OR "strategy clone"[Properties] OR "strategy finishing"[Properties] OR "strategy validation"[Properties] AND "filetype fastq"[Properties])
+```
