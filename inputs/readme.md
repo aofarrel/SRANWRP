@@ -1,8 +1,8 @@
-# debug
-Not all accessions work on all versions of fasterq-dump. Here's some examples.
+# inputs
+**You are probably looking for the [/quick_tests](./quick_tests) directory. Most of the other stuff here isn't useful for you.**
 
 ## 2.10/3.0
-All test data is tuberculosis data for the time being.
+Not all accessions work on all versions of fasterq-dump. Here's some examples. All test data is tuberculosis data for the time being.
 * full: List of 156 SRA accessions; superset of fail + pass_DL
 * fail_DL: List of SRA accessions which fail fasterq-dump
 * pass_DL: List of SRA accessions which pass fasterq-dump
@@ -19,4 +19,4 @@ Out of 156 tested, all except two fail fasterq-dump. The two that fail are both 
 Lists of accessions that should not be used in production pipelines.
 
 ## tb_accessions
-Lists of various tuberculosis accessions. See [./tb_accessions/readme.md]()for more information.
+Lists of various tuberculosis accessions. See [./tb_accessions/readme.md](./tb_accessions/readme.md) for more information.

@@ -1,6 +1,29 @@
-307
-SRS000422
-SRS544089
+# Which list to use?
+denylist_samples.txt is currently more complete, except for the ones that lack a biosample accession entirely.
+
+# Why Deny?
+
+## not on google mirror, seem to have no data, do not have a biosample accession
+ERR3256208
+ERR1274706
+ERR1873513
+ERR760606
+ERR760780
+ERR760898
+ERR845308
+ERR181439
+ERR181441
+
+## appear in list Z, but aren't TB (biosample: SRS000422 but also can be reached via 307 which is how it's in list Z)
+SRR001703
+SRR001704
+SRR001705
+
+## fails fasterq-dump3.0.0 (biosample: SRS544089)
+SRR1180610
+SRR1180764
+
+## known to be TN-Seq (by sample, since there's so many of them)
 SRS15530894
 SRS15530895
 SAMN12913102
