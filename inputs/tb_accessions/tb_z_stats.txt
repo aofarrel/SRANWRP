@@ -1,0 +1,8 @@
+   22 ERR   - ENA reads
+   15 SRR   - Reads (SRR1239339, etc - note that SRR1239339's biosample SAMN02727913 isn't there)
+16881 SAME  - BioSample (SAMEA1015935, etc)
+29986 ERS   - ENA sample
+23872 SAMN  - BioSample
+  217 SAMD  - BioSample (SAMD00029431, etc)
+  137 "ENA_PENDING"
+    1 "307"
