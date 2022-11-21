@@ -1,9 +1,6 @@
-# appears in list Z, but isn't TB
 307
 SRS000422
-# fails fasterq-dump3.0.0 (SRR1180610 + SRR1180764)
 SRS544089
-# TN-seq
 SRS15530894
 SRS15530895
 SAMN12913102
