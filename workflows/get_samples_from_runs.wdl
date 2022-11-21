@@ -1,5 +1,8 @@
 version 1.0
 
+# Convert a bunch of SRA accessions into BioSample accessions
+# Author: Ash O'Farrell
+
 import "../tasks/processing_tasks.wdl" as processingtasks
 import "../tasks/get_metadata.wdl" as metatasks
 

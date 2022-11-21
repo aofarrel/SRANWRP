@@ -1,17 +1,17 @@
 version 1.0
 
+# Get the organism (including taxID) from a bunch of BioProject accessions
+# Author: Ash O'Farrell
+# If you don't already have a file with bioprojects already, you can get one from an
+# SRA query. Select "Send to" > "File" radio > "Accessions list" dropdown > "Create File"
+# Have the resulting file be the input to this pipeline.
+
 import "../tasks/get_metadata.wdl" as metatasks
 import "../tasks/processing_tasks.wdl" as processingtasks
-#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bioproject_stuff/tasks/get_metadata.wdl" as metatasks
-#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bioproject_stuff/tasks/processing_tasks.wdl" as processingtasks
+#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/get_metadata.wdl" as metatasks
+#import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/processing_tasks.wdl" as processingtasks
 
-# How to use:
-# 1. Use NCBI's web search to look for what you want, such as:
-# (("bioproject sra"[Filter]) AND ("mycobacterium tuberculosis"[Organism] OR "mycobacterium tuberculosis complex"[Organism]))
-# 2. In the drop down menu, select "Send to" > "File" radio > "Accessions list" dropdown > "Create File" button
-# 3. Have the resulting file be the input to this pipeline
-
-workflow IS_THIS_TUBERCULOSIS {
+workflow IS_THIS_A_PIDGEON {
 	input {
 		File bioprojects_file
 	}

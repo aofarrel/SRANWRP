@@ -1,5 +1,10 @@
 version 1.0
 
+# Pull FASTQs from a list of SRA Run accessions (SRR/ERR/DRR).
+# Will only return paired FASTQs. Accessions that give only
+# one FASTQ will be ignored, and accessions that give two paired
+# reads + one additional FASTQ will only return the paired FASTQs.
+
 import "../tasks/pull_fastqs.wdl" as pulltasks
 #import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/pull_fastqs.wdl" as pulltasks
 

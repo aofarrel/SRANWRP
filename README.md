@@ -1,19 +1,24 @@
 # SRAnwrp ![Docker Image Version (latest by date)](https://img.shields.io/docker/v/ashedpotatoes/sranwrp) [![Docker Repository on Quay](https://quay.io/repository/aofarrel/sranwrp/status "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
 SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Docker image. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
 
-## Where?
-You can find the Docker image on Docker Hub as [ashedpotatoes/sranwrp](https://hub.docker.com/r/ashedpotatoes/sranwrp) and Quay.io as [aofarrel/sranwrp](quay.io/aofarrel/sranwrp). You can find a WDL task in [tasks/pull_from_SRA.wdl](./tasks/pull_from_SRA.wdl) and a WDL workflow in [workflows/pull_from_SRA_simple.wdl](workflows/pull_from_SRA_simple.wdl).
+## What tasks can it perform?
+The combination of e-direct and sra-tools allows it do basically anything you can do from SRA's website. These exist in the form of WDL workflows -- [more on WDL here](./wdl.md).
 
-## Which tasks can it perform?
-The combination of e-direct and sra-tools allows it do basically anything you can do from SRA's website. WDL tasks are provided for the following specific functions:
-* [Pull all fastqs from an SRA accession, a biosample accession, or a bioproject accession](./pull_fastqs.wdl)
-* [Get a list of all of a BioProject's SRA accessions and said SRA accessions' species](./get_metadata_from_accession.wdl)
-* [Manipulate outputs into something you can play nicely with using WDL](./processing_tasks.wdl)
+### Pulling FASTQs
+* [Pull paired FASTQs from a list of run accessions (SRR/ERR/DRR)](./workflows/pull_paired_FASTQ_by_run_accession.wdl)
+* [Pull paired FASTQs from a lit of BioSample accessions - can be SRS or SAME notation](./workflows/pull_paired_FASTQ_by_biosample.wdl)
+* Plus some bonus [non-workflow pulling tasks](./tasks/pull_fastqs.wdl)
 
-## WDL?
-[More information here.](./wdl.md)
+### Getting Organism + TaxID from a list of BioProject accessions
+There's a lot of BioProjects on SRA, and some of them are multi-species. Use [this workflow](./workflows/get_organisms_from_bioproject.wdl) to get a list of all run accessions, and said run accessions' species and TaxIDs, from a list of BioProject accessions.
 
-## What's included?
+### Getting sample accessions from run accessions (SRR/ERR/DRR)
+If you have a list of run accessions, [this workflow](./workflows/get_samples_from_runs.wdl) will get a list of sample accessions that they cover. Some samples have more than one run -- those samples will only appear in the output once.
+
+### Other stuff?
+Here's [some other tasks](./tasks/processing_tasks.wdl) that can help you convert between data types.
+
+## What's included in the Docker image?
 Non-exhaustive list:
 * bedtools-latest
 * bcftools-1.16
