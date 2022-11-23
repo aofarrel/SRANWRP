@@ -56,7 +56,7 @@ RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recu
 ENV PERL5LIB=/perlstuff:
 
 # grab premade sra-tool binaries
-RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.0/sratoolkit.3.0.0-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.0-ubuntu64.tar.gz
+RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.1-ubuntu64.tar.gz
 
 # set path variable and some aliases
 RUN echo 'alias fdfind="fd"' >> ~/.bashrc
@@ -64,11 +64,11 @@ RUN echo 'alias python="python3.10"' >> ~/.bashrc
 RUN echo 'alias python3="python3.10"' >> ~/.bashrc
 RUN echo 'alias pydoc3="ydoc3.10"' >> ~/.bashrc
 RUN echo 'alias pygettext3="pygettext3.10"' >> ~/.bashrc
-ENV PATH=/bin:/root/edirect/:/bin/sratoolkit.3.0.0-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH=/bin:/root/edirect/:/bin/sratoolkit.3.0.1-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # attempt configure vdb
 # !!this will cause a segfault!!
 RUN x | vdb-config --interactive || :
 
 # cleanup
-RUN sudo rm /bin/bcftools-1.16.tar.bz2 && sudo rm /bin/samtools-1.16.1.tar.bz2 && sudo rm /bin/sratoolkit.3.0.0-ubuntu64.tar.gz
+RUN sudo rm /bin/bcftools-1.16.tar.bz2 && sudo rm /bin/samtools-1.16.1.tar.bz2 && sudo rm /bin/sratoolkit.3.0.1-ubuntu64.tar.gz

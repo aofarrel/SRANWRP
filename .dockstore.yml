@@ -1,0 +1,28 @@
+version: 1.2
+workflows:
+  - name: get_biosample_accessions_from_run_accessions
+    subclass: WDL
+    primaryDescriptorPath: /workflows/get_samples_from_runs.wdl
+    testParameterFiles:
+      - /workflows/get_samples_from_runs.json
+    authors:
+      - orcid: 0000-0003-4896-1858
+  - name: get_all_organisms_from_bioproject
+    subclass: WDL
+    primaryDescriptorPath: /workflows/get_organisms_from_bioproject.wdl
+    testParameterFiles:
+      - /workflows/get_organisms_from_bioproject.json
+    authors:
+      - orcid: 0000-0003-4896-1858
+  - name: pull_FASTQs_from_SRA_by_biosample
+    subclass: WDL
+    primaryDescriptorPath: /workflows/pull_paired_FASTQ_by_biosample.wdl
+    testParameterFiles:
+      - /workflows/pull_paired_FASTQ_by_biosample.json
+    authors:
+      - orcid: 0000-0003-4896-1858
+  - name: pull_FASTQs_from_SRA_by_run
+    subclass: WDL
+    primaryDescriptorPath: /workflows/pull_paired_FASTQ_by_run_accession.wdl
+    authors:
+      - orcid: 0000-0003-4896-1858
