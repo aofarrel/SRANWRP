@@ -1,4 +1,4 @@
-# SRAnwrp ![Docker Image Version (latest by date)](https://img.shields.io/docker/v/ashedpotatoes/sranwrp) [![Docker Repository on Quay](https://quay.io/repository/aofarrel/sranwrp/status "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
+# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.0.8?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags) [![Quay.io Link](https://img.shields.io/badge/quay.io-1.0.8-blue?logo=redhat "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
 SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Docker image. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
 
 ## What tasks can it perform?
