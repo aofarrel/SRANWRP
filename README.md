@@ -1,8 +1,8 @@
-# SRAnwrp ![Docker Image Version (latest by date)](https://img.shields.io/docker/v/ashedpotatoes/sranwrp) [![Docker Repository on Quay](https://quay.io/repository/aofarrel/sranwrp/status "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
+# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.0.7?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags) [![Quay.io Link](https://img.shields.io/badge/quay.io-1.0.7-blue?logo=redhat "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
 SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Docker image. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
 
 ## Where?
-You can find the Docker image on Docker Hub as [ashedpotatoes/sranwrp](https://hub.docker.com/r/ashedpotatoes/sranwrp) and Quay.io as [aofarrel/sranwrp](quay.io/aofarrel/sranwrp). You can find a WDL task in [tasks/pull_from_SRA.wdl](./tasks/pull_from_SRA.wdl) and a WDL workflow in [workflows/pull_from_SRA_simple.wdl](workflows/pull_from_SRA_simple.wdl).
+You can find the Docker image on Docker Hub as [ashedpotatoes/sranwrp](https://hub.docker.com/r/ashedpotatoes/sranwrp) and Quay.io as [aofarrel/sranwrp](https://quay.io/aofarrel/sranwrp). You can find a WDL task in [tasks/pull_from_SRA.wdl](./tasks/pull_from_SRA.wdl) and a WDL workflow in [workflows/pull_from_SRA_simple.wdl](workflows/pull_from_SRA_simple.wdl).
 
 ## WDL?
 [More information here.](./wdl.md)
