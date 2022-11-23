@@ -36,5 +36,5 @@ Right now, the image is built and pushed manually.
 * Docker Hub's latest version of staphb/sratoolkit, as of my writing this in October 2022, [runs version 2.9.2 (see command 15)](https://hub.docker.com/layers/staphb/sratoolkit/latest/images/sha256-84fc990e6d04f263d7bea82dcbff7f5dd9182ab5234314bb0daf2e2db977e4a0?context=explore), which [doesn't work at all anymore](https://github.com/ncbi/sra-tools/issues/714)
 * Existing Docker images tend to contain either the SRA toolkit or Entrez Direct, not both
 * Building SRA Toolkit on your own, without conda, is not intuitive
-* Building SRA Toolkit on your own, with conda, is also not intutive (you usually end up with v2.10 which [only sometimes works](./debug/README.md))
+* Building SRA Toolkit on your own, with conda, is also not intutive (you usually end up with v2.10 which [only sometimes works](./inputs/readme.md#210))
 * No need to run `vdb-config --interactive` or any other interactive process before using anything in this image; SRA Toolkit's config file is generated while building the image
