@@ -33,9 +33,9 @@ Non-exhaustive list:
 	* aliased to python and python3
 	* **note:** when running non-interactively, the aliases will not be read. you must call Python invoking `python3.10`
 * [samtools-1.16](https://github.com/samtools/samtools) 
-* [sra-tools-3.0.0](https://github.com/ncbi/sra-tools) (aka SRAtools, SRA tools, SRA toolkit, etc)
+* [sra-tools-3.0.1](https://github.com/ncbi/sra-tools) (aka SRAtools, SRA tools, SRA toolkit, etc)
 	* align-info, fastq-dump, fasterq-dump, prefetch, sam-dump, sra-pileup, etc
-	* Note that [ncbi/ncbi-vdb](https://github.com/ncbi/ncbi-vdb) was merged with sra-tools in sra-tools-3.0.0
+	* Note that [ncbi/ncbi-vdb](https://github.com/ncbi/ncbi-vdb) was merged with sra-tools in sra-tools-3.0.0 and vdb-get was retired in 3.0.1
 * sudo-latest
 * tree-latest
 * vim-latest
