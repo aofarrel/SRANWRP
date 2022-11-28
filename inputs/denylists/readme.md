@@ -14,12 +14,12 @@ ERR845308
 ERR181439
 ERR181441
 
-## appear in list Z, but aren't TB (biosample: SRS000422 but also can be reached via 307 which is how it's in list Z)
+## appear in list Z, but aren't TB (biosample: SRS000422/SAMN00000188/307)
 SRR001703
 SRR001704
 SRR001705
 
-## fails fasterq-dump3.0.0 (biosample: SRS544089)
+## fails fasterq-dump3.0.0 (biosample: SRS544089/SAMN02580571)
 SRR1180610
 SRR1180764
 
