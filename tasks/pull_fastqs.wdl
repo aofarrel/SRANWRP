@@ -177,7 +177,11 @@ task pull_fq_from_biosample {
 		# 4. tar the outputs, if that's what you want
 		if [ ~{tar_outputs} == "true" ]
 		then
-			tar -tf ~{biosample_accession}.tar --wildcards '*.fastq'
+			# double check that there actually are fastqs
+			NUMBER_OF_FQ=$(ls *.fastq | grep -v / | wc -l)
+			f [ `expr $NUMBER_OF_FQ` == 0 ]
+			then
+				tar -tf ~{biosample_accession}.tar --wildcards '*.fastq'
 		fi
 		
 
