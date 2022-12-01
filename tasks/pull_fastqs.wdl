@@ -86,6 +86,7 @@ task pull_fq_from_biosample {
 	input {
 		String biosample_accession
 
+		Boolean tar_outputs = false
 		Boolean fail_on_invalid = false
 		Int disk_size = 50
 		Int preempt = 1
@@ -173,6 +174,13 @@ task pull_fq_from_biosample {
 			mv -- "$fq" "~{biosample_accession}_${fq%.fastq}.fastq"
 		done
 
+		# 4. tar the outputs, if that's what you want
+		if [ ~{tar_outputs} == "true" ]
+		then
+			tar -tf ~{biosample_accession}.tar --wildcards '*.fastq'
+		fi
+		
+
 	>>>
 
 	runtime {
@@ -185,6 +193,7 @@ task pull_fq_from_biosample {
 
 	output {
 		Array[File?] fastqs = glob("*.fastq")
+		File? tarball_fastqs = glob("*.tar")[0]
 	}
 }
 
