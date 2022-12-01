@@ -11,21 +11,21 @@ import "../tasks/processing_tasks.wdl" as processingtasks
 #import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/get_metadata.wdl" as metatasks
 #import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/processing_tasks.wdl" as processingtasks
 
-workflow IS_THIS_A_PIDGEON {
+workflow IS_THIS_A_BUTTERFLY {
 	input {
-		File bioprojects_file
+		File biosamples_file
 	}
 
-	call processingtasks.extract_accessions_from_file as get_bioproj_IDs {
+	call processingtasks.extract_accessions_from_file as get_biosamp_IDs {
 		input:
-			accessions_file = bioprojects_file
+			accessions_file = biosamples_file
 	}
 
 
-	scatter(bioproject_accession in get_bioproj_IDs.accessions) {
-		call metatasks.get_organism_per_SRA_accession_from_bioproject as get_organism_names {
+	scatter(biosample_accession in get_biosamp_IDs.accessions) {
+		call metatasks.get_organism_per_biosample as get_organism_names {
 			input:
-				bioproject_accession = bioproject_accession
+				biosample_accession = biosample_accession
 		}
 	}
 
@@ -35,7 +35,8 @@ workflow IS_THIS_A_PIDGEON {
 	}
 
 	output {
-		Array[File] all_organism_files = get_organism_names.organisms_and_SRA_accessions # useful if cat takes too long
+		File all_organisms_per_biosample = cat.outfile
+		#Array[File] all_organism_files = get_organism_names.organisms_and_SRA_accessions # useful if cat takes too long
 	}
 
 }

@@ -16,7 +16,7 @@ task get_biosample_accession_ID_from_SRA {
 
 	runtime {
 		cpu: 4
-		disks: "local-disk " + disk_size + " SSD"
+		disks: "local-disk " + disk_size + " HDD"
 		docker: "ashedpotatoes/sranwrp:1.0.8"
 		memory: "8 GB"
 		preemptible: preempt
@@ -45,7 +45,7 @@ task get_SRA_accession_IDs_by_biosample {
 
 	runtime {
 		cpu: 4
-		disks: "local-disk " + disk_size + " SSD"
+		disks: "local-disk " + disk_size + " HDD"
 		docker: "ashedpotatoes/sranwrp:1.0.8"
 		memory: "8 GB"
 		preemptible: preempt
@@ -76,7 +76,7 @@ task get_SRA_accession_IDs_by_bioproject {
 
 	runtime {
 		cpu: 4
-		disks: "local-disk " + disk_size + " SSD"
+		disks: "local-disk " + disk_size + " HDD"
 		docker: "ashedpotatoes/sranwrp:1.0.8"
 		memory: "8 GB"
 		preemptible: preempt
@@ -111,7 +111,7 @@ task get_all_accession_IDs_by_bioproject {
 
 	runtime {
 		cpu: 4
-		disks: "local-disk " + disk_size + " SSD"
+		disks: "local-disk " + disk_size + " HDD"
 		docker: "ashedpotatoes/sranwrp:1.0.8"
 		memory: "8 GB"
 		preemptible: preempt
@@ -137,24 +137,76 @@ task get_organism_per_SRA_accession_from_bioproject {
 	input {
 		String bioproject_accession
 		Int? preempt = 1
-		Int? disk_size = 50
+		Int? disk_size = 10
 	}
 
 	command {
 		esearch -db sra -query ~{bioproject_accession} | \
 			esummary | \
-			xtract -pattern DocumentSummary -element Run@acc,Organism@taxid,Organism@ScientificName >> ~{bioproject_accession}_organisms.txt 
+			xtract -pattern DocumentSummary -element Biosample,Run@acc,Organism@taxid,Organism@ScientificName >> ~{bioproject_accession}_organisms.txt 
 	}
 
 	runtime {
 		cpu: 4
-		disks: "local-disk " + disk_size + " SSD"
+		disks: "local-disk " + disk_size + " HDD"
 		docker: "ashedpotatoes/sranwrp:1.0.8"
-		memory: "8 GB"
+		memory: "4 GB"
 		preemptible: preempt
 	}
 
 	output {
 		File organisms_and_SRA_accessions = "~{bioproject_accession}_organisms.txt"
+	}
+}
+
+task get_organism_per_biosample {
+	input {
+		String biosample_accession
+		Int? preempt = 1
+		Int? disk_size = 10
+	}
+
+	command {
+		esearch -db sra -query ~{biosample_accession} | \
+			esummary | \
+			xtract -pattern DocumentSummary -element Biosample,Run@acc,Organism@taxid,Organism@ScientificName >> ~{biosample_accession}_organisms.txt 
+	}
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.0.8"
+		memory: "4 GB"
+		preemptible: preempt
+	}
+
+	output {
+		File organisms_and_SRA_accessions = "~{biosample_accession}_organisms.txt"
+	}
+}
+
+task get_organism_per_biosamples {
+	input {
+		Array[String] biosample_accession
+		Int? preempt = 1
+		Int? disk_size = 10
+	}
+
+	command {
+		esearch -db sra -query ~{biosample_accession} | \
+			esummary | \
+			xtract -pattern DocumentSummary -element Biosample,Run@acc,Organism@taxid,Organism@ScientificName >> ~{biosample_accession}_organisms.txt 
+	}
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.0.8"
+		memory: "4 GB"
+		preemptible: preempt
+	}
+
+	output {
+		File organisms_and_SRA_accessions = "~{biosample_accession}_organisms.txt"
 	}
 }
