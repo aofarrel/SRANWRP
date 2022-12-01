@@ -3,6 +3,13 @@ denylist_samples.txt is currently more complete, except for the ones that lack a
 
 # Why Deny?
 
+# fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
+ERR3063110
+ERR3063109
+ERR3063108
+ERR3063107
+ERR3063106
+
 ## not on google mirror, seem to have no data, do not have a biosample accession
 ERR3256208
 ERR1274706
