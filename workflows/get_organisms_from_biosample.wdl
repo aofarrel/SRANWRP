@@ -14,6 +14,7 @@ import "../tasks/processing_tasks.wdl" as processingtasks
 workflow IS_THIS_A_BUTTERFLY {
 	input {
 		File biosamples_file
+		Boolean do_not_scatter = true
 	}
 
 	call processingtasks.extract_accessions_from_file as get_biosamp_IDs {
@@ -22,21 +23,30 @@ workflow IS_THIS_A_BUTTERFLY {
 	}
 
 
-	scatter(biosample_accession in get_biosamp_IDs.accessions) {
-		call metatasks.get_organism_per_biosample as get_organism_names {
+	if (!do_not_scatter) {
+		scatter(biosample_accession in get_biosamp_IDs.accessions) {
+			call metatasks.get_organism_per_biosample_single as get_organism_names_scattered {
+				input:
+					biosample_accession = biosample_accession
+			}
+		}
+
+		call processingtasks.cat_files as cat {
 			input:
-				biosample_accession = biosample_accession
+				files = get_organism_names_scattered.organisms_and_SRA_accessions
 		}
 	}
 
-	call processingtasks.cat_files as cat {
-		input:
-			files = get_organism_names.organisms_and_SRA_accessions
+	if (do_not_scatter) {
+		call metatasks.get_organism_per_biosample_multiple as get_organism_names_single {
+			input:
+				biosample_accessions = get_biosamp_IDs.accessions
+		}
 	}
 
+
 	output {
-		File all_organisms_per_biosample = cat.outfile
-		#Array[File] all_organism_files = get_organism_names.organisms_and_SRA_accessions # useful if cat takes too long
+		File? all_organisms_per_biosample = select_first([cat.outfile, get_organism_names_single.organisms_and_SRA_accessions])
 	}
 
 }

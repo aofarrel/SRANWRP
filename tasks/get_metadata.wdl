@@ -159,7 +159,7 @@ task get_organism_per_SRA_accession_from_bioproject {
 	}
 }
 
-task get_organism_per_biosample {
+task get_organism_per_biosample_single {
 	input {
 		String biosample_accession
 		Int? preempt = 1
@@ -185,18 +185,29 @@ task get_organism_per_biosample {
 	}
 }
 
-task get_organism_per_biosamples {
+task get_organism_per_biosample_multiple {
 	input {
-		Array[String] biosample_accession
+		Array[String] biosample_accessions
 		Int? preempt = 1
 		Int? disk_size = 10
 	}
 
-	command {
-		esearch -db sra -query ~{biosample_accession} | \
-			esummary | \
-			xtract -pattern DocumentSummary -element Biosample,Run@acc,Organism@taxid,Organism@ScientificName >> ~{biosample_accession}_organisms.txt 
-	}
+	command <<<
+		python3.10 << CODE
+		import subprocess
+		accessions = ['~{sep="','" biosample_accessions}']
+		outs = []
+		subprocess.check_output(["touch organisms.txt"], shell=True)
+		for accession in accessions:
+			esearch = subprocess.Popen(["esearch", "-db", "sra", "-query", f"{accession}"], stdout=subprocess.PIPE)
+			esummary = subprocess.Popen("esummary", stdin=esearch.stdout, stdout=subprocess.PIPE)
+			xtract = subprocess.check_output(["xtract", "-pattern", "DocumentSummary", "-element", "Biosample,Run@acc,Organism@taxid,Organism@ScientificName"], stdin=esummary.stdout, text=True)
+			outs.append(xtract)
+		with open('organisms.txt', 'w') as f:
+			for out in outs:
+				f.write("%s" % out)
+		CODE
+	>>>
 
 	runtime {
 		cpu: 4
@@ -207,6 +218,6 @@ task get_organism_per_biosamples {
 	}
 
 	output {
-		File organisms_and_SRA_accessions = "~{biosample_accession}_organisms.txt"
+		File organisms_and_SRA_accessions = "organisms.txt"
 	}
 }
