@@ -9,8 +9,8 @@ The combination of e-direct and sra-tools allows it do basically anything you ca
 * [Pull paired FASTQs from a lit of BioSample accessions - can be SRS or SAME notation](./workflows/pull_paired_FASTQ_by_biosample.wdl)
 * Plus some bonus [non-workflow pulling tasks](./tasks/pull_fastqs.wdl)
 
-### Getting Organism + TaxID from a list of BioProject accessions
-There's a lot of BioProjects on SRA, and some of them are multi-species. Use [this workflow](./workflows/get_organisms_from_bioproject.wdl) to get a list of all run accessions, and said run accessions' species and TaxIDs, from a list of BioProject accessions.
+### Getting Organism + TaxID from a list of BioProject/BioSample accessions
+There's a lot of BioProjects on SRA, and some of them are multi-species. Use [this workflow](./workflows/get_organisms_from_bioproject.wdl) to get a list of all run accessions, and said run accessions' species and TaxIDs, from a list of BioProject accessions. If you instead have a list of BioSamples, use [this workflow](./workflows/get_organisms_from_biosample.wdl) to get species and taxid (as well as a list of all run accessions).
 
 ### Getting sample accessions from run accessions (SRR/ERR/DRR)
 If you have a list of run accessions, [this workflow](./workflows/get_samples_from_runs.wdl) will get a list of sample accessions that they cover. Some samples have more than one run -- those samples will only appear in the output once.
