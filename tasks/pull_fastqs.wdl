@@ -180,7 +180,8 @@ task pull_fq_from_biosample {
 			NUMBER_OF_FQ=$(ls *.fastq | grep -v / | wc -l)
 			if [ ! `expr $NUMBER_OF_FQ` == 0 ]
 			then
-				tar -tf ~{biosample_accession}.tar --wildcards '*.fastq'
+				FQ=$(ls *.fastq)
+				tar -rf  SRS1528302.tar $FQ
 			fi
 		fi
 
