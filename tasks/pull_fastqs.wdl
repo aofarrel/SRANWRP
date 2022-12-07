@@ -185,9 +185,6 @@ task pull_fq_from_biosample {
 			fi
 		fi
 		
-
-		
-
 	>>>
 
 	runtime {
@@ -200,7 +197,8 @@ task pull_fq_from_biosample {
 
 	output {
 		Array[File?] fastqs = glob("*.fastq")
-		File? tarball_fastqs = glob("*.tar")[0]
+		File? tarball_fastqs = glob("~{biosample_accession}.tar")[0]
+		File? tarball_fastqs_another_attempt = flatten([glob('*.tar'), ['null_file.txt']])[0]
 	}
 }
 
