@@ -111,13 +111,14 @@ task pull_fq_from_biosample {
 			echo "searching $SRR"
 			prefetch $SRR
 			fasterq-dump $SRR
-			NUMBER_OF_FQ=$(ls -dqp $SRR* | grep -v / | wc -l)
+			rm -rf $SRR/
+			NUMBER_OF_FQ=$(find . -name "$SRR*" | wc -l)
 			if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
 			then
 				echo "Even number of fastqs"
 			else
 				echo "Odd number of fastqs; checking if we can still use them..."
-				if [ `expr $NUMBER_OF_FQ` == 1 ]
+				if [ $NUMBER_OF_FQ == 1 ]
 				then
 					echo "Only one fastq found"
 					if [ ~{fail_on_invalid} == "true" ]
@@ -128,7 +129,7 @@ task pull_fq_from_biosample {
 						rm *.fastq
 					fi
 				else
-					if [ `expr $NUMBER_OF_FQ` != 3 ]
+					if [ $NUMBER_OF_FQ != 3 ]
 					then
 						# somehow we got 5, 7, 9, etc reads
 						# this should probably never happen
@@ -146,22 +147,27 @@ task pull_fq_from_biosample {
 					# three files present
 					# do some folder stuff to avoid confusion with other accessions
 					mkdir temp
-					THIS_SRA_FQS=$(ls -dq *$SRR*)
-					THIS_SRA_FQS_ARR=($THIS_SRA_FQS)
+					declare -a THIS_SRA_FQS_ARR
+					readarray -t THIS_SRA_FQS_ARR < <(find . -name "*$SRR*")
+					#THIS_SRA_FQS=$(ls -dq *$SRR*)
+					#THIS_SRA_FQS_ARR=($THIS_SRA_FQS)
 					for THING in "${THIS_SRA_FQS_ARR[@]}"
-						do mv $THING temp/$THING
+					do
+						mv $THING temp/$THING
+						echo "We are moving $THING to a temporary directory"
 					done
 					cd temp
-					READ1=$(ls -dq *_1*)
-					READ2=$(ls -dq *_2*)
+					READ1=$(find . -name "*_1*")
+					READ2=$(find . -name "*_2*")
 					mkdir temptemp
 					mv $READ1 temptemp/$READ1
 					mv $READ2 temptemp/$READ2
-					BARCODE=$(ls -dq *fastq*)
+					BARCODE=$(find . -name "*fastq*")
 					rm $BARCODE
 					cd ..
 					mv temp/temptemp/$READ1 ./$READ1
 					mv temp/temptemp/$READ2 ./$READ2
+					echo "We moved $READ1 and $READ2 back to the workdir and deleted $BARCODE."
 				fi
 			fi
 		done
@@ -169,8 +175,8 @@ task pull_fq_from_biosample {
 		# 3. append biosample name to the fastq filenames
 		
 		# double check that there actually are fastqs
-		NUMBER_OF_FQ=$(ls *.fastq | grep -v / | wc -l)
-		if [ ! `expr $NUMBER_OF_FQ` == 0 ]
+		NUMBER_OF_FQ=$(find . -name "*.fastq" | wc -l)
+		if [ ! $NUMBER_OF_FQ == 0 ]
 		then
 			for fq in *.fastq
 				do
@@ -180,7 +186,7 @@ task pull_fq_from_biosample {
 			# 4. tar the outputs, if that's what you want
 			if [ ~{tar_outputs} == "true" ]
 			then
-				FQ=$(ls *.fastq)
+				FQ=$(find . -name "*.fastq")
 				tar -rf ~{biosample_accession}.tar $FQ
 			fi
 		fi
@@ -190,14 +196,14 @@ task pull_fq_from_biosample {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.1.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
 
 	output {
 		Array[File?] fastqs = glob("*.fastq")
-		File? tarball_fastqs = glob("~{biosample_accession}.tar")
+		File? tarball_fastqs = "~{biosample_accession}.tar"
 		File? tarball_fastqs_another_attempt = flatten([glob('*.tar'), ['null_file.txt']])[0]
 	}
 }
