@@ -5,7 +5,7 @@ task pull_fq_from_SRA_accession {
 		String sra_accession
 
 		Boolean fail_on_invalid = false
-		Int disk_size = 50
+		Int disk_size = 100
 		Int preempt = 1
 	}
 
@@ -88,7 +88,7 @@ task pull_fq_from_biosample {
 
 		Boolean tar_outputs = false
 		Boolean fail_on_invalid = false
-		Int disk_size = 50
+		Int disk_size = 100
 		Int preempt = 1
 	}
 
@@ -167,23 +167,26 @@ task pull_fq_from_biosample {
 		done
 
 		# 3. append biosample name to the fastq filenames
-		for fq in *.fastq
-		do
-			mv -- "$fq" "~{biosample_accession}_${fq%.fastq}.fastq"
-		done
-
-		# 4. tar the outputs, if that's what you want
-		if [ ~{tar_outputs} == "true" ]
+		
+		# double check that there actually are fastqs
+		NUMBER_OF_FQ=$(ls *.fastq | grep -v / | wc -l)
+		if [ ! `expr $NUMBER_OF_FQ` == 0 ]
 		then
-			# double check that there actually are fastqs
-			echo "Tarring outputs (if they exist)"
-			NUMBER_OF_FQ=$(ls *.fastq | grep -v / | wc -l)
-			if [ ! `expr $NUMBER_OF_FQ` == 0 ]
+			for fq in *.fastq
+				do
+					mv -- "$fq" "~{biosample_accession}_${fq%.fastq}.fastq"
+				done
+
+			# 4. tar the outputs, if that's what you want
+			if [ ~{tar_outputs} == "true" ]
 			then
 				FQ=$(ls *.fastq)
 				tar -rf ~{biosample_accession}.tar $FQ
 			fi
 		fi
+		
+
+		
 
 	>>>
 
