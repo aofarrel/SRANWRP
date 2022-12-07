@@ -86,6 +86,7 @@ task pull_fq_from_biosample {
 	input {
 		String biosample_accession
 
+		Boolean tar_outputs = false
 		Boolean fail_on_invalid = false
 		Int disk_size = 50
 		Int preempt = 1
@@ -125,7 +126,6 @@ task pull_fq_from_biosample {
 					else
 						# don't fail, but give no output
 						rm *.fastq
-						exit 0
 					fi
 				else
 					if [ `expr $NUMBER_OF_FQ` != 3 ]
@@ -139,7 +139,6 @@ task pull_fq_from_biosample {
 						else
 							# could probably adapt the 3-case
 							rm *.fastq
-							exit 0
 						fi
 
 					fi
@@ -173,6 +172,19 @@ task pull_fq_from_biosample {
 			mv -- "$fq" "~{biosample_accession}_${fq%.fastq}.fastq"
 		done
 
+		# 4. tar the outputs, if that's what you want
+		if [ ~{tar_outputs} == "true" ]
+		then
+			# double check that there actually are fastqs
+			echo "Tarring outputs (if they exist)"
+			NUMBER_OF_FQ=$(ls *.fastq | grep -v / | wc -l)
+			if [ ! `expr $NUMBER_OF_FQ` == 0 ]
+			then
+				FQ=$(ls *.fastq)
+				tar -rf ~{biosample_accession}.tar $FQ
+			fi
+		fi
+
 	>>>
 
 	runtime {
@@ -185,6 +197,7 @@ task pull_fq_from_biosample {
 
 	output {
 		Array[File?] fastqs = glob("*.fastq")
+		File? tarball_fastqs = glob("*.tar")[0]
 	}
 }
 

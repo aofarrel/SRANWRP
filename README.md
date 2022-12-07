@@ -1,5 +1,5 @@
-# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.0.8?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags) [![Quay.io Link](https://img.shields.io/badge/quay.io-1.0.8-blue?logo=redhat "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
-SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Docker image. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
+# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.1.0?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags) [![Quay.io Link](https://img.shields.io/badge/quay.io-1.1.0-blue?logo=redhat "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
+SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Ubuntu-based Docker image. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
 
 ## What tasks can it perform?
 The combination of e-direct and sra-tools allows it do basically anything you can do from SRA's website. These exist in the form of WDL workflows -- [more on WDL here](./wdl.md).
@@ -20,22 +20,26 @@ Here's [some other tasks](./tasks/processing_tasks.wdl) that can help you conver
 
 ## What's included in the Docker image?
 Non-exhaustive list:
-* bedtools-latest
+* bash-5.1.16(1)-release
+* [bedtools-latest](https://github.com/arq5x/bedtools2)
 * bcftools-1.16
 * cpan-latest
 * curl-latest
-* entrez-direct-latest (aka edirect)
+* [entrez-direct-latest](https://www.ncbi.nlm.nih.gov/books/NBK179288/) (aka edirect)
 * gcc-latest
 * htslib-1.16
 * make-latest
+* Matplotlib-latest
+* [numpy-latest](https://github.com/numpy/numpy)
+* [pandas-latest](https://github.com/pandas-dev/pandas)
 * [pigz-latest](https://github.com/madler/pigz)
-* python-3.10
-	* aliased to python and python3
-	* **note:** when running non-interactively, the aliases will not be read. you must call Python invoking `python3.10`
+* python-3.11
+	* **note:** must be called with `python3` instead of `python` (and `pip3` instead of `pip`) when running non-interactively
 * [samtools-1.16](https://github.com/samtools/samtools) 
+  * mpileup, minimap2, fixmate, etc
 * [sra-tools-3.0.1](https://github.com/ncbi/sra-tools) (aka SRAtools, SRA tools, SRA toolkit, etc)
 	* align-info, fastq-dump, fasterq-dump, prefetch, sam-dump, sra-pileup, etc
-	* Note that [ncbi/ncbi-vdb](https://github.com/ncbi/ncbi-vdb) was merged with sra-tools in sra-tools-3.0.0 and vdb-get was retired in 3.0.1
+	* fyi: [ncbi/ncbi-vdb](https://github.com/ncbi/ncbi-vdb) was merged with sra-tools in sra-tools-3.0.0 and vdb-get was retired in 3.0.1
 * sudo-latest
 * tree-latest
 * vim-latest
