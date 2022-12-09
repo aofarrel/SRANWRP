@@ -21,12 +21,10 @@ task extract_accessions_from_file {
 	Int disk_size = ceil(size(accessions_file, "GB")) * 2
 
 	command <<<
+	sort "~{accessions_file}" | uniq -u > unique.txt
 	python3.10 << CODE
 	import os
-	try:
-		f = open("~{accessions_file}.txt", "r")
-	except FileNotFoundError:
-		f = open("~{accessions_file}", "r")
+	f = open("unique.txt", "r")
 	valid = []
 	for line in (f.readlines()):
 		if line == "":
@@ -46,7 +44,7 @@ task extract_accessions_from_file {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.1.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
