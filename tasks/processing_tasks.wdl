@@ -22,7 +22,7 @@ task extract_accessions_from_file {
 
 	command <<<
 	sort "~{accessions_file}" | uniq -u > unique.txt
-	python3.10 << CODE
+	python3 << CODE
 	import os
 	f = open("unique.txt", "r")
 	valid = []
