@@ -1,11 +1,27 @@
-# tb_accessions
+# legacy
+
+## 2.10/3.0
+Not all accessions work on all versions of fasterq-dump. Here's some examples. All test data is tuberculosis data for the time being.
+* full: List of 156 SRA accessions; superset of fail + pass_DL
+* fail_DL: List of SRA accessions which fail fasterq-dump
+* pass_DL: List of SRA accessions which pass fasterq-dump
+* pass_map_reads: List of SRA accessions which pass DL + myco map_reads step
+* pass_var_call: List of SRA accessions which pass DL + myco map_reads step + myco var_call step
+
+### 2.10
+Out of 156 tested, 120 accessions pass fasterq-dump, and 36 accessions fail fasterq-dump. See 2.10/readme.md for more info.
+
+### 3.0
+Out of 156 tested, all except two fail fasterq-dump. The two that fail are both from the same mouse, so I'm going to blame the mouse.
+
+## tb_accessions
 * TB_a: a's first attempt at a list of all TB accessions
 * TB_a2: a's second attempt at a list of all TB accessions
 * TB_a3: a's third attempt **(this is the one you probably care about)**
 * TB_l: l's list
 * TB_z: z's list
 
-## tb_a process
+### tb_a process
 1. Go to https://www.ncbi.nlm.nih.gov/bioproject
 2. `(("bioproject sra"[Filter]) AND ("mycobacterium tuberculosis"[Organism] OR "mycobacterium tuberculosis complex"[Organism])) NOT avium NOT gordonae NOT kansasii NOT nonchromogenicum NOT simiae NOT abscessus NOT ulcerans NOT leprae NOT lepromatosis NOT marinum NOT chelonae NOT fortuitum NOT smegmatis`
 3. On `Data types` (right hand column) click `Genome sequencing` and `Other`
@@ -17,7 +33,7 @@
 9. On `Results by taxa` (left hand column) click `Mycobacterium tuberculosis` and save to file
 10. Hit back button, select TB complex, save to file.
 
-## tb_a2 process
+### tb_a2 process
 Was likely this:
 
 ```
@@ -33,9 +49,9 @@ txid77643[Organism:exp] AND "Mycobacterium tuberculosis complex sp."[orgn] AND (
 ```
 txid77643[Organism:exp] AND ("biomol dna"[Properties] AND "library layout paired"[Properties] AND "strategy wgs"[Properties] OR "strategy wga"[Properties] OR "strategy wcs"[Properties] OR "strategy clone"[Properties] OR "strategy finishing"[Properties] OR "strategy validation"[Properties] AND "filetype fastq"[Properties]) AND ("biomol dna"[Properties] AND "library layout paired"[Properties] AND "strategy wgs"[Properties] OR "strategy wga"[Properties] OR "strategy wcs"[Properties] OR "strategy clone"[Properties] OR "strategy finishing"[Properties] OR "strategy validation"[Properties] AND "filetype fastq"[Properties])
 ```
-## tb_a3 process
+### tb_a3 process
 
-### strict
+#### strict
 
 On SRA's website, the following search was performed.
 
@@ -75,5 +91,5 @@ jq -c -r '.[] | [.acc, .assay_type, .bioproject, .biosample, .center_name, .coll
 cut -f 4 tb_a3_strict_metadata_simple.tsv | sort | uniq > tb_a3_strict_biosample.txt
 ```
 
-### loose
+#### loose
 This process could be repeated by allowing WCS and the mysterious "other" category, but wasn't.
