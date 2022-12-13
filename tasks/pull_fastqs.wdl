@@ -148,26 +148,20 @@ task pull_fq_from_biosample {
 					# do some folder stuff to avoid confusion with other accessions
 					mkdir temp
 					declare -a THIS_SRA_FQS_ARR
-					readarray -t THIS_SRA_FQS_ARR < <(find . -name "*$SRR*")
-					#THIS_SRA_FQS=$(ls -dq *$SRR*)
-					#THIS_SRA_FQS_ARR=($THIS_SRA_FQS)
+					readarray -t THIS_SRA_FQS_ARR < <(fdfind . -name "*$SRR*")
 					for THING in "${THIS_SRA_FQS_ARR[@]}"
 					do
 						mv $THING temp/$THING
-						echo "We are moving $THING to a temporary directory"
 					done
 					cd temp
-					READ1=$(find . -name "*_1*")
-					READ2=$(find . -name "*_2*")
-					mkdir temptemp
-					mv $READ1 temptemp/$READ1
-					mv $READ2 temptemp/$READ2
-					BARCODE=$(find . -name "*fastq*")
+					READ1=$(fdfind _1)
+					READ2=$(fdfind _2)
+					mv $READ1 ../$READ1
+					mv $READ2 ../$READ2
+					BARCODE=$(fdfind ".fastq")
 					rm $BARCODE
 					cd ..
-					mv temp/temptemp/$READ1 ./$READ1
-					mv temp/temptemp/$READ2 ./$READ2
-					echo "We moved $READ1 and $READ2 back to the workdir and deleted $BARCODE."
+					echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
 				fi
 			fi
 		done
@@ -196,7 +190,7 @@ task pull_fq_from_biosample {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.0"
+		docker: "ashedpotatoes/sranwrp:1.1.2"
 		memory: "8 GB"
 		preemptible: preempt
 	}
