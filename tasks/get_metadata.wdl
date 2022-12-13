@@ -28,6 +28,42 @@ task get_biosample_accession_ID_from_SRA {
 	}
 }
 
+task get_biosample_accession_IDs_from_SRA {
+	# Given multiple SRA accessions, get a bunch of BioSample accessions
+	# It is more resource-efficient to run this instead of the above task
+	# in a scatter, but this task might obscure which accessions come from
+	# which sample due to deleting duplicate samples.
+	input {
+		Array[String] sra_accessions
+		Int? preempt = 1
+		Int? disk_size = 50
+	}
+
+	command <<<
+		touch biosamples.txt
+		for SRR in ~{sep=' ' sra_accessions}
+		do
+			esearch -db sra -query "$SRR" | \
+			elink -target biosample | esummary | \
+			xtract -pattern DocumentSummary -element Accession >> biosamples.txt
+		done
+		sort biosamples.txt | uniq -u >> biosamples_unique.txt
+		
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.1.0"
+		memory: "8 GB"
+		preemptible: preempt
+	}
+
+	output {
+		File accessions_as_file = "biosamples_unique.txt"
+	}
+}
+
 task get_SRA_accession_IDs_by_biosample {
 	# Given a BioSample accession, get its SRA accession(s) -- but don't pull any fqs.
 	input {
