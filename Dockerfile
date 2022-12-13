@@ -11,6 +11,7 @@ FROM ubuntu:jammy
 # gcc:             install samtools/htslib/bcftools
 # lbzip2:          install samtools/htslib/bcftools
 # libbz2-dev:      install samtools/htslib/bcftools
+# libffi-dev:      fix some pip installs failing due to lack of '_ctypes' module
 # liblzma-dev:     use cram files
 # libncurses5-dev: use samtools tview
 # libssl-dev:      install python with pip
@@ -18,11 +19,13 @@ FROM ubuntu:jammy
 # sudo:            wrangle some installations (might not be 100% necessary)
 # wget:            install most stuff
 # zlib1g-dev:      install samtools/htslib/bcftools
+
 RUN apt-get update && \
 apt-get install -y autoconf && \
 apt-get install -y gcc && \
 apt-get install -y lbzip2 && \
 apt-get install -y libbz2-dev && \
+apt-get install -y libffi-dev && \
 apt-get install -y liblzma-dev && \
 apt-get install -y libncurses5-dev && \
 apt-get install -y libssl-dev && \
