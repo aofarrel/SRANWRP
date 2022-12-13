@@ -1,4 +1,17 @@
 # tb_accessions
+* five_per_sublineage: Contains, in this order:
+ * 5 L1.1.1.1
+ * 5 L1.1.1
+ * 5 L1.1.2
+ * 5 L1.1.3
+ * 5 L1.1
+ * 5 L1.2.1
+ * 5 L1.2.2
+ * 5 L3.1.1
+ * 5 L3.1.2.1
+ * 5 L3.1.2.2
+ * 5 L3.1.2
+ * 5 L3
 * L*: various lineages -- pulled by hand, so there's a chance a few are off
 * TB_a3: list of "every" MTBC accession on SRA
 
