@@ -112,7 +112,7 @@ task pull_fq_from_biosample {
 			prefetch $SRR
 			fasterq-dump $SRR
 			rm -rf $SRR/
-			NUMBER_OF_FQ=$(find . -name "$SRR*" | wc -l)
+			NUMBER_OF_FQ=$(fdfind "$SRR*" | wc -l)
 			if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
 			then
 				echo "Even number of fastqs"
@@ -148,7 +148,7 @@ task pull_fq_from_biosample {
 					# do some folder stuff to avoid confusion with other accessions
 					mkdir temp
 					declare -a THIS_SRA_FQS_ARR
-					readarray -t THIS_SRA_FQS_ARR < <(fdfind . -name "*$SRR*")
+					readarray -t THIS_SRA_FQS_ARR < <(fdfind "*$SRR*")
 					for THING in "${THIS_SRA_FQS_ARR[@]}"
 					do
 						mv $THING temp/$THING
@@ -169,7 +169,7 @@ task pull_fq_from_biosample {
 		# 3. append biosample name to the fastq filenames
 		
 		# double check that there actually are fastqs
-		NUMBER_OF_FQ=$(find . -name "*.fastq" | wc -l)
+		NUMBER_OF_FQ=$(fdfind "*.fastq" | wc -l)
 		if [ ! $NUMBER_OF_FQ == 0 ]
 		then
 			for fq in *.fastq
@@ -180,7 +180,7 @@ task pull_fq_from_biosample {
 			# 4. tar the outputs, if that's what you want
 			if [ ~{tar_outputs} == "true" ]
 			then
-				FQ=$(find . -name "*.fastq")
+				FQ=$(fdfind "*.fastq")
 				tar -rf ~{biosample_accession}.tar $FQ
 			fi
 		fi
