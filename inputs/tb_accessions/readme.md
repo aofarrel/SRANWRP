@@ -12,6 +12,7 @@
  * 5 L3.1.2.2
  * 5 L3.1.2
  * 5 L3
+ * 5 L2
 * L*: various lineages -- pulled by hand, so there's a chance a few are off
 * TB_a3: list of "every" MTBC accession on SRA circa November 2022
 
