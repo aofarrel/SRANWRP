@@ -92,29 +92,29 @@ If you run the sample-from-run workflow I wrote on a single one of these, you wi
 
 | sample (\*RS) 	| sample (SAM\*) |
 |--------------	    |--------------- |
-| ERS007672    | |
-| ERS007673    | |
-| ERS007674    | |
-| ERS007675    | |
-| ERS007677    | |
-| ERS007679    | |
-| SRS024887    | |
-| ERS007681    | |
-| ERS007683    | |
-| ERS007684    | |
-| ERS007686    | |
-| ERS007688    | |
+| ERS007672         | |
+| ERS007673         | |
+| ERS007674         | |
+| ERS007675         | |
+| ERS007677         | |
+| ERS007679         | |
+| SRS024887         | |
+| ERS007681         | |
+| ERS007683         | |
+| ERS007684         | |
+| ERS007686         | |
+| ERS007688         | |
 
 ### sample group D
 | run       	| lineage       |
 |-----------	|-----------	|
-| ERR024336     |  |
-| ERR024337     |  |
-| ERR024338     |  |
-| ERR024339     |  |
+| ERR024336     | unknown       |
+| ERR024337     | unknown       |
+| ERR024338     | unknown       |
+| ERR024339     | unknown       |
 | ERR024340     | L4.3          |
-| ERR024341     |  |
-| ERR024342     |  |
+| ERR024341     | unknown       |
+| ERR024342     | unknown       |
 | ERR024343     | L4.3          |
 | ERR024344     | L4.3          |
 | ERR024345     | L4.3          |
@@ -123,18 +123,49 @@ If you run the sample-from-run workflow I wrote on a single one of these, you wi
 
 | sample (\*RS) 	| sample (SAM\*) |
 |--------------	    |--------------- |
-| ERS007706         | SAMEA968193 |
-| ERS007708         | SAMEA968191 |
-| ERS007710         | SAMEA968205 |
-| ERS007711         | SAMEA968206 |
-| ERS007712         | SAMEA968207 |
-| ERS007713         | SAMEA968122 |
-| SRS024887         | SAMEA968167 |
-| ERS007714         | SAMEA968209 |
-| ERS007716         | SAMEA968211 |
-| ERS007718         | SAMEA968135 |
-| ERS007720         | SAMEA968136 |
-| ERS007722         | SAMEA968137 |
+| ERS007706         | SAMEA968193    |
+| ERS007708         | SAMEA968191    |
+| ERS007710         | SAMEA968205    |
+| ERS007711         | SAMEA968206    |
+| ERS007712         | SAMEA968207    |
+| ERS007713         | SAMEA968122    |
+| SRS024887         | SAMEA968167    |
+| ERS007714         | SAMEA968209    |
+| ERS007716         | SAMEA968211    |
+| ERS007718         | SAMEA968135    |
+| ERS007720         | SAMEA968136    |
+| ERS007722         | SAMEA968137    |
+
+### sample group E
+| run       	| lineage       |
+|-----------	|-----------	|
+| ERR023753     | unknown       |
+| ERR023754     | unknown       |
+| ERR023755     | unknown       |
+| ERR023756     | unknown       |
+| ERR023757     | L4.1          |
+| ERR023758     | L4.1          |
+| ERR023759     | L4.1          |
+| ERR023760     | L4.1          |
+| ERR023761     | L4.3          |
+| ERR023762     | unknown       |
+| ERR023763     | unknown       |
+| ERR023764     | L4.3          |
+
+| sample (\*RS) 	| sample (SAM\*) |
+|--------------	    |--------------- |
+| ERS007690         | SAMEA968182    |
+| ERS007692         | SAMEA968154    |
+| ERS007693         | SAMEA968153    |
+| ERS007694         | SAMEA968150    |
+| ERS007695         | SAMEA968149    |
+| ERS007697         | SAMEA968151    |
+| SRS024887	        | SAMEA968167    |
+| ERS007699         | SAMEA968148    |
+| ERS007701         | SAMEA968198    |
+| ERS007702         | SAMEA968202    |
+| ERS007703         | SAMEA968201    |
+| ERS007704         | SAMEA968195    |
 
 ## fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
 ERR3063110
