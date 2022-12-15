@@ -6,6 +6,8 @@ denylist_samples.txt is currently more complete, except for the ones that lack a
 ## series of L4 accessions set up with "sample groups"
 If you run the sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
 
+It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particularly odd, appearing not only in multiple groups below, but also multiple unrelated studies.
+
 ### sample group A
 | run       	| lineage
 |-----------	|-----------	|
