@@ -6,12 +6,23 @@ task get_biosample_accession_ID_from_SRA {
 		String sra_accession
 		Int? preempt = 1
 		Int? disk_size = 50
+		Boolean? fail_if_sample_groups = true
 	}
 
 	command {
 		esearch -db sra -query ~{sra_accession} | \
 			elink -target biosample | esummary | \
 			xtract -pattern DocumentSummary -element Accession >> biosample.txt
+
+		if [[ "~{fail_if_sample_groups}" == "true" ]]
+		then
+			words=$(wc -l "biosample.txt")
+			if [[ ! "$words" == "1 biosample.txt" ]]
+			then
+				echo "More than one biosample associated with this run."
+				exit 1
+			fi
+		fi
 	}
 
 	runtime {
@@ -33,6 +44,7 @@ task get_biosample_accession_IDs_from_SRA {
 	# It is more resource-efficient to run this instead of the above task
 	# in a scatter, but this task might obscure which accessions come from
 	# which sample due to deleting duplicate samples.
+	# Note that this does not check if multiple samples return for a given run!
 	input {
 		Array[String] sra_accessions
 		Int? preempt = 1

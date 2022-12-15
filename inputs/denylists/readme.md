@@ -3,7 +3,50 @@ denylist_samples.txt is currently more complete, except for the ones that lack a
 
 # Why Deny?
 
-# fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
+## series of L4 accessions set up with "sample groups"
+If you run the sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
+ERR024348
+ERR024349
+ERR024350
+ERR024351
+ERR024352
+ERR024353
+ERR024354
+ERR024355
+ERR024356
+ERR024357
+ERR024358
+ERR024359
+
+This covers the following samples:
+ERS007724
+ERS007726
+ERS007728
+ERS007730
+ERS007731
+ERS007733
+SRS024887
+ERS007734
+ERS007737
+ERS007739
+ERS007741
+ERS007743
+
+Also known as:
+SAMEA968101
+SAMEA968102
+SAMEA968217
+SAMEA968089
+SAMEA968090
+SAMEA968165
+SAMEA968167
+SAMEA968166
+SAMEA968097
+SAMEA968139
+SAMEA968138
+SAMN00009845
+
+## fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
 ERR3063110
 ERR3063109
 ERR3063108
