@@ -6,39 +6,104 @@ denylist_samples.txt is currently more complete, except for the ones that lack a
 ## series of L4 accessions set up with "sample groups"
 If you run the sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
 
-### lineage 4.7
-| run       	| sample (\*RS) 	| sample (SAM\*)  |
-|-----------	|-----------	    |--------------	  |
-| ERR023728 	| ERS007636 	    | SAMEA968161  	  |
-| ERR023729 	| ERS007637 	    | SAMEA968160  	  |
-| ERR023730 	| ERS007638 	    | SAMEA968158  	  |
-| ERR023731 	| ERS007640 	    | SAMEA968084  	  |
-| ERR023732 	| ERS007642 	    | SAMEA968083  	  |
-| ERR023733 	| ERS007644 	    | SAMEA968088  	  |
-| ERR023734 	| SRS024887 	    | SAMN00009845 	  |
-| ERR023735 	| ERS007646 	    | SAMEA968086  	  |
-| ERR023736 	| ERS007647 	    | SAMEA968087  	  |
-| ERR023737 	| ERS007649 	    | SAMEA968078  	  |
-| ERR023738 	| ERS007651 	    | SAMEA968074  	  |
-| ERR023739 	| ERS007652 	    | SAMEA968215  	  |
-| ERR023740 	| ERS007654 	    | SAMEA968216  	  |
+### sample group A
+| run       	| lineage
+|-----------	|-----------	|
+| ERR023728 	|
+| ERR023729 	|
+| ERR023730 	|
+| ERR023731 	| L4.1
+| ERR023732 	|
+| ERR023733 	|
+| ERR023734 	|
+| ERR023735 	|
+| ERR023736 	|
+| ERR023737 	|
+| ERR023738 	|
+| ERR023739 	|
+| ERR023740 	|
 
-### lineage 4.8
-| run       	| sample (\*RS) 	| sample (SAM\*) |
-|-----------	|--------------	    |--------------- |
-| ERR024348 	| ERS007724    	    | SAMEA968101    |
-| ERR024349 	| ERS007726    	    | SAMEA968102    |
-| ERR024350 	| ERS007728    	    | SAMEA968217    |
-| ERR024351 	| ERS007730    	    | SAMEA968089    |
-| ERR024352 	| ERS007731    	    | SAMEA968090    |
-| ERR024353 	| ERS007733    	    | SAMEA968165    |
-| ERR024354 	| SRS024887    	    | SAMEA968167    |
-| ERR024355 	| ERS007734    	    | SAMEA968166    |
-| ERR024356 	| ERS007737    	    | SAMEA968097    |
-| ERR024357 	| ERS007739    	    | SAMEA968139    |
-| ERR024358 	| ERS007741    	    | SAMEA968138    |
-| ERR024359 	| ERS007743    	    | SAMN00009845   |
+| sample (\*RS) 	| sample (SAM\*)  |
+|-----------	    |--------------	  |
+| ERS007636 	    | SAMEA968161  	  |
+| ERS007637 	    | SAMEA968160  	  |
+| ERS007638 	    | SAMEA968158  	  |
+| ERS007640 	    | SAMEA968084  	  |
+| ERS007642 	    | SAMEA968083  	  |
+| ERS007644 	    | SAMEA968088  	  |
+| SRS024887 	    | SAMN00009845 	  |
+| ERS007646 	    | SAMEA968086  	  |
+| ERS007647 	    | SAMEA968087  	  |
+| ERS007649 	    | SAMEA968078  	  |
+| ERS007651 	    | SAMEA968074  	  |
+| ERS007652 	    | SAMEA968215  	  |
+| ERS007654 	    | SAMEA968216  	  |
 
+
+### sample group B
+| run       	| lineage       |
+|-----------	|-----------	|
+| ERR024348 	|  |
+| ERR024349 	|  |
+| ERR024350 	|  |
+| ERR024351 	|  |
+| ERR024352 	|  |
+| ERR024353 	|  |
+| ERR024354 	|  |
+| ERR024355 	|  |
+| ERR024356 	|  |
+| ERR024357 	|  |
+| ERR024358 	|  |
+| ERR024359 	|  |
+
+| sample (\*RS) 	| sample (SAM\*) |
+|--------------	    |--------------- |
+| ERS007724    	    | SAMEA968101    |
+| ERS007726    	    | SAMEA968102    |
+| ERS007728    	    | SAMEA968217    |
+| ERS007730    	    | SAMEA968089    |
+| ERS007731    	    | SAMEA968090    |
+| ERS007733    	    | SAMEA968165    |
+| SRS024887    	    | SAMEA968167    |
+| ERS007734    	    | SAMEA968166    |
+| ERS007737    	    | SAMEA968097    |
+| ERS007739    	    | SAMEA968139    |
+| ERS007741    	    | SAMEA968138    |
+| ERS007743    	    | SAMN00009845   |
+
+
+
+
+### sample group C
+| run       	| lineage       |
+|-----------	|-----------	|
+| ERR023741     |	
+| ERR023742     |	
+| ERR023743     |	
+| ERR023744     |	
+| ERR023745     |	
+| ERR023746     |
+| ERR023747     |	
+| ERR023748     |
+| ERR023749     |	
+| ERR023750     |
+| ERR023751     |	
+| ERR023752     |
+
+| sample (\*RS) 	| sample (SAM\*) |
+|--------------	    |--------------- |
+| ERS007672    | |
+| ERS007673    | |
+| ERS007674    | |
+| ERS007675    | |
+| ERS007677    | |
+| ERS007679    | |
+| SRS024887    | |
+| ERS007681    | |
+| ERS007683    | |
+| ERS007684    | |
+| ERS007686    | |
+| ERS007688    | |
 
 
 ## fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
