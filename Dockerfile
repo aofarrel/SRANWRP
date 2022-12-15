@@ -11,6 +11,7 @@ FROM ubuntu:jammy
 # gcc:             install samtools/htslib/bcftools
 # lbzip2:          install samtools/htslib/bcftools
 # libbz2-dev:      install samtools/htslib/bcftools
+# libffi-dev:      fix some pip installs failing due to lack of '_ctypes' module
 # liblzma-dev:     use cram files
 # libncurses5-dev: use samtools tview
 # libssl-dev:      install python with pip
@@ -18,11 +19,13 @@ FROM ubuntu:jammy
 # sudo:            wrangle some installations (might not be 100% necessary)
 # wget:            install most stuff
 # zlib1g-dev:      install samtools/htslib/bcftools
+
 RUN apt-get update && \
 apt-get install -y autoconf && \
 apt-get install -y gcc && \
 apt-get install -y lbzip2 && \
 apt-get install -y libbz2-dev && \
+apt-get install -y libffi-dev && \
 apt-get install -y liblzma-dev && \
 apt-get install -y libncurses5-dev && \
 apt-get install -y libssl-dev && \
@@ -67,7 +70,6 @@ ENV PERL5LIB=/perlstuff:
 RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.1-ubuntu64.tar.gz
 
 # set path variable and some aliases
-RUN echo 'alias fdfind="fd"' >> ~/.bashrc
 RUN echo 'alias python="python3"' >> ~/.bashrc
 RUN echo 'alias pip="pip3"' >> ~/.bashrc
 ENV PATH=/bin:/root/edirect/:/bin/sratoolkit.3.0.1-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

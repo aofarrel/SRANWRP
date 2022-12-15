@@ -86,7 +86,7 @@ task pull_fq_from_biosample {
 	input {
 		String biosample_accession
 
-		Boolean tar_outputs = false
+		Boolean tar_outputs = true
 		Boolean fail_on_invalid = false
 		Int disk_size = 100
 		Int preempt = 1
@@ -112,7 +112,7 @@ task pull_fq_from_biosample {
 			prefetch $SRR
 			fasterq-dump $SRR
 			rm -rf $SRR/
-			NUMBER_OF_FQ=$(find . -name "$SRR*" | wc -l)
+			NUMBER_OF_FQ=$(fdfind $SRR | wc -l)
 			if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
 			then
 				echo "Even number of fastqs"
@@ -148,26 +148,20 @@ task pull_fq_from_biosample {
 					# do some folder stuff to avoid confusion with other accessions
 					mkdir temp
 					declare -a THIS_SRA_FQS_ARR
-					readarray -t THIS_SRA_FQS_ARR < <(find . -name "*$SRR*")
-					#THIS_SRA_FQS=$(ls -dq *$SRR*)
-					#THIS_SRA_FQS_ARR=($THIS_SRA_FQS)
+					readarray -t THIS_SRA_FQS_ARR < <(fdfind $SRR)
 					for THING in "${THIS_SRA_FQS_ARR[@]}"
 					do
 						mv $THING temp/$THING
-						echo "We are moving $THING to a temporary directory"
 					done
 					cd temp
-					READ1=$(find . -name "*_1*")
-					READ2=$(find . -name "*_2*")
-					mkdir temptemp
-					mv $READ1 temptemp/$READ1
-					mv $READ2 temptemp/$READ2
-					BARCODE=$(find . -name "*fastq*")
+					READ1=$(fdfind _1)
+					READ2=$(fdfind _2)
+					mv $READ1 ../$READ1
+					mv $READ2 ../$READ2
+					BARCODE=$(fdfind ".fastq")
 					rm $BARCODE
 					cd ..
-					mv temp/temptemp/$READ1 ./$READ1
-					mv temp/temptemp/$READ2 ./$READ2
-					echo "We moved $READ1 and $READ2 back to the workdir and deleted $BARCODE."
+					echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
 				fi
 			fi
 		done
@@ -175,7 +169,7 @@ task pull_fq_from_biosample {
 		# 3. append biosample name to the fastq filenames
 		
 		# double check that there actually are fastqs
-		NUMBER_OF_FQ=$(find . -name "*.fastq" | wc -l)
+		NUMBER_OF_FQ=$(fdfind ".fastq" | wc -l)
 		if [ ! $NUMBER_OF_FQ == 0 ]
 		then
 			for fq in *.fastq
@@ -186,7 +180,7 @@ task pull_fq_from_biosample {
 			# 4. tar the outputs, if that's what you want
 			if [ ~{tar_outputs} == "true" ]
 			then
-				FQ=$(find . -name "*.fastq")
+				FQ=$(fdfind ".fastq")
 				tar -rf ~{biosample_accession}.tar $FQ
 			fi
 		fi
@@ -196,7 +190,7 @@ task pull_fq_from_biosample {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.0"
+		docker: "ashedpotatoes/sranwrp:1.1.2"
 		memory: "8 GB"
 		preemptible: preempt
 	}
