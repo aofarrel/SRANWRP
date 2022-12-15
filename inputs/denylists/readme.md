@@ -69,7 +69,7 @@ If you run the sample-from-run workflow I wrote on a single one of these, you wi
 | ERS007737    	    | SAMEA968097    |
 | ERS007739    	    | SAMEA968139    |
 | ERS007741    	    | SAMEA968138    |
-| ERS007743    	    | SAMN00009845   |
+| ERS007743    	    | SAMEA968101    |
 
 
 
@@ -92,18 +92,18 @@ If you run the sample-from-run workflow I wrote on a single one of these, you wi
 
 | sample (\*RS) 	| sample (SAM\*) |
 |--------------	    |--------------- |
-| ERS007672         | |
-| ERS007673         | |
-| ERS007674         | |
-| ERS007675         | |
-| ERS007677         | |
-| ERS007679         | |
-| SRS024887         | |
-| ERS007681         | |
-| ERS007683         | |
-| ERS007684         | |
-| ERS007686         | |
-| ERS007688         | |
+| ERS007672         | SAMEA968096    |
+| ERS007673         | SAMEA968095    |
+| ERS007674         | SAMEA968094    |
+| ERS007675         | SAMEA968093    |
+| ERS007677         | SAMEA968092    |
+| ERS007679         | SAMEA968091    |
+| SRS024887         | SAMN00009845   |
+| ERS007681         | SAMEA968187    |
+| ERS007683         | SAMEA968186    |
+| ERS007684         | SAMEA968185    |
+| ERS007686         | SAMEA968184    |
+| ERS007688         | SAMEA968183    |
 
 ### sample group D
 | run       	| lineage       |
