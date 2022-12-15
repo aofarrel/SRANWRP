@@ -19,7 +19,7 @@ task get_biosample_accession_ID_from_SRA {
 			words=$(wc -l "biosample.txt")
 			if [[ ! "$words" == "1 biosample.txt" ]]
 			then
-				echo "More than one biosample associated with this run."
+				echo "More than one biosample associated with ~{sra_accession}."
 				exit 1
 			fi
 		fi
