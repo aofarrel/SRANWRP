@@ -6,12 +6,23 @@ task get_biosample_accession_ID_from_SRA {
 		String sra_accession
 		Int? preempt = 1
 		Int? disk_size = 50
+		Boolean? fail_if_sample_groups = true
 	}
 
 	command {
 		esearch -db sra -query ~{sra_accession} | \
 			elink -target biosample | esummary | \
 			xtract -pattern DocumentSummary -element Accession >> biosample.txt
+
+		if [[ "~{fail_if_sample_groups}" == "true" ]]
+		then
+			words=$(wc -l "biosample.txt")
+			if [[ ! "$words" == "1 biosample.txt" ]]
+			then
+				echo "More than one biosample associated with ~{sra_accession}."
+				exit 1
+			fi
+		fi
 	}
 
 	runtime {
@@ -25,6 +36,43 @@ task get_biosample_accession_ID_from_SRA {
 	output {
 		File accession_as_file = "biosample.txt"
 		String accession = read_string("biosample.txt")
+	}
+}
+
+task get_biosample_accession_IDs_from_SRA {
+	# Given multiple SRA accessions, get a bunch of BioSample accessions
+	# It is more resource-efficient to run this instead of the above task
+	# in a scatter, but this task might obscure which accessions come from
+	# which sample due to deleting duplicate samples.
+	# Note that this does not check if multiple samples return for a given run!
+	input {
+		Array[String] sra_accessions
+		Int? preempt = 1
+		Int? disk_size = 50
+	}
+
+	command <<<
+		touch biosamples.txt
+		for SRR in ~{sep=' ' sra_accessions}
+		do
+			esearch -db sra -query "$SRR" | \
+			elink -target biosample | esummary | \
+			xtract -pattern DocumentSummary -element Accession >> biosamples.txt
+		done
+		sort biosamples.txt | uniq -u >> biosamples_unique.txt
+		
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.1.0"
+		memory: "8 GB"
+		preemptible: preempt
+	}
+
+	output {
+		File accessions_as_file = "biosamples_unique.txt"
 	}
 }
 

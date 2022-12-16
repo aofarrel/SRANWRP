@@ -3,7 +3,173 @@ denylist_samples.txt is currently more complete, except for the ones that lack a
 
 # Why Deny?
 
-# fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
+## series of L4 accessions set up with "sample groups"
+If you run the sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
+
+It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particularly odd, appearing not only in multiple groups below, but also multiple unrelated studies.
+
+### sample group A
+| run       	| lineage
+|-----------	|-----------	|
+| ERR023728 	| unknown       |
+| ERR023729 	| L4.7          |
+| ERR023730 	| unknown       |
+| ERR023731 	| L4.1          |
+| ERR023732 	| L4.1          |
+| ERR023733 	| unknown       |
+| ERR023734 	| unknown       |
+| ERR023735 	| unknown       |
+| ERR023736 	| unknown       |
+| ERR023737 	| L4.7          |
+| ERR023738 	| L4.7          |
+| ERR023739 	| L4.1          |
+| ERR023740 	| L4.1          |
+
+| sample (\*RS) 	| sample (SAM\*)  |
+|-----------	    |--------------	  |
+| ERS007636 	    | SAMEA968161  	  |
+| ERS007637 	    | SAMEA968160  	  |
+| ERS007638 	    | SAMEA968158  	  |
+| ERS007640 	    | SAMEA968084  	  |
+| ERS007642 	    | SAMEA968083  	  |
+| ERS007644 	    | SAMEA968088  	  |
+| SRS024887 	    | SAMN00009845 	  |
+| ERS007646 	    | SAMEA968086  	  |
+| ERS007647 	    | SAMEA968087  	  |
+| ERS007649 	    | SAMEA968078  	  |
+| ERS007651 	    | SAMEA968074  	  |
+| ERS007652 	    | SAMEA968215  	  |
+| ERS007654 	    | SAMEA968216  	  |
+
+
+### sample group B
+| run       	| lineage       |
+|-----------	|-----------	|
+| ERR024348 	| unknown       |
+| ERR024349 	| unknown       |
+| ERR024350 	| unknown       |
+| ERR024351 	| unknown       |
+| ERR024352 	| unknown       |
+| ERR024353 	| unknown       |
+| ERR024354 	| unknown       |
+| ERR024355 	| L4.8          |
+| ERR024356 	| unknown       |
+| ERR024357 	| unknown       |
+| ERR024358 	| unknown       |
+| ERR024359 	| L4.4          |
+
+| sample (\*RS) 	| sample (SAM\*) |
+|--------------	    |--------------- |
+| ERS007724    	    | SAMEA968101    |
+| ERS007726    	    | SAMEA968102    |
+| ERS007728    	    | SAMEA968217    |
+| ERS007730    	    | SAMEA968089    |
+| ERS007731    	    | SAMEA968090    |
+| ERS007733    	    | SAMEA968165    |
+| SRS024887    	    | SAMEA968167    |
+| ERS007734    	    | SAMEA968166    |
+| ERS007737    	    | SAMEA968097    |
+| ERS007739    	    | SAMEA968139    |
+| ERS007741    	    | SAMEA968138    |
+| ERS007743    	    | SAMEA968101    |
+
+
+
+
+### sample group C
+| run       	| lineage       |
+|-----------	|-----------	|
+| ERR023741     | unknown       |	
+| ERR023742     | unknown       |	
+| ERR023743     | unknown       |	
+| ERR023744     | unknown       |	
+| ERR023745     | unknown       |	
+| ERR023746     | L4.1          |
+| ERR023747     | L4.1	        |
+| ERR023748     | unknown       |
+| ERR023749     | unknown       |
+| ERR023750     | unknown       |
+| ERR023751     | unknown       |	
+| ERR023752     | unknown       |
+
+| sample (\*RS) 	| sample (SAM\*) |
+|--------------	    |--------------- |
+| ERS007672         | SAMEA968096    |
+| ERS007673         | SAMEA968095    |
+| ERS007674         | SAMEA968094    |
+| ERS007675         | SAMEA968093    |
+| ERS007677         | SAMEA968092    |
+| ERS007679         | SAMEA968091    |
+| SRS024887         | SAMN00009845   |
+| ERS007681         | SAMEA968187    |
+| ERS007683         | SAMEA968186    |
+| ERS007684         | SAMEA968185    |
+| ERS007686         | SAMEA968184    |
+| ERS007688         | SAMEA968183    |
+
+### sample group D
+| run       	| lineage       |
+|-----------	|-----------	|
+| ERR024336     | unknown       |
+| ERR024337     | unknown       |
+| ERR024338     | unknown       |
+| ERR024339     | unknown       |
+| ERR024340     | L4.3          |
+| ERR024341     | unknown       |
+| ERR024342     | unknown       |
+| ERR024343     | L4.3          |
+| ERR024344     | L4.3          |
+| ERR024345     | L4.3          |
+| ERR024346     | L4.3          |
+| ERR024347     | L4.3          |
+
+| sample (\*RS) 	| sample (SAM\*) |
+|--------------	    |--------------- |
+| ERS007706         | SAMEA968193    |
+| ERS007708         | SAMEA968191    |
+| ERS007710         | SAMEA968205    |
+| ERS007711         | SAMEA968206    |
+| ERS007712         | SAMEA968207    |
+| ERS007713         | SAMEA968122    |
+| SRS024887         | SAMEA968167    |
+| ERS007714         | SAMEA968209    |
+| ERS007716         | SAMEA968211    |
+| ERS007718         | SAMEA968135    |
+| ERS007720         | SAMEA968136    |
+| ERS007722         | SAMEA968137    |
+
+### sample group E
+| run       	| lineage       |
+|-----------	|-----------	|
+| ERR023753     | unknown       |
+| ERR023754     | unknown       |
+| ERR023755     | unknown       |
+| ERR023756     | unknown       |
+| ERR023757     | L4.1          |
+| ERR023758     | L4.1          |
+| ERR023759     | L4.1          |
+| ERR023760     | L4.1          |
+| ERR023761     | L4.3          |
+| ERR023762     | unknown       |
+| ERR023763     | unknown       |
+| ERR023764     | L4.3          |
+
+| sample (\*RS) 	| sample (SAM\*) |
+|--------------	    |--------------- |
+| ERS007690         | SAMEA968182    |
+| ERS007692         | SAMEA968154    |
+| ERS007693         | SAMEA968153    |
+| ERS007694         | SAMEA968150    |
+| ERS007695         | SAMEA968149    |
+| ERS007697         | SAMEA968151    |
+| SRS024887	        | SAMEA968167    |
+| ERS007699         | SAMEA968148    |
+| ERS007701         | SAMEA968198    |
+| ERS007702         | SAMEA968202    |
+| ERS007703         | SAMEA968201    |
+| ERS007704         | SAMEA968195    |
+
+## fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
 ERR3063110
 ERR3063109
 ERR3063108
