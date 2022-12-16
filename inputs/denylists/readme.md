@@ -45,18 +45,18 @@ It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particula
 ### sample group B
 | run       	| lineage       |
 |-----------	|-----------	|
-| ERR024348 	|  |
-| ERR024349 	|  |
-| ERR024350 	|  |
-| ERR024351 	|  |
-| ERR024352 	|  |
-| ERR024353 	|  |
-| ERR024354 	|  |
-| ERR024355 	|  |
-| ERR024356 	|  |
-| ERR024357 	|  |
-| ERR024358 	|  |
-| ERR024359 	| L4.4           |
+| ERR024348 	| unknown       |
+| ERR024349 	| unknown       |
+| ERR024350 	| unknown       |
+| ERR024351 	| unknown       |
+| ERR024352 	| unknown       |
+| ERR024353 	| unknown       |
+| ERR024354 	| unknown       |
+| ERR024355 	| L4.8          |
+| ERR024356 	| unknown       |
+| ERR024357 	| unknown       |
+| ERR024358 	| unknown       |
+| ERR024359 	| L4.4          |
 
 | sample (\*RS) 	| sample (SAM\*) |
 |--------------	    |--------------- |
