@@ -79,18 +79,18 @@ It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particula
 ### sample group C
 | run       	| lineage       |
 |-----------	|-----------	|
-| ERR023741     |	
-| ERR023742     |	
-| ERR023743     |	
-| ERR023744     |	
-| ERR023745     |	
+| ERR023741     | unknown       |	
+| ERR023742     | unknown       |	
+| ERR023743     | unknown       |	
+| ERR023744     | unknown       |	
+| ERR023745     | unknown       |	
 | ERR023746     | L4.1          |
 | ERR023747     | L4.1	        |
-| ERR023748     |
-| ERR023749     |	
-| ERR023750     |
-| ERR023751     |	
-| ERR023752     |
+| ERR023748     | unknown       |
+| ERR023749     | unknown       |
+| ERR023750     | unknown       |
+| ERR023751     | unknown       |	
+| ERR023752     | unknown       |
 
 | sample (\*RS) 	| sample (SAM\*) |
 |--------------	    |--------------- |
