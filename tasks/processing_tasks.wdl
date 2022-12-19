@@ -54,6 +54,32 @@ task extract_accessions_from_file {
 	}
 }
 
+task compare_ins_to_scattered_outs {
+	# Compare the Array[String] input of a scattered task (such
+	# that each instance of the scattered task gets one String)
+	# with the outputs of that scattered task. This can be used
+	# to detect instances of the scatter with null outputs.
+
+	input {
+		Array[String] input_strings
+		Array[Array[String]] output_strings
+		Int? preempt = 1
+	}
+
+	command <<<
+	pass
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " SSD"
+		docker: "ashedpotatoes/sranwrp:1.1.2"
+		memory: "8 GB"
+		preemptible: preempt
+	}
+
+}
+
 task cat_files {
 	# Concatenate Array[File] into a single File.
 
