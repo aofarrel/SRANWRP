@@ -95,6 +95,8 @@ task pull_fq_from_biosample {
 	command <<<
 		set -eux pipefail
 
+		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
+		
 		# 1. get SRA accessions from biosample
 		SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
 			elink -target sra | efetch -format docsum | \
@@ -116,11 +118,13 @@ task pull_fq_from_biosample {
 			if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
 			then
 				echo "Even number of fastqs"
+				echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
 			else
 				echo "Odd number of fastqs; checking if we can still use them..."
 				if [ $NUMBER_OF_FQ == 1 ]
 				then
 					echo "Only one fastq found"
+					echo "    $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
 					if [ ~{fail_on_invalid} == "true" ]
 					then
 						exit 1
@@ -134,6 +138,7 @@ task pull_fq_from_biosample {
 						# somehow we got 5, 7, 9, etc reads
 						# this should probably never happen
 						echo "Odd number > 3 files found"
+						echo "    $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
 						if [ ~{fail_on_invalid} == "true" ]
 						then
 							exit 1
@@ -162,6 +167,7 @@ task pull_fq_from_biosample {
 					rm $BARCODE
 					cd ..
 					echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
+					echo "    $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
 				fi
 			fi
 		done
@@ -198,6 +204,7 @@ task pull_fq_from_biosample {
 	output {
 		Array[File?] fastqs = glob("*.fastq")
 		File? tarball_fastqs = "~{biosample_accession}.tar"
+		File results = "~{biosample_accession}_pull_results.txt"
 	}
 }
 
