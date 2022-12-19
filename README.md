@@ -37,6 +37,7 @@ Non-exhaustive list:
 	* **note:** must be called with `python3` instead of `python` (and `pip3` instead of `pip`) when running non-interactively
 * [samtools-1.16](https://github.com/samtools/samtools) 
   * mpileup, minimap2, fixmate, etc
+* [seqtk-latest](https://github.com/lh3/seqtk)
 * [sra-tools-3.0.1](https://github.com/ncbi/sra-tools) (aka SRAtools, SRA tools, SRA toolkit, etc)
 	* align-info, fastq-dump, fasterq-dump, prefetch, sam-dump, sra-pileup, etc
 	* fyi: [ncbi/ncbi-vdb](https://github.com/ncbi/ncbi-vdb) was merged with sra-tools in sra-tools-3.0.0 and vdb-get was retired in 3.0.1

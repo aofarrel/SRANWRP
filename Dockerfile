@@ -18,7 +18,7 @@ FROM ubuntu:jammy
 # make:            install samtools/htslib/bcftools
 # sudo:            wrangle some installations (might not be 100% necessary)
 # wget:            install most stuff
-# zlib1g-dev:      install samtools/htslib/bcftools
+# zlib1g-dev:      install samtools/htslib/bcftools + seqtk
 
 RUN apt-get update && \
 apt-get install -y autoconf && \
@@ -35,7 +35,7 @@ apt-get install -y wget && \
 apt-get install -y zlib1g-dev && \
 apt-get clean
 
-# soft prereqs: cpan, curl, fd-find, pigz, tree, vim
+# good to have: cpan, curl, fd-find, pigz, tree, vim
 RUN apt-get update && \
 apt-get install -y cpanminus && \
 apt-get install -y curl && \
@@ -45,7 +45,7 @@ apt-get install -y tree && \
 apt-get install -y vim && \
 apt-get clean
 
-# python and friends
+# install python and friends
 RUN wget https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tgz && tar -xf Python-3.11.1.tgz && cd Python-3.11.1 && ./configure --disable-test-modules --enable-optimizations && make && sudo make install 
 RUN pip3 install numpy
 RUN pip3 install pandas
@@ -62,21 +62,25 @@ RUN apt-get update && apt-get install -y bedtools && apt-get clean
 RUN cd bin && wget https://github.com/samtools/samtools/releases/download/1.16.1/samtools-1.16.1.tar.bz2 && tar -xf samtools-1.16.1.tar.bz2 && cd samtools-1.16.1 && ./configure && make && make install
 RUN cd bin && wget https://github.com/samtools/bcftools/releases/download/1.16/bcftools-1.16.tar.bz2 && tar -xf bcftools-1.16.tar.bz2 && cd bcftools-1.16 && ./configure && make && make install
 
-# fix some perl stuff (might not be needed but I'm taking no chances)
-RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recursive && cd ..
-ENV PERL5LIB=/perlstuff:
+# install seqtk
+RUN apt-get install -y git
+RUN git clone https://github.com/lh3/seqtk.git && cd seqtk && make && cd .. && mv seqtk bin/seqtk
 
 # grab premade sra-tool binaries
 RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.1-ubuntu64.tar.gz
 
+# attempt configure vdb for sra-tool
+# !!this will cause a segfault!!
+RUN x | vdb-config --interactive || :
+
+# fix some perl stuff (might not be needed but I'm taking no chances)
+RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recursive && cd ..
+ENV PERL5LIB=/perlstuff:
+
 # set path variable and some aliases
 RUN echo 'alias python="python3"' >> ~/.bashrc
 RUN echo 'alias pip="pip3"' >> ~/.bashrc
-ENV PATH=/bin:/root/edirect/:/bin/sratoolkit.3.0.1-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-# attempt configure vdb
-# !!this will cause a segfault!!
-RUN x | vdb-config --interactive || :
+ENV PATH=/bin:/bin/seqtk:/root/edirect/:/bin/sratoolkit.3.0.1-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # cleanup
 RUN sudo rm /bin/bcftools-1.16.tar.bz2 && sudo rm /bin/samtools-1.16.1.tar.bz2 && sudo rm /bin/sratoolkit.3.0.1-ubuntu64.tar.gz && sudo rm Python-3.11.1.tgz && sudo rm -rf Python-3.11.1
