@@ -86,12 +86,23 @@ task pull_fq_from_biosample {
 	input {
 		String biosample_accession
 
+		Boolean fail_on_invalid = false
+		Boolean tar_outputs = false
 		Int subsample_cutoff = 450
 		Int subsample_seed = 1965
-		Boolean tar_outputs = false
-		Boolean fail_on_invalid = false
-		Int disk_size = 100
+
+		Int disk_size = 60
 		Int preempt = 1
+	}
+
+	parameter_meta {
+    	biosample_accession: "BioSample accession to pull fastqs from"
+    	disk_size:           "Size, in GB, of disk (acts as a limit on GCP)"
+    	fail_on_invalid:     "Error (instead of exit 0 with null output) if output invalid"
+    	preempt:             "Number of times to attempt task on a preemptible VM (GCP only)"
+    	subsample_cutoff:    "If fastq > this value in MB, the fastq will be subsampled"
+    	subsample_seed:      "Seed to use when subsampling large fastqs"
+    	tar_outputs:         "Tarball all fastqs into one output file"
 	}
 
 	command <<<
@@ -123,11 +134,10 @@ task pull_fq_from_biosample {
 				
 				# check size
 				READ1=$(fdfind _1)
+				READ2=$(fdfind _2)
 				fastq1size=$(du -m "$READ1" | cut -f1)
 				if (( fastq1size > ~{subsample_cutoff} ))
 				then
-					READ1=$(fdfind _1)
-					READ2=$(fdfind _2)
 					seqtk sample -s~{subsample_seed} $READ1 1000000 > temp1.fq
 					seqtk sample -s~{subsample_seed} $READ2 1000000 > temp2.fq
 					rm $READ1
