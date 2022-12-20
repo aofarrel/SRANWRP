@@ -86,10 +86,23 @@ task pull_fq_from_biosample {
 	input {
 		String biosample_accession
 
-		Boolean tar_outputs = true
 		Boolean fail_on_invalid = false
-		Int disk_size = 100
+		Boolean tar_outputs = false
+		Int subsample_cutoff = 450
+		Int subsample_seed = 1965
+
+		Int disk_size = 60
 		Int preempt = 1
+	}
+
+	parameter_meta {
+    	biosample_accession: "BioSample accession to pull fastqs from"
+    	disk_size:           "Size, in GB, of disk (acts as a limit on GCP)"
+    	fail_on_invalid:     "Error (instead of exit 0 with null output) if output invalid"
+    	preempt:             "Number of times to attempt task on a preemptible VM (GCP only)"
+    	subsample_cutoff:    "If fastq > this value in MB, the fastq will be subsampled"
+    	subsample_seed:      "Seed to use when subsampling large fastqs"
+    	tar_outputs:         "Tarball all fastqs into one output file"
 	}
 
 	command <<<
@@ -118,7 +131,25 @@ task pull_fq_from_biosample {
 			if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
 			then
 				echo "Even number of fastqs"
-				echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
+				
+				# check size
+				READ1=$(fdfind _1)
+				READ2=$(fdfind _2)
+				fastq1size=$(du -m "$READ1" | cut -f1)
+				if (( fastq1size > ~{subsample_cutoff} ))
+				then
+					seqtk sample -s~{subsample_seed} $READ1 1000000 > temp1.fq
+					seqtk sample -s~{subsample_seed} $READ2 1000000 > temp2.fq
+					rm $READ1
+					rm $READ2
+					mv temp1.fq $READ1
+					mv temp2.fq $READ2
+					echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+				else
+					echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
+				fi
+
+
 			else
 				echo "Odd number of fastqs; checking if we can still use them..."
 				if [ $NUMBER_OF_FQ == 1 ]
@@ -167,7 +198,22 @@ task pull_fq_from_biosample {
 					rm $BARCODE
 					cd ..
 					echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
-					echo "    $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
+
+					# check size -- if very large, we should subsample
+					fastq1size=$(du -m "$READ1" | cut -f1)
+					if (( fastq1size > ~{subsample_cutoff} ))
+					then
+						seqtk sample -s~{subsample_seed} $READ1 1000000 > temp1.fq
+						seqtk sample -s~{subsample_seed} $READ2 1000000 > temp2.fq
+						rm $READ1
+						rm $READ2
+						mv temp1.fq $READ1
+						mv temp2.fq $READ2
+						echo "    $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+					else
+						# not bigger than the cutoff, but still a triplet, so make note of that
+						echo "    $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
+					fi
 				fi
 			fi
 		done
