@@ -122,6 +122,7 @@ task pull_fq_from_biosample {
 				echo "Even number of fastqs"
 				
 				# check size
+				READ1=$(fdfind _1)
 				fastq1size=$(du -m "$READ1" | cut -f1)
 				if (( fastq1size > ~{subsample_cutoff} ))
 				then
