@@ -88,7 +88,7 @@ task pull_fq_from_biosample {
 
 		Int subsample_cutoff = 450
 		Int subsample_seed = 1965
-		Boolean tar_outputs = true
+		Boolean tar_outputs = false
 		Boolean fail_on_invalid = false
 		Int disk_size = 100
 		Int preempt = 1
