@@ -196,7 +196,7 @@ task pull_fq_from_biosample {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.2"
+		docker: "ashedpotatoes/sranwrp:1.1.3"
 		memory: "8 GB"
 		preemptible: preempt
 	}
