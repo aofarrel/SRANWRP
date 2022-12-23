@@ -3,6 +3,14 @@ denylist_samples.txt is currently more complete, except for the ones that lack a
 
 # Why Deny?
 
+## fails fasterq-dump-3.0.1
+
+### `int: no error - failed to verify`
+ERR2179830 (SAMEA104357625, L1.2.1)
+
+### `err: row #400475 : READ.len(216) != QUALITY.len(220) (F)`
+ERR234214 (SAMEA1877221, L1.2.1)
+
 ## series of L4 accessions set up with "sample groups"
 If you run the sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
 
