@@ -3,25 +3,29 @@ denylist_samples.txt is currently more complete, except for the ones that lack a
 
 # Why Deny?
 
-## fails fasterq-dump-3.0.1
+## fails prefetch-3.0.1 or fasterq-dump-3.0.1
+
+### `prefetch.3.0.1 err: name not found while resolving query within virtual file system module - failed to resolve accession 'x' - no data ( 404 )`
+ERR760606 (SAMEA3231653, L4.1) -- the other two runs for this sample seem okay  
+ERR760898 (SAMEA3231746, L4.1) -- other run for this sample seems okay  
 
 ### `int: no error - failed to verify`
 ERR2179830 (SAMEA104357625, L1.2.1)
 
 ### `err: row #400475 : READ.len(x) != QUALITY.len(x) (F)`
-ERR234214 (SAMEA1877221, L1.2.1)
-ERR538429 (SAMEA2609933, L2)
-ERR538424 (SAMEA2609928, L2)
-ERR538426 (SAMEA2609930, L2)
-ERR538425 (SAMEA2609929, L2)
-ERR538430 (SAMEA2609934, L2)
-ERR538428 (SAMEA2609932, L2)
-ERR538431 (SAMEA2609935, L2)
-ERR538432 (SAMEA2609936, L2)
-ERR538427 (SAMEA2609931, L2)
-ERR538422 (SAMEA2609926, L2)
-ERR538423 (SAMEA2609927, L2)
-SRR960962 (SAMN02339318, L2)
+ERR234214 (SAMEA1877221, L1.2.1)  
+ERR538429 (SAMEA2609933, L2)  
+ERR538424 (SAMEA2609928, L2)  
+ERR538426 (SAMEA2609930, L2)  
+ERR538425 (SAMEA2609929, L2)  
+ERR538430 (SAMEA2609934, L2)  
+ERR538428 (SAMEA2609932, L2)  
+ERR538431 (SAMEA2609935, L2)  
+ERR538432 (SAMEA2609936, L2)  
+ERR538427 (SAMEA2609931, L2)  
+ERR538422 (SAMEA2609926, L2)  
+ERR538423 (SAMEA2609927, L2)  
+SRR960962 (SAMN02339318, L2)  
 
 ## series of L4 accessions set up with "sample groups"
 If you run the sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
