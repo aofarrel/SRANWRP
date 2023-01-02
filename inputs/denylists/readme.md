@@ -11,8 +11,9 @@ ERR760898 (SAMEA3231746, L4.1) -- other run for this sample seems okay
 
 ### `int: no error - failed to verify`
 ERR2179830 (SAMEA104357625, L1.2.1)
+ERR2179842 (SAMEA104357637, L3)
 
-### `err: row #400475 : READ.len(x) != QUALITY.len(x) (F)`
+### `err: row #x : READ.len(x) != QUALITY.len(x) (F)`
 ERR234214 (SAMEA1877221, L1.2.1)  
 ERR538429 (SAMEA2609933, L2)  
 ERR538424 (SAMEA2609928, L2)  
@@ -26,6 +27,11 @@ ERR538427 (SAMEA2609931, L2)
 ERR538422 (SAMEA2609926, L2)  
 ERR538423 (SAMEA2609927, L2)  
 SRR960962 (SAMN02339318, L2)  
+ERR234219 (SAMEA1877131, L3)
+ERR234218 (SAMEA1877166, L3)
+
+### sample has different run types
+SAMN03257097 has four runs associated with it. Two are PacBio, two are Illumina.
 
 ## series of L4 accessions set up with "sample groups"
 If you run the sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
