@@ -40,6 +40,7 @@ RUN apt-get update && \
 apt-get install -y cpanminus && \
 apt-get install -y curl && \
 apt-get install -y fd-find && \
+apt-get install -y git && \
 apt-get install -y pigz && \
 apt-get install -y tree && \
 apt-get install -y vim && \
@@ -51,6 +52,7 @@ RUN pip3 install numpy
 RUN pip3 install pandas
 RUN pip3 install Matplotlib
 RUN pip3 install firecloud
+RUN pip3 install taxoniumtools
 
 # install entrez direct
 RUN sh -c "$(wget -q ftp://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh -O -)"
@@ -63,7 +65,6 @@ RUN cd bin && wget https://github.com/samtools/samtools/releases/download/1.16.1
 RUN cd bin && wget https://github.com/samtools/bcftools/releases/download/1.16/bcftools-1.16.tar.bz2 && tar -xf bcftools-1.16.tar.bz2 && cd bcftools-1.16 && ./configure && make && make install
 
 # install seqtk
-RUN apt-get install -y git
 RUN git clone https://github.com/lh3/seqtk.git && cd seqtk && make && cd .. && mv seqtk bin/seqtk
 
 # grab premade sra-tool binaries
