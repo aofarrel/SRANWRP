@@ -3,6 +3,10 @@ denylist_samples.txt is currently more complete, except for the ones that lack a
 
 # Why Deny?
 
+## very large number of runs
+SAMEA968096 (L3)   
+SAMEA968095 (L3)  
+
 ## fails prefetch-3.0.1 or fasterq-dump-3.0.1
 
 ### `prefetch.3.0.1 err: name not found while resolving query within virtual file system module - failed to resolve accession 'x' - no data ( 404 )`
