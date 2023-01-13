@@ -43,6 +43,7 @@ Non-exhaustive list:
 	* align-info, fastq-dump, fasterq-dump, prefetch, sam-dump, sra-pileup, etc
 	* fyi: [ncbi/ncbi-vdb](https://github.com/ncbi/ncbi-vdb) was merged with sra-tools in sra-tools-3.0.0 and vdb-get was retired in 3.0.1
 * sudo-latest
+* [taxoniumtools-latest](https://github.com/theosanderson/taxonium/tree/master/taxoniumtools)
 * tree-latest
 * vim-latest
 * wget-latest
