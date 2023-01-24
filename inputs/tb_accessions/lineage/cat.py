@@ -7,5 +7,5 @@ with open("all_lineages", "w") as catfile:
 				line = line.strip("\n")
 				catfile.write(f"{line}\t{file.strip('.txt')}\n")
 
-os.system("touch all_unique")
-os.system("sort all_lineages | uniq -u >> all_unique")
+os.system("sort all_lineages >> all_sorted")
+os.system("uniq -u all_sorted >> all_unique")
