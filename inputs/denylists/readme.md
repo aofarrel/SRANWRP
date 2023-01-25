@@ -13,6 +13,39 @@ SAMEA968095 (L3)
 ERR760606 (SAMEA3231653, L4.1) -- the other two runs for this sample seem okay  
 ERR760898 (SAMEA3231746, L4.1) -- other run for this sample seems okay  
 
+I asked NLM about ERR760606 specifically, and got this response (shoutout to their support team by the way!)
+
+> This is an odd case - the issue is that there are errors in the run, that prevented NCBI SRA from processing it properly. You will need to check ENA site to get the original file to see it yourself.
+
+They also [linked the EBI version](https://www.ebi.ac.uk/ena/browser/view/ERR760606?dataType=&show=xrefs), and indicated this could be queried from the command line. It might be worth implementing something like this in the pull task in the future. 
+
+```
+$ curl -s -X POST "https://locate.ncbi.nlm.nih.gov/sdl/2/locality?acc=ERR760606"
+[
+    {
+        "accession": "ERR760606",
+        "status": 200,
+        "message": "ok",
+        "files": [
+            {
+                "object": "srapub_files|10620372",
+                "type": "fastq",
+                "accession": "ERR760606",
+                "name": "1206_ATTCCT_L001_R2_001.gz",
+                "size": 522811080,
+                "md5": "1c9a4a85cea7bc17410959e0b452acae",
+                "modificationDate": "2015-02-21T00:30:42Z",
+                "locality": [
+                    {
+                        "service": "ebi"
+                    }
+                ]
+            }
+        ]
+    }
+]
+```
+
 ### `int: no error - failed to verify`
 ERR2179830 (SAMEA104357625, L1.2.1)
 ERR2179842 (SAMEA104357637, L3)
