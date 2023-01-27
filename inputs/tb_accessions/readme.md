@@ -1,5 +1,5 @@
 # tb_accessions
-* five_per_sublineage: Contains, in this order:
+* five_per_L1_L3_sublineage: Contains, in this order:
  * 5 L1.1.1.1
  * 5 L1.1.1
  * 5 L1.1.2
