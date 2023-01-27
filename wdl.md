@@ -1,7 +1,7 @@
 # WDL Information
 WDL stands for Workflow Description Language. [You can read more about it here](https://openwdl.org/), but essentially is a language made for running batch tasks, usually by leveraging Docker. You don't enter the Docker container and then run the WDL script. Instead, you run the WDL script, which then does bash stuff in the Docker container.
 
-The easiest way to run these workflows locally is using [miniwdl](https://github.com/chanzuckerberg/miniwdl), eg, `miniwdl run workflows/get_samples_from_runs.wdl -i workflows/get_samples_from_runs.json` Alternatively, you can launch these workflows on [Terra](https://terra.bio/).
+The easiest way to run these workflows locally is using [miniwdl](https://github.com/chanzuckerberg/miniwdl), eg, `miniwdl run workflows/get_samples_from_runs.wdl -i workflows/get_samples_from_runs.json` Alternatively, you can launch these workflows on [Terra](https://terra.bio/). For more information on running WDLs, [see this beginner's guide](https://github.com/ucsc-cgp/training-resources/blob/main/WDL/running_a_wdl.md).
 
 ## Common arguments used by WDLs in this repo
 **disk_size** (default: 50 gigabytes)  
