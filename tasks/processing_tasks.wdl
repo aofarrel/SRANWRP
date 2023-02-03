@@ -16,7 +16,7 @@ task extract_accessions_from_file {
 		# It doesn't matter if the input file is sorted by organism or 
 		# uses NCBI's "default order." Either works.
 		File accessions_file
-		Int? preempt = 1
+		Int preempt = 1
 	}
 	Int disk_size = ceil(size(accessions_file, "GB")) * 2
 
@@ -59,24 +59,44 @@ task cat_files {
 
 	input {
 		Array[File] files
-		String? out_filename = "all.txt"
-		Int? preempt = 1
-		Boolean? keep_only_unique_lines = false
+		String out_filename = "all.txt"
+		Int preempt = 1
+		Boolean keep_only_unique_lines = false
+		Boolean output_first_lines = true
+		Boolean slice_first_line_first_char = true
 	}
 	Int disk_size = ceil(size(files, "GB")) * 2
 
 	command <<<
 
-	touch ~{out_filename}
-	cat ~{sep=" " files} >> ~{out_filename}
+	touch "~{out_filename}"
+	cat ~{sep=" " files} >> "~{out_filename}"
 
 	if [[ "~{keep_only_unique_lines}" = "true" ]]
 	then
 		touch temp
-		sort ~{out_filename} | uniq -u >> temp
-		rm ~{out_filename}
-		mv temp ~{out_filename}
+		sort "~{out_filename}" | uniq -u >> temp
+		rm "~{out_filename}"
+		mv temp "~{out_filename}"
 	fi
+
+	if [[ "~{output_first_lines}" = "true"]]
+	then
+		touch firstlines.txt
+		declare -a FILES
+		readarray -t FILES < <~{sep=" " files}
+		if [[ "~{slice_first_line_first_char}" = "true" ]]
+		then
+		else
+			for FILE in "${FILES[@]}"
+			do
+				head -1 >> firstlines.txt
+			done
+		fi
+
+		
+	fi
+
 
 	>>>
 
@@ -90,6 +110,7 @@ task cat_files {
 
 	output {
 		File outfile = "~{out_filename}"
+		File? first_lines
 	}
 }
 
