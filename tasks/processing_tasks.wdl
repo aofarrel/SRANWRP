@@ -88,8 +88,9 @@ task cat_files {
 		then
 			for FILE in "${FILES[@]}"
 			do
+				echo "${firstline}"
 				firstline=$(head -1 "$FILE")
-				echo "${firstline:1}" >> firstlines.txt
+				echo "${firstline:0}" >> firstlines.txt
 			done
 		else
 			for FILE in "${FILES[@]}"
