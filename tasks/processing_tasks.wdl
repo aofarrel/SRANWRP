@@ -30,7 +30,7 @@ task extract_accessions_from_file {
 	for line in (f.readlines()):
 		if line == "":
 			pass
-		elif line == "NA" && "~{filter_na}" == "true":
+		elif line == "NA" and "~{filter_na}" == "true":
 			print("WARNING -- NA found")
 			pass
 		else:
