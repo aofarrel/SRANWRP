@@ -63,7 +63,7 @@ task cat_files {
 		Int preempt = 1
 		Boolean keep_only_unique_lines = false
 		Boolean output_first_lines = true
-		Boolean slice_first_line_first_char = true
+		Boolean strip_first_line_first_char = true
 	}
 	Int disk_size = ceil(size(files, "GB")) * 2
 
@@ -80,21 +80,23 @@ task cat_files {
 		mv temp "~{out_filename}"
 	fi
 
-	if [[ "~{output_first_lines}" = "true"]]
+	if [[ "~{output_first_lines}" = "true" ]]
 	then
 		touch firstlines.txt
-		declare -a FILES
-		readarray -t FILES < <~{sep=" " files}
-		if [[ "~{slice_first_line_first_char}" = "true" ]]
+		FILES=(~{sep=" " files})
+		if [[ "~{strip_first_line_first_char}" = "true" ]]
 		then
+			for FILE in "${FILES[@]}"
+			do
+				firstline=$(head -1 "$FILE")
+				echo "${firstline:1}" >> firstlines.txt
+			done
 		else
 			for FILE in "${FILES[@]}"
 			do
-				head -1 >> firstlines.txt
+				head -1 "$FILE" >> firstlines.txt
 			done
 		fi
-
-		
 	fi
 
 
@@ -110,7 +112,7 @@ task cat_files {
 
 	output {
 		File outfile = "~{out_filename}"
-		File? first_lines
+		File? first_lines = "firstlines.txt"
 	}
 }
 
