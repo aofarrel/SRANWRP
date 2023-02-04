@@ -57,13 +57,37 @@ task extract_accessions_from_file {
 task cat_files {
 	# Concatenate Array[File] into a single File.
 	#
-	# If removal_candidates is defined, those files will be cat
-	# first to create a TSV containing
+	# Files going into removal_candidates should be formatted as TSVs
+	# where the first column is the filename and the second column is
+	# a float value. (Other columns will be ignored.) These TSVs will
+	# be cat to create a single big TSV. Then, any values above the
+	# user-input float removal_threshold will have their associated
+	# file removed, preventing it from being cat'd.
+	#
+	# For example:
+	# files = [SAMEA10030079.diff, SAMEA7555065.diff]
+	# removal_candidates = [SAMEA10030079.report, SAMEA7555065.report]
+	# removal_threshold = 0.02
+	#
+	# Let's say SAMEA10030079.report looked like this:
+	# SAMEA10030079.diff	0.02230766998856633
+	#
+	# And SAMEA7555065.report looked like this
+	# SAMEA7555065.diff	0.019289670799169087
+	#
+	# First, the reports would get cat into this:
+	# SAMEA10030079	0.02230766998856633
+	# SAMEA7555065	0.019289670799169087
+	#
+	# Then, the script would notice that SAMEA10030079 has a value above
+	# the removal_threshold of 0.02, so it deletes the SAMEA10030079.diff
+	# input. As a result, the final cat file will only consist of
+	# SAMEA7555065.diff.
 
 	input {
 		Array[File] files
 		Array[File]? removal_candidates
-		Int? removal_thresholds
+		Float? removal_threshold
 		String out_filename = "all.txt"
 		Int preempt = 1
 		Boolean keep_only_unique_lines = false
@@ -73,6 +97,47 @@ task cat_files {
 	Int disk_size = ceil(size(files, "GB")) * 2
 
 	command <<<
+
+	if [[ ! ~{sep=" " removal_candidates} = " " ]]
+	then
+		cat ~{sep=" " removal_candidates} >> removal_guide.tsv
+		FILES=(~{sep=" " files})
+		for FILE in "${FILES[@]}"
+		do
+			# check if it's in the removal guide and below threshold
+			this_files_info=$(awk -v file_to_check="$FILE" '$1 == file_to_check' removal_guide.tsv)
+			echo "$this_files_info"
+			echo "$this_files_info" > temp
+			if [[ ! "$this_files_info" = "" ]]
+			then
+				# okay, we have information about this file. is it above the removal threshold?
+				this_files_value=$(cut -f2 temp)
+				if [[ $this_files_value -gt ~{removal_threshold} ]]
+				then
+					cat "$FILE" >> "~{out_filename}"
+
+					# now, check if we're grabbing first lines
+					if [[ "~{output_first_lines}" = "true" ]]
+					then
+						touch firstlines.txt
+						if [[ "~{strip_first_line_first_char}" = "true" ]]
+						then
+							firstline=$(head -1 "$FILE")
+							echo "${firstline:1}" >> firstlines.txt
+						else
+							head -1 "$FILE" >> firstlines.txt
+						fi
+					fi
+				
+				else
+					# this is below the theshold
+					echo "$FILE's value of $this_files_value is below threshold. It won't be included."
+				fi
+			else
+				echo "WARNING: Removal guide exists but can't find $FILE in it! Skipping..."
+			fi
+		done
+	fi
 
 	touch "~{out_filename}"
 	cat ~{sep=" " files} >> "~{out_filename}"
@@ -85,24 +150,7 @@ task cat_files {
 		mv temp "~{out_filename}"
 	fi
 
-	if [[ "~{output_first_lines}" = "true" ]]
-	then
-		touch firstlines.txt
-		FILES=(~{sep=" " files})
-		if [[ "~{strip_first_line_first_char}" = "true" ]]
-		then
-			for FILE in "${FILES[@]}"
-			do
-				firstline=$(head -1 "$FILE")
-				echo "${firstline:1}" >> firstlines.txt
-			done
-		else
-			for FILE in "${FILES[@]}"
-			do
-				head -1 "$FILE" >> firstlines.txt
-			done
-		fi
-	fi
+	
 
 
 	>>>
@@ -118,6 +166,7 @@ task cat_files {
 	output {
 		File outfile = "~{out_filename}"
 		File? first_lines = "firstlines.txt"
+		File? removal_guide = "removal_guide.tsv"
 	}
 }
 
