@@ -57,12 +57,12 @@ task pull_fq_from_SRA_accession {
 				READ1=$(ls -dq *_1*)
 				READ2=$(ls -dq *_2*)
 				mkdir temp
-				mv $READ1 temp/$READ1
-				mv $READ2 temp/$READ2
+				mv "$READ1" "temp/$READ1"
+				mv "$READ2" "temp/$READ2"
 				BARCODE=$(ls -dq *fastq*)
-				rm $BARCODE
-				mv temp/$READ1 ./$READ1
-				mv temp/$READ2 ./$READ2
+				rm "$BARCODE"
+				mv "temp/$READ1" "./$READ1"
+				mv "temp/$READ2" "./$READ2"
 				echo "~{sra_accession}" > accession.txt
 			fi
 		fi
@@ -124,10 +124,10 @@ task pull_fq_from_biosample {
 		for SRR in "${SRRS_ARRAY[@]}"
 		do
 			echo "searching $SRR"
-			prefetch $SRR
-			fasterq-dump $SRR
+			prefetch "$SRR"
+			fasterq-dump "$SRR"
 			rm -rf $SRR/
-			NUMBER_OF_FQ=$(fdfind $SRR | wc -l)
+			NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
 			if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
 			then
 				echo "Even number of fastqs"
@@ -136,14 +136,14 @@ task pull_fq_from_biosample {
 				READ1=$(fdfind _1)
 				READ2=$(fdfind _2)
 				fastq1size=$(du -m "$READ1" | cut -f1)
-				if (( fastq1size > ~{subsample_cutoff} ))
+				if [[ fastq1size -gt ~{subsample_cutoff} ]]
 				then
-					seqtk sample -s~{subsample_seed} $READ1 1000000 > temp1.fq
-					seqtk sample -s~{subsample_seed} $READ2 1000000 > temp2.fq
-					rm $READ1
-					rm $READ2
-					mv temp1.fq $READ1
-					mv temp2.fq $READ2
+					seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+					seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+					rm "$READ1"
+					rm "$READ2"
+					mv temp1.fq "$READ1"
+					mv temp2.fq "$READ2"
 					echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
 				else
 					echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
@@ -184,18 +184,18 @@ task pull_fq_from_biosample {
 					# do some folder stuff to avoid confusion with other accessions
 					mkdir temp
 					declare -a THIS_SRA_FQS_ARR
-					readarray -t THIS_SRA_FQS_ARR < <(fdfind $SRR)
+					readarray -t THIS_SRA_FQS_ARR < <(fdfind "$SRR")
 					for THING in "${THIS_SRA_FQS_ARR[@]}"
 					do
-						mv $THING temp/$THING
+						mv "$THING" "temp/$THING"
 					done
 					cd temp
 					READ1=$(fdfind _1)
 					READ2=$(fdfind _2)
-					mv $READ1 ../$READ1
-					mv $READ2 ../$READ2
+					mv "$READ1" "../$READ1"
+					mv "$READ2" "../$READ2"
 					BARCODE=$(fdfind ".fastq")
-					rm $BARCODE
+					rm "$BARCODE"
 					cd ..
 					echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
 
@@ -203,12 +203,12 @@ task pull_fq_from_biosample {
 					fastq1size=$(du -m "$READ1" | cut -f1)
 					if (( fastq1size > ~{subsample_cutoff} ))
 					then
-						seqtk sample -s~{subsample_seed} $READ1 1000000 > temp1.fq
-						seqtk sample -s~{subsample_seed} $READ2 1000000 > temp2.fq
-						rm $READ1
-						rm $READ2
-						mv temp1.fq $READ1
-						mv temp2.fq $READ2
+						seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+						seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+						rm "$READ1"
+						rm "$READ2"
+						mv temp1.fq "$READ1"
+						mv temp2.fq "$READ2"
 						echo "    $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
 					else
 						# not bigger than the cutoff, but still a triplet, so make note of that
@@ -233,7 +233,7 @@ task pull_fq_from_biosample {
 			if [ ~{tar_outputs} == "true" ]
 			then
 				FQ=$(fdfind ".fastq")
-				tar -rf ~{biosample_accession}.tar $FQ
+				tar -rf "~{biosample_accession}.tar" "$FQ"
 			fi
 		fi
 		
