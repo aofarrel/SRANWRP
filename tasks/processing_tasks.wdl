@@ -105,7 +105,8 @@ task cat_files {
 		for FILE in "${FILES[@]}"
 		do
 			# check if it's in the removal guide and below threshold
-			this_files_info=$(awk -v file_to_check="$FILE" '$1 == file_to_check' removal_guide.tsv)
+			basename_file=$(basename "$FILE")
+			this_files_info=$(awk -v file_to_check="$basename_file" '$1 == file_to_check' removal_guide.tsv)
 			echo "$this_files_info"
 			echo "$this_files_info" > temp
 			if [[ ! "$this_files_info" = "" ]]
