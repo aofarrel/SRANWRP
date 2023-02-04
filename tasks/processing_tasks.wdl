@@ -87,7 +87,7 @@ task cat_files {
 	input {
 		Array[File] files
 		Array[File]? removal_candidates
-		Float? removal_threshold
+		Float removal_threshold = 0.05
 		String out_filename = "all.txt"
 		Int preempt = 1
 		Boolean keep_only_unique_lines = false
@@ -98,7 +98,7 @@ task cat_files {
 
 	command <<<
 
-	if [[ ! ~{sep=" " removal_candidates} = " " ]]
+	if [[ ! "~{sep=' ' removal_candidates}" = " " ]]
 	then
 		cat ~{sep=" " removal_candidates} >> removal_guide.tsv
 		FILES=(~{sep=" " files})
@@ -149,10 +149,6 @@ task cat_files {
 		rm "~{out_filename}"
 		mv temp "~{out_filename}"
 	fi
-
-	
-
-
 	>>>
 
 	runtime {
