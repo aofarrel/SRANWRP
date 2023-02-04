@@ -98,7 +98,7 @@ task cat_files {
 
 	command <<<
 
-	if [[ ! "~{sep=' ' removal_candidates}" = " " ]]
+	if [[ ! "~{sep=' ' removal_candidates}" = "" ]]
 	then
 		cat ~{sep=" " removal_candidates} >> removal_guide.tsv
 		FILES=(~{sep=" " files})
