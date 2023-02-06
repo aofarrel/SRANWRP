@@ -44,7 +44,7 @@ task extract_accessions_from_file {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.0"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -113,7 +113,8 @@ task cat_files {
 			then
 				# okay, we have information about this file. is it above the removal threshold?
 				this_files_value=$(cut -f2 temp)
-				if [[ $this_files_value -gt ~{removal_threshold} ]]
+				is_bigger=$(echo "$this_files_value>~{removal_threshold}" | bc)
+				if [[ $is_bigger == 0 ]]
 				then
 					cat "$FILE" >> "~{out_filename}"
 
@@ -155,7 +156,7 @@ task cat_files {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: preempt
 	}
