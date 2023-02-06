@@ -13,7 +13,7 @@ task pull_fq_from_SRA_accession {
 		set -eux pipefail
 		prefetch "~{sra_accession}"  # prefetch is not always required, but is good practice
 		fasterq-dump "~{sra_accession}"
-		NUMBER_OF_FQ=$(ls -dq *fastq* | wc -l)
+		NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
 		echo $NUMBER_OF_FQ > number_of_reads.txt
 		if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
 		then
@@ -54,12 +54,12 @@ task pull_fq_from_SRA_accession {
 				fi
 
 				# three files present
-				READ1=$(ls -dq *_1*)
-				READ2=$(ls -dq *_2*)
+				READ1=$(fdfind _1)
+				READ2=$(fdfind _2)
 				mkdir temp
 				mv "$READ1" "temp/$READ1"
 				mv "$READ2" "temp/$READ2"
-				BARCODE=$(ls -dq *fastq*)
+				BARCODE=$(fdfind ".fastq")
 				rm "$BARCODE"
 				mv "temp/$READ1" "./$READ1"
 				mv "temp/$READ2" "./$READ2"
@@ -71,7 +71,7 @@ task pull_fq_from_SRA_accession {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -242,7 +242,7 @@ task pull_fq_from_biosample {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.3"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -276,7 +276,7 @@ task pull_fq_from_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: preempt
 	}
