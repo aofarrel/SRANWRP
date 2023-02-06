@@ -22,7 +22,7 @@ task pull_fq_from_SRA_accession {
 			echo "~{sra_accession}" > accession.txt
 		else
 			echo "Odd number of fastqs; checking if we can still use them..."
-			if [ `expr $NUMBER_OF_FQ` == 1 ]
+			if [[ $NUMBER_OF_FQ == 1 ]]
 			then
 				echo "Only one fastq found"
 				if [ "~{fail_on_invalid}" == "true" ]
@@ -31,12 +31,10 @@ task pull_fq_from_SRA_accession {
 				else
 					# don't fail, but give no output
 					rm *.fastq
-					#touch DONOTUSE.fastq
-					#echo "" > accession.txt
 					exit 0
 				fi
 			else
-				if [ `expr $NUMBER_OF_FQ` != 3 ]
+				if [[ $NUMBER_OF_FQ != 3 ]]
 				then
 					# somehow we got 5, 7, 9, etc reads
 					# this should probably never happen
@@ -47,8 +45,6 @@ task pull_fq_from_SRA_accession {
 					else
 						# could probably adapt the 3-case
 						rm *.fastq
-						#touch DONOTUSE.fastq
-						#echo "" > accession.txt
 						exit 0
 					fi
 
@@ -127,7 +123,7 @@ task pull_fq_from_biosample {
 			echo "searching $SRR"
 			prefetch "$SRR"
 			fasterq-dump "$SRR"
-			rm -rf $SRR/
+			rm -rf "$SRR/"
 			NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
 			IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
 			if [[ $IS_ODD == 0 ]]
