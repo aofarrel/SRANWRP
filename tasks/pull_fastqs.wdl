@@ -11,8 +11,8 @@ task pull_fq_from_SRA_accession {
 
 	command <<<
 		set -eux pipefail
-		prefetch ~{sra_accession}  # prefetch is not always required, but is good practice
-		fasterq-dump ~{sra_accession}
+		prefetch "~{sra_accession}"  # prefetch is not always required, but is good practice
+		fasterq-dump "~{sra_accession}"
 		NUMBER_OF_FQ=$(ls -dq *fastq* | wc -l)
 		echo $NUMBER_OF_FQ > number_of_reads.txt
 		if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
@@ -24,7 +24,7 @@ task pull_fq_from_SRA_accession {
 			if [ `expr $NUMBER_OF_FQ` == 1 ]
 			then
 				echo "Only one fastq found"
-				if [ ~{fail_on_invalid} == "true" ]
+				if [ "~{fail_on_invalid}" == "true" ]
 				then
 					exit 1
 				else
@@ -40,7 +40,7 @@ task pull_fq_from_SRA_accession {
 					# somehow we got 5, 7, 9, etc reads
 					# this should probably never happen
 					echo "Odd number > 3 files found"
-					if [ ~{fail_on_invalid} == "true" ]
+					if [ "~{fail_on_invalid}" == "true" ]
 					then
 						exit 1
 					else
@@ -156,7 +156,7 @@ task pull_fq_from_biosample {
 				then
 					echo "Only one fastq found"
 					echo "    $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
-					if [ ~{fail_on_invalid} == "true" ]
+					if [ "~{fail_on_invalid}" == "true" ]
 					then
 						exit 1
 					else
@@ -170,7 +170,7 @@ task pull_fq_from_biosample {
 						# this should probably never happen
 						echo "Odd number > 3 files found"
 						echo "    $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
-						if [ ~{fail_on_invalid} == "true" ]
+						if [ "~{fail_on_invalid}" == "true" ]
 						then
 							exit 1
 						else
@@ -266,7 +266,7 @@ task pull_fq_from_bioproject {
 	}
 
 	command {
-		esearch -db sra -query ~{bioproject_accession} | \
+		esearch -db sra -query "~{bioproject_accession}" | \
 			efetch -format runinfo | \
 			cut -d ',' -f 1 | \
 			grep SRR | \
