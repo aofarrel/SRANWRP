@@ -100,6 +100,7 @@ task cat_files {
 
 	if [[ ! "~{sep=' ' removal_candidates}" = "" ]]
 	then
+		echo "Checking which files ought to not be included..."
 		cat ~{sep=" " removal_candidates} >> removal_guide.tsv
 		FILES=(~{sep=" " files})
 		for FILE in "${FILES[@]}"
@@ -107,7 +108,6 @@ task cat_files {
 			# check if it's in the removal guide and below threshold
 			basename_file=$(basename "$FILE")
 			this_files_info=$(awk -v file_to_check="$basename_file" '$1 == file_to_check' removal_guide.tsv)
-			echo "$this_files_info"
 			echo "$this_files_info" > temp
 			if [[ ! "$this_files_info" = "" ]]
 			then
@@ -133,16 +133,15 @@ task cat_files {
 				
 				else
 					# this is below the theshold
-					echo "$FILE's value of $this_files_value is below threshold. It won't be included."
+					echo "$basename_file's value of $this_files_value is below threshold. It won't be included."
 				fi
 			else
-				echo "WARNING: Removal guide exists but can't find $FILE in it! Skipping..."
+				echo "WARNING: Removal guide exists but can't find $basename_file in it! Skipping..."
 			fi
 		done
 	fi
 
 	touch "~{out_filename}"
-	cat ~{sep=" " files} >> "~{out_filename}"
 
 	if [[ "~{keep_only_unique_lines}" = "true" ]]
 	then
