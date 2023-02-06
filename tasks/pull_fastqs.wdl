@@ -30,7 +30,7 @@ task pull_fq_from_SRA_accession {
 					exit 1
 				else
 					# don't fail, but give no output
-					rm *.fastq
+					rm ./*.fastq
 					exit 0
 				fi
 			else
@@ -44,7 +44,7 @@ task pull_fq_from_SRA_accession {
 						exit 1
 					else
 						# could probably adapt the 3-case
-						rm *.fastq
+						rm ./*.fastq
 						exit 0
 					fi
 
@@ -150,7 +150,7 @@ task pull_fq_from_biosample {
 
 			else
 				echo "Odd number of fastqs; checking if we can still use them..."
-				if [ $NUMBER_OF_FQ == 1 ]
+				if [[ $NUMBER_OF_FQ == 1 ]]
 				then
 					echo "Only one fastq found"
 					echo "    $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
@@ -159,10 +159,10 @@ task pull_fq_from_biosample {
 						exit 1
 					else
 						# don't fail, but give no output
-						rm *.fastq
+						rm ./*.fastq
 					fi
 				else
-					if [ $NUMBER_OF_FQ != 3 ]
+					if [[ $NUMBER_OF_FQ != 3 ]]
 					then
 						# somehow we got 5, 7, 9, etc reads
 						# this should probably never happen
@@ -173,7 +173,7 @@ task pull_fq_from_biosample {
 							exit 1
 						else
 							# could probably adapt the 3-case
-							rm *.fastq
+							rm ./*.fastq
 						fi
 
 					fi
@@ -220,7 +220,7 @@ task pull_fq_from_biosample {
 		
 		# double check that there actually are fastqs
 		NUMBER_OF_FQ=$(fdfind ".fastq" | wc -l)
-		if [ ! $NUMBER_OF_FQ == 0 ]
+		if [[ ! $NUMBER_OF_FQ == 0 ]]
 		then
 			for fq in *.fastq
 				do
