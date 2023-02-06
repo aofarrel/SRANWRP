@@ -15,7 +15,8 @@ task pull_fq_from_SRA_accession {
 		fasterq-dump "~{sra_accession}"
 		NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
 		echo $NUMBER_OF_FQ > number_of_reads.txt
-		if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
+		IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
+		if [[ $IS_ODD == 0 ]]
 		then
 			echo "Even number of fastqs"
 			echo "~{sra_accession}" > accession.txt
@@ -91,7 +92,7 @@ task pull_fq_from_biosample {
 		Int subsample_cutoff = 450
 		Int subsample_seed = 1965
 
-		Int disk_size = 60
+		Int disk_size = 100
 		Int preempt = 1
 	}
 
@@ -128,7 +129,8 @@ task pull_fq_from_biosample {
 			fasterq-dump "$SRR"
 			rm -rf $SRR/
 			NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
-			if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
+			IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
+			if [[ $IS_ODD == 0 ]]
 			then
 				echo "Even number of fastqs"
 				
@@ -261,8 +263,8 @@ task pull_fq_from_bioproject {
 	input {
 		String bioproject_accession
 
-		Int? disk_size = 50
-		Int? preempt = 1
+		Int disk_size = 50
+		Int preempt = 1
 	}
 
 	command {
