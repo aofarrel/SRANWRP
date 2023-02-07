@@ -112,7 +112,7 @@ task pull_fq_from_biosample {
 			elink -target sra | efetch -format docsum | \
 			xtract -pattern DocumentSummary -element Run@acc)
 		declare -a SRRS_ARRAY
-		IFS=" " readarray -r SRRS_ARRAY <<< "$SRRS_STR"
+		IFS=" " readarray SRRS_ARRAY <<< "$SRRS_STR"
 
 		# 2. loop through every SRA accession and pull the fastqs
 		# TODO: This loop doesn't work as expected. It's sending the whole array.
