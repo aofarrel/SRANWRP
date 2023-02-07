@@ -54,6 +54,7 @@ RUN pip3 install numpy
 RUN pip3 install pandas
 RUN pip3 install Matplotlib
 RUN pip3 install firecloud
+RUN pip3 install taxoniumtools
 
 # install entrez direct
 RUN sh -c "$(wget -q ftp://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh -O -)"
