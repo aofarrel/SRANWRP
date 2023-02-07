@@ -1,3 +1,4 @@
+# cat all lineage files into one file
 import os
 with open("all_lineages", "w") as catfile:
 	files = [file for file in os.listdir(".") if file.endswith(".txt")]
@@ -8,4 +9,5 @@ with open("all_lineages", "w") as catfile:
 				catfile.write(f"{line}\t{file.strip('.txt')}\n")
 
 os.system("sort all_lineages >> all_sorted")
-os.system("uniq -u all_sorted >> all_unique")
+#os.system("uniq -u all_sorted >> all_unique")
+os.system("cut -f1 all_sorted >> all_samples_only")

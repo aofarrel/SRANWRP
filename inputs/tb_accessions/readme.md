@@ -14,7 +14,11 @@
  * 5 L3
  * 5 L2
 * L*: various lineages -- pulled by hand, so there's a chance a few are off
-* TB_a3: list of "every" MTBC accession on SRA circa November 2022
+
+
+* tB_a3: list of "every" MTBC accession on SRA circa November 2022
+    * see lineage/all_not_in_tb_a3.txt for some exceptions
+* 
 
 
 ## tb_a3 process
