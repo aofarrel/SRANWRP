@@ -11,58 +11,55 @@ task pull_fq_from_SRA_accession {
 
 	command <<<
 		set -eux pipefail
-		prefetch ~{sra_accession}  # prefetch is not always required, but is good practice
-		fasterq-dump ~{sra_accession}
-		NUMBER_OF_FQ=$(ls -dq *fastq* | wc -l)
-		echo $NUMBER_OF_FQ > number_of_reads.txt
-		if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
+		prefetch "~{sra_accession}"  # prefetch is not always required, but is good practice
+		fasterq-dump "~{sra_accession}"
+		NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
+		echo "$NUMBER_OF_FQ" > number_of_reads.txt
+		IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
+		if [[ $IS_ODD == 0 ]]
 		then
 			echo "Even number of fastqs"
 			echo "~{sra_accession}" > accession.txt
 		else
 			echo "Odd number of fastqs; checking if we can still use them..."
-			if [ `expr $NUMBER_OF_FQ` == 1 ]
+			if [[ $NUMBER_OF_FQ == 1 ]]
 			then
 				echo "Only one fastq found"
-				if [ ~{fail_on_invalid} == "true" ]
+				if [ "~{fail_on_invalid}" == "true" ]
 				then
 					exit 1
 				else
 					# don't fail, but give no output
-					rm *.fastq
-					#touch DONOTUSE.fastq
-					#echo "" > accession.txt
+					rm ./*.fastq
 					exit 0
 				fi
 			else
-				if [ `expr $NUMBER_OF_FQ` != 3 ]
+				if [[ $NUMBER_OF_FQ != 3 ]]
 				then
 					# somehow we got 5, 7, 9, etc reads
 					# this should probably never happen
 					echo "Odd number > 3 files found"
-					if [ ~{fail_on_invalid} == "true" ]
+					if [ "~{fail_on_invalid}" == "true" ]
 					then
 						exit 1
 					else
 						# could probably adapt the 3-case
-						rm *.fastq
-						#touch DONOTUSE.fastq
-						#echo "" > accession.txt
+						rm ./*.fastq
 						exit 0
 					fi
 
 				fi
 
 				# three files present
-				READ1=$(ls -dq *_1*)
-				READ2=$(ls -dq *_2*)
+				READ1=$(fdfind _1)
+				READ2=$(fdfind _2)
 				mkdir temp
-				mv $READ1 temp/$READ1
-				mv $READ2 temp/$READ2
-				BARCODE=$(ls -dq *fastq*)
-				rm $BARCODE
-				mv temp/$READ1 ./$READ1
-				mv temp/$READ2 ./$READ2
+				mv "$READ1" "temp/$READ1"
+				mv "$READ2" "temp/$READ2"
+				BARCODE=$(fdfind ".fastq")
+				rm "$BARCODE"
+				mv "temp/$READ1" "./$READ1"
+				mv "temp/$READ2" "./$READ2"
 				echo "~{sra_accession}" > accession.txt
 			fi
 		fi
@@ -71,7 +68,7 @@ task pull_fq_from_SRA_accession {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -91,7 +88,7 @@ task pull_fq_from_biosample {
 		Int subsample_cutoff = 450
 		Int subsample_seed = 1965
 
-		Int disk_size = 60
+		Int disk_size = 100
 		Int preempt = 1
 	}
 
@@ -124,11 +121,12 @@ task pull_fq_from_biosample {
 		for SRR in "${SRRS_ARRAY[@]}"
 		do
 			echo "searching $SRR"
-			prefetch $SRR
-			fasterq-dump $SRR
-			rm -rf $SRR/
-			NUMBER_OF_FQ=$(fdfind $SRR | wc -l)
-			if [ `expr $NUMBER_OF_FQ % 2` == 0 ]
+			prefetch "$SRR"
+			fasterq-dump "$SRR"
+			rm -rf "${SRR:?}/"
+			NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
+			IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
+			if [[ $IS_ODD == 0 ]]
 			then
 				echo "Even number of fastqs"
 				
@@ -136,14 +134,14 @@ task pull_fq_from_biosample {
 				READ1=$(fdfind _1)
 				READ2=$(fdfind _2)
 				fastq1size=$(du -m "$READ1" | cut -f1)
-				if (( fastq1size > ~{subsample_cutoff} ))
+				if [[ fastq1size -gt ~{subsample_cutoff} ]]
 				then
-					seqtk sample -s~{subsample_seed} $READ1 1000000 > temp1.fq
-					seqtk sample -s~{subsample_seed} $READ2 1000000 > temp2.fq
-					rm $READ1
-					rm $READ2
-					mv temp1.fq $READ1
-					mv temp2.fq $READ2
+					seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+					seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+					rm "$READ1"
+					rm "$READ2"
+					mv temp1.fq "$READ1"
+					mv temp2.fq "$READ2"
 					echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
 				else
 					echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
@@ -152,30 +150,30 @@ task pull_fq_from_biosample {
 
 			else
 				echo "Odd number of fastqs; checking if we can still use them..."
-				if [ $NUMBER_OF_FQ == 1 ]
+				if [[ $NUMBER_OF_FQ == 1 ]]
 				then
 					echo "Only one fastq found"
 					echo "    $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
-					if [ ~{fail_on_invalid} == "true" ]
+					if [ "~{fail_on_invalid}" == "true" ]
 					then
 						exit 1
 					else
 						# don't fail, but give no output
-						rm *.fastq
+						rm ./*.fastq
 					fi
 				else
-					if [ $NUMBER_OF_FQ != 3 ]
+					if [[ $NUMBER_OF_FQ != 3 ]]
 					then
 						# somehow we got 5, 7, 9, etc reads
 						# this should probably never happen
 						echo "Odd number > 3 files found"
 						echo "    $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
-						if [ ~{fail_on_invalid} == "true" ]
+						if [ "~{fail_on_invalid}" == "true" ]
 						then
 							exit 1
 						else
 							# could probably adapt the 3-case
-							rm *.fastq
+							rm ./*.fastq
 						fi
 
 					fi
@@ -184,18 +182,18 @@ task pull_fq_from_biosample {
 					# do some folder stuff to avoid confusion with other accessions
 					mkdir temp
 					declare -a THIS_SRA_FQS_ARR
-					readarray -t THIS_SRA_FQS_ARR < <(fdfind $SRR)
+					readarray -t THIS_SRA_FQS_ARR < <(fdfind "$SRR")
 					for THING in "${THIS_SRA_FQS_ARR[@]}"
 					do
-						mv $THING temp/$THING
+						mv "$THING" "temp/$THING"
 					done
 					cd temp
 					READ1=$(fdfind _1)
 					READ2=$(fdfind _2)
-					mv $READ1 ../$READ1
-					mv $READ2 ../$READ2
+					mv "$READ1" "../$READ1"
+					mv "$READ2" "../$READ2"
 					BARCODE=$(fdfind ".fastq")
-					rm $BARCODE
+					rm "$BARCODE"
 					cd ..
 					echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
 
@@ -203,12 +201,12 @@ task pull_fq_from_biosample {
 					fastq1size=$(du -m "$READ1" | cut -f1)
 					if (( fastq1size > ~{subsample_cutoff} ))
 					then
-						seqtk sample -s~{subsample_seed} $READ1 1000000 > temp1.fq
-						seqtk sample -s~{subsample_seed} $READ2 1000000 > temp2.fq
-						rm $READ1
-						rm $READ2
-						mv temp1.fq $READ1
-						mv temp2.fq $READ2
+						seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+						seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+						rm "$READ1"
+						rm "$READ2"
+						mv temp1.fq "$READ1"
+						mv temp2.fq "$READ2"
 						echo "    $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
 					else
 						# not bigger than the cutoff, but still a triplet, so make note of that
@@ -222,7 +220,7 @@ task pull_fq_from_biosample {
 		
 		# double check that there actually are fastqs
 		NUMBER_OF_FQ=$(fdfind ".fastq" | wc -l)
-		if [ ! $NUMBER_OF_FQ == 0 ]
+		if [[ ! $NUMBER_OF_FQ == 0 ]]
 		then
 			for fq in *.fastq
 				do
@@ -233,7 +231,7 @@ task pull_fq_from_biosample {
 			if [ ~{tar_outputs} == "true" ]
 			then
 				FQ=$(fdfind ".fastq")
-				tar -rf ~{biosample_accession}.tar $FQ
+				tar -rf "~{biosample_accession}.tar" "$FQ"
 			fi
 		fi
 		
@@ -242,7 +240,7 @@ task pull_fq_from_biosample {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.3"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -261,12 +259,12 @@ task pull_fq_from_bioproject {
 	input {
 		String bioproject_accession
 
-		Int? disk_size = 50
-		Int? preempt = 1
+		Int disk_size = 50
+		Int preempt = 1
 	}
 
 	command {
-		esearch -db sra -query ~{bioproject_accession} | \
+		esearch -db sra -query "~{bioproject_accession}" | \
 			efetch -format runinfo | \
 			cut -d ',' -f 1 | \
 			grep SRR | \
@@ -276,7 +274,7 @@ task pull_fq_from_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: preempt
 	}
