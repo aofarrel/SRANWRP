@@ -14,7 +14,7 @@ task pull_fq_from_SRA_accession {
 		prefetch "~{sra_accession}"  # prefetch is not always required, but is good practice
 		fasterq-dump "~{sra_accession}"
 		NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
-		echo $NUMBER_OF_FQ > number_of_reads.txt
+		echo "$NUMBER_OF_FQ" > number_of_reads.txt
 		IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
 		if [[ $IS_ODD == 0 ]]
 		then
@@ -123,7 +123,7 @@ task pull_fq_from_biosample {
 			echo "searching $SRR"
 			prefetch "$SRR"
 			fasterq-dump "$SRR"
-			rm -rf "$SRR/"
+			rm -rf "${SRR:?}/"
 			NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
 			IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
 			if [[ $IS_ODD == 0 ]]
