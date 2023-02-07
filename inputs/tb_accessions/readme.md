@@ -1,24 +1,20 @@
 # tb_accessions
-* five_per_L1_L3_sublineage: Contains, in this order:
- * 5 L1.1.1.1
- * 5 L1.1.1
- * 5 L1.1.2
- * 5 L1.1.3
- * 5 L1.1
- * 5 L1.2.1
- * 5 L1.2.2
- * 5 L3.1.1
- * 5 L3.1.2.1
- * 5 L3.1.2.2
- * 5 L3.1.2
- * 5 L3
- * 5 L2
-* L*: various lineages -- pulled by hand, so there's a chance a few are off
-
-
-* tB_a3: list of "every" MTBC accession on SRA circa November 2022
+## main folder
+* tb_a3 -- list of "every" MTBC accession on SRA circa November 2022
     * see lineage/all_not_in_tb_a3.txt for some exceptions
-* 
+* tb_a3_no_lineage -- all tb_a3 samples not also in all_lineages
+
+## exclusive_subsets folder
+* tb_a3_100_random -- 100 random samples from tb_a3 (by happenstance none were in all_lineages, but going forward all random samples will be taken from the pool file rather than tb_a3 directly)
+* tb_a3_pool -- the "pool" of valid tb_a3 samples from which more samples can be taken -- everything in here has no lineage and also isn't already in tb_a3_random
+
+## lineage folder
+* lineage/all_lineages -- all samples for which we have lineage information + their lineage
+* lineage/all_not_in_tb_a3 -- samples in all_lineage but not tb_a3
+* lineage/all_samples_only -- all_sorted, but without lineage information (can be put into a workflow directly)
+* lineage/all_sorted -- all_lineages but sorted alphabetically
+* lineage/cat.py and filter.sh -- small scripts for putting some files together
+* lineage/L*: various lineages -- pulled by hand, so there's a chance a few are off
 
 
 ## tb_a3 process
