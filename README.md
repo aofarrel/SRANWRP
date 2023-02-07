@@ -1,4 +1,4 @@
-# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.1.5?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags) [![Quay.io Link](https://img.shields.io/badge/quay.io-1.1.5-blue?logo=redhat "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
+# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.1.6?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags) [![Quay.io Link](https://img.shields.io/badge/quay.io-1.1.6-blue?logo=redhat "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
 SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Ubuntu-based Docker image and some optional assorted workflows. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
 
 ## What tasks can it perform?
@@ -23,6 +23,7 @@ Here's [some other tasks](./tasks/processing_tasks.wdl) that can help you conver
 Non-exhaustive list:
 * bash-5.1.16(1)-release
 * [bedtools-latest](https://github.com/arq5x/bedtools2)
+* [bc-latest](https://www.gnu.org/software/bc/)
 * bcftools-1.16
 * cpan-latest
 * curl-latest
