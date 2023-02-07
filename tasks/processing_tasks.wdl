@@ -17,6 +17,7 @@ task extract_accessions_from_file {
 		# uses NCBI's "default order." Either works.
 		File accessions_file
 		Int preempt = 1
+		Boolean? filter_na = true
 	}
 	Int disk_size = ceil(size(accessions_file, "GB")) * 2
 
@@ -28,6 +29,9 @@ task extract_accessions_from_file {
 	valid = []
 	for line in (f.readlines()):
 		if line == "":
+			pass
+		elif line == "NA" and "~{filter_na}" == "true":
+			print("WARNING -- NA found")
 			pass
 		else:
 			split = line.split("\t")
