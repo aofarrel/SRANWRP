@@ -9,6 +9,9 @@ SAMEA968095 (L3)
 
 ## fails prefetch-3.0.1 or fasterq-dump-3.0.1
 
+### mixed run types
+SAMN24042990 (SRR17234897 is PacBio, SRR17234904 is Illumina)
+
 ### `prefetch.3.0.1 err: name not found while resolving query within virtual file system module - failed to resolve accession 'x' - no data ( 404 )`
 ERR760606 (SAMEA3231653, L4.1) -- the other two runs for this sample seem okay  
 ERR760898 (SAMEA3231746, L4.1) -- other run for this sample seems okay  
@@ -719,5 +722,4 @@ SAMN07236907
 SAMN07236907
 SAMN07236906
 SAMN07236906
-SAMN07236908
 SAMN07236908
