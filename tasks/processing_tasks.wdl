@@ -17,7 +17,7 @@ task extract_accessions_from_file {
 		# uses NCBI's "default order." Either works.
 		File accessions_file
 		Int preempt = 1
-		Boolean? filter_na = true
+		Boolean filter_na = true
 	}
 	Int disk_size = ceil(size(accessions_file, "GB")) * 2
 
@@ -143,9 +143,11 @@ task cat_files {
 				echo "WARNING: Removal guide exists but can't find $basename_file in it! Skipping..."
 			fi
 		done
+	else
+		# no removal guide
+		echo "No removal guide found"
+		cat ~{sep=" " files} >> "~{out_filename}"
 	fi
-
-	touch "~{out_filename}"
 
 	if [[ "~{keep_only_unique_lines}" = "true" ]]
 	then
