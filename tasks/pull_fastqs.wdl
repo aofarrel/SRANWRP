@@ -111,8 +111,8 @@ task pull_fq_from_biosample {
 		SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
 			elink -target sra | efetch -format docsum | \
 			xtract -pattern DocumentSummary -element Run@acc)
-
-		SRRS_ARRAY=($SRRS_STR)
+		declare -a SRRS_ARRAY
+		IFS=" " readarray -r SRRS_ARRAY <<< "$SRRS_STR"
 
 		# 2. loop through every SRA accession and pull the fastqs
 		# TODO: This loop doesn't work as expected. It's sending the whole array.
