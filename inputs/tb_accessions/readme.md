@@ -1,14 +1,11 @@
 # tb_accessions
-## main folder
-* tb_a3 -- list of "every" MTBC accession on SRA circa November 2022
-    * see lineage/all_not_in_tb_a3.txt for some exceptions
-* tb_a3_no_lineage -- all tb_a3 samples not also in all_lineages
+There's two types of files here: tb_a3 files and lineage files.
 
-## exclusive_subsets folder
-* tb_a3_100_random -- 100 random samples from tb_a3 (by happenstance none were in all_lineages, but going forward all random samples will be taken from the pool file rather than tb_a3 directly)
-* tb_a3_pool -- the "pool" of valid tb_a3 samples from which more samples can be taken -- everything in here has no lineage and also isn't already in tb_a3_random
+The lineage files are derivied from a bunch of TSVs floating around with sample accessions for known TB lineages. Those TSVs are not rehosted here.
 
-## lineage folder
+tb_a3 files are derivied from a search of SRA circa November 2022. It represents "every" MTBC accession on the site at that time.
+
+## lineage 
 * lineage/all_lineages -- all samples for which we have lineage information + their lineage
 * lineage/all_not_in_tb_a3 -- samples in all_lineage but not tb_a3
 * lineage/all_samples_only -- all_sorted, but without lineage information (can be put into a workflow directly)
@@ -16,8 +13,20 @@
 * lineage/cat.py and filter.sh -- small scripts for putting some files together
 * lineage/L*: various lineages -- pulled by hand, so there's a chance a few are off
 
+### very import caveat
+When we say something "has no lineage information," what we actually mean is that it isn't on any of the TSVs from which lineage/L*.txt are derived and by extension are not in any lineage/L*.txt file. There's bound to be samples on SRA that do have lineage information that weren't on those TSVs -- in fact we already found some lineage 3 lurking around. Right now, we're deciding not to retroactively update the L*.txt files when additional samples with lineage information are found. By extension, tb_a3_no_lineage.txt and its derivatives may have some samples that actually do have lineage information (but not lineage information we were aware of when making the lineage/L*.txt files).
 
-## tb_a3 process
+## tb_a3
+* tb_a3 -- list of "every" MTBC accession on SRA circa November 2022
+    * see lineage/all_not_in_tb_a3.txt for some exceptions
+* tb_a3_no_lineage -- all tb_a3 samples not also in all_lineages
+
+### exclusive_subsets folder
+This has randomized subsets of tb_a3. All of them are derivied from tb_a3_pool, which acts as the "pool" of valid tb_a3 samples from which more samples can be taken. Everything in the pool has no lineage information (see caveats) and also isn't already in any other tb_a3_rand* file.
+
+tb_a3_rand00100.txt was the first of our tests and wasn't from the pool file, but just happened to have no samples with lineage information. Everything else has been derived from the pool file, and upon creation, modifies the pool file accordingly.
+
+### tb_a3 creation process
 On SRA's website, the following search was performed.
 
 ```
