@@ -1,3 +1,12 @@
+## 1/20/100
+1/20/100 samples. The 1 sample case is a very simple sample.
+
+## multirun_sample
+2 multirun (ie multiple SRRs) samples.
+
+## pacbio
+1 PacBio sample -- expected to fail fasterq-dump
+
 ## What edge cases are being tested?
 * SRS1528302: Single-run (SRR11947402) but returns one FASTQ file
 * SRS3269160: Single-run (SRR7131136) but returns three FASTQ files
