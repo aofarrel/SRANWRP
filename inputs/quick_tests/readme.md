@@ -43,3 +43,6 @@ Three of these samples, even after being downsampled, go very slowly during cloc
 * SRS3269160: Single-run (SRR7131136) but returns three FASTQ files
 * SAMEA2534128: Two runs with different ERX accessions
 * ERS457530: Same as SAMEA2534128, should have equivalent output
+
+## tricky
+I honestly don't remember. All of them are technically a different organism, but still within MTBC. Two are over 600 megabytes, one is just under 400 megabytes.
