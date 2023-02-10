@@ -68,6 +68,7 @@ task cat_strings {
 	}
 
 	command <<<
+		echo "~{sep=' ' strings}"
 		python3 << CODE
 		strings_list = ['~{sep="','" strings}']
 		with open("~{out}", "w") as f:
