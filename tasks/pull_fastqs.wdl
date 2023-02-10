@@ -75,8 +75,8 @@ task pull_fq_from_SRA_accession {
 				echo "~{sra_accession}" > accession.txt
 			fi
 		fi
-		# check size, unless seed is -1
-		if [[ ! "~{subsample_seed}" = "-1" ]]
+		# check size, unless cutoff is -1
+		if [[ ! "~{subsample_cutoff}" = "-1" ]]
 			READ1=$(fdfind _1)
 			READ2=$(fdfind _2)
 			fastq1size=$(du -m "$READ1" | cut -f1)
@@ -160,8 +160,8 @@ task pull_fq_from_biosample {
 			then
 				echo "Even number of fastqs"
 				
-				# check size, unless seed is -1
-				if [[ ! "~{subsample_seed}" = "-1" ]]
+				# check size, unless cutoff is -1
+				if [[ ! "~{subsample_cutoff}" = "-1" ]]
 					READ1=$(fdfind _1)
 					READ2=$(fdfind _2)
 					fastq1size=$(du -m "$READ1" | cut -f1)
