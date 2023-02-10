@@ -70,7 +70,7 @@ task cat_strings {
 	command <<<
 		python3 << CODE
 		strings_list = ['~{sep="','" strings}']
-		with open("~{outfile}", "w") as f:
+		with open("~{out}", "w") as f:
 			for report in strings_list:
 				catfile.write(f"{report}\n")
 		CODE
