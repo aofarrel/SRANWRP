@@ -68,13 +68,7 @@ task cat_strings {
 	}
 
 	command <<<
-		echo "~{sep=' ' strings}"
-		python3 << CODE
-		strings_list = ['~{sep="','" strings}']
-		with open("~{out}", "w") as f:
-			for report in strings_list:
-				catfile.write(f"{report}\n")
-		CODE
+		printf "~{sep='\n' strings}"
 	>>>
 
 	runtime {
@@ -83,10 +77,6 @@ task cat_strings {
 		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: 2
-	}
-
-	output {
-		File outfile = out
 	}
 }
 
