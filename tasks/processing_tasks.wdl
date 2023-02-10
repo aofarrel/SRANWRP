@@ -63,7 +63,7 @@ task cat_strings {
 
 	input {
 		Array[String] strings
-		String outfile = "pull_reports.txt"
+		String out = "pull_reports.txt"
 		Int disk_size = 10
 	}
 
@@ -82,6 +82,10 @@ task cat_strings {
 		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: 2
+	}
+
+	output {
+		File outfile = out
 	}
 }
 
