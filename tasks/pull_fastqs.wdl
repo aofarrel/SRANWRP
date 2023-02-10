@@ -5,8 +5,20 @@ task pull_fq_from_SRA_accession {
 		String sra_accession
 
 		Boolean fail_on_invalid = false
+		Int subsample_cutoff = 450
+		Int subsample_seed = 1965
+
 		Int disk_size = 100
-		Int preempt = 1
+		Int preempt = 1	
+	}
+
+	parameter_meta {
+    	sra_accession:     "SRA run accession (NOT BioSample!) to pull fastqs from - can be SRR, ERR, etc"
+    	disk_size:         "Size, in GB, of disk (acts as a limit on GCP)"
+    	fail_on_invalid:   "Error (instead of exit 0 with null output) if output invalid"
+    	preempt:           "Number of times to attempt task on a preemptible VM (GCP only)"
+    	subsample_cutoff:  "If a fastq > this value in MB, the fastq will be subsampled (set to -1 to disable)"
+    	subsample_seed:    "Seed to use when subsampling large fastqs"
 	}
 
 	command <<<
@@ -63,6 +75,24 @@ task pull_fq_from_SRA_accession {
 				echo "~{sra_accession}" > accession.txt
 			fi
 		fi
+		# check size, unless cutoff is -1
+		if [[ ! "~{subsample_cutoff}" = "-1" ]]
+			READ1=$(fdfind _1)
+			READ2=$(fdfind _2)
+			fastq1size=$(du -m "$READ1" | cut -f1)
+			if [[ fastq1size -gt ~{subsample_cutoff} ]]
+			then
+				seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+				seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+				rm "$READ1"
+				rm "$READ2"
+				mv temp1.fq "$READ1"
+				mv temp2.fq "$READ2"
+				echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+			else
+				echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
+			fi
+		fi
 	>>>
 
 	runtime {
@@ -97,7 +127,7 @@ task pull_fq_from_biosample {
     	disk_size:           "Size, in GB, of disk (acts as a limit on GCP)"
     	fail_on_invalid:     "Error (instead of exit 0 with null output) if output invalid"
     	preempt:             "Number of times to attempt task on a preemptible VM (GCP only)"
-    	subsample_cutoff:    "If fastq > this value in MB, the fastq will be subsampled"
+    	subsample_cutoff:    "If a fastq > this value in MB, the fastq will be subsampled (set to -1 to disable)"
     	subsample_seed:      "Seed to use when subsampling large fastqs"
     	tar_outputs:         "Tarball all fastqs into one output file"
 	}
@@ -130,21 +160,23 @@ task pull_fq_from_biosample {
 			then
 				echo "Even number of fastqs"
 				
-				# check size
-				READ1=$(fdfind _1)
-				READ2=$(fdfind _2)
-				fastq1size=$(du -m "$READ1" | cut -f1)
-				if [[ fastq1size -gt ~{subsample_cutoff} ]]
-				then
-					seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
-					seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
-					rm "$READ1"
-					rm "$READ2"
-					mv temp1.fq "$READ1"
-					mv temp2.fq "$READ2"
-					echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
-				else
-					echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
+				# check size, unless cutoff is -1
+				if [[ ! "~{subsample_cutoff}" = "-1" ]]
+					READ1=$(fdfind _1)
+					READ2=$(fdfind _2)
+					fastq1size=$(du -m "$READ1" | cut -f1)
+					if [[ fastq1size -gt ~{subsample_cutoff} ]]
+					then
+						seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+						seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+						rm "$READ1"
+						rm "$READ2"
+						mv temp1.fq "$READ1"
+						mv temp2.fq "$READ2"
+						echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+					else
+						echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
+					fi
 				fi
 
 
