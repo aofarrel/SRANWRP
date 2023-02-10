@@ -77,6 +77,7 @@ task pull_fq_from_SRA_accession {
 		fi
 		# check size, unless cutoff is -1
 		if [[ ! "~{subsample_cutoff}" = "-1" ]]
+		then
 			READ1=$(fdfind _1)
 			READ2=$(fdfind _2)
 			fastq1size=$(du -m "$READ1" | cut -f1)
@@ -88,9 +89,9 @@ task pull_fq_from_SRA_accession {
 				rm "$READ2"
 				mv temp1.fq "$READ1"
 				mv temp2.fq "$READ2"
-				echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+				echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{sra_accession}"_pull_results.txt
 			else
-				echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
+				echo "    $SRR: PASS" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
 	>>>
@@ -162,6 +163,7 @@ task pull_fq_from_biosample {
 				
 				# check size, unless cutoff is -1
 				if [[ ! "~{subsample_cutoff}" = "-1" ]]
+				then
 					READ1=$(fdfind _1)
 					READ2=$(fdfind _2)
 					fastq1size=$(du -m "$READ1" | cut -f1)
