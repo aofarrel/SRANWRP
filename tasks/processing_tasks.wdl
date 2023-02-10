@@ -58,6 +58,33 @@ task extract_accessions_from_file {
 	}
 }
 
+task cat_strings {
+	# Concatenate Array[String] into a single File.
+
+	input {
+		Array[String] strings
+		String outfile = "pull_reports.txt"
+		Int disk_size = 10
+	}
+
+	command <<<
+		python3 << CODE
+		strings_list = ['~{sep="','" strings}']
+		with open("~{outfile}", "w") as f:
+			for report in strings_list:
+				catfile.write(f"{report}\n")
+		CODE
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " SSD"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
+		memory: "8 GB"
+		preemptible: 2
+	}
+}
+
 task cat_files {
 	# Concatenate Array[File] into a single File.
 	#
