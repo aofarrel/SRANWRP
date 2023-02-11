@@ -60,6 +60,7 @@ Three of these samples, even after being downsampled, go very slowly during cloc
 * SAMN04276653: Two runs, one of which has only one fastq
 * SAMN07190145
 * SAMN09090431: Has one SRR that has three fastqs, and the two normal ones are kind of big
+* SAMN18648259
 * SAMN27519992
 * SAMN27519993
 * SAMN29944050
