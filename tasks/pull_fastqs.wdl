@@ -134,7 +134,6 @@ task pull_fq_from_biosample {
 	}
 
 	command <<<
-
 		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
 		
 		# 1. get SRA accessions from biosample
@@ -194,8 +193,9 @@ task pull_fq_from_biosample {
 				# check size, unless cutoff is -1
 				if [[ ! "~{subsample_cutoff}" = "-1" ]]
 				then
-					READ1=$(fdfind _1)
-					READ2=$(fdfind _2)
+					READ1=$(fdfind "$SRR_1")
+					READ2=$(fdfind "$SRR_2")
+					echo "Checking size of $READ1..."
 					fastq1size=$(du -m "$READ1" | cut -f1)
 					if [[ fastq1size -gt ~{subsample_cutoff} ]]
 					then
@@ -220,10 +220,11 @@ task pull_fq_from_biosample {
 					echo "    $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
 					if [ "~{fail_on_invalid}" == "true" ]
 					then
+						set -eux pipefail
 						exit 1
 					else
-						# don't fail, but give no output
-						rm ./*.fastq
+						# don't fail, but give no output for this SRR
+						rm "./$SRR.fastq"
 					fi
 				else
 					if [[ $NUMBER_OF_FQ != 3 ]]
@@ -234,6 +235,7 @@ task pull_fq_from_biosample {
 						echo "    $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
 						if [ "~{fail_on_invalid}" == "true" ]
 						then
+							set -eux pipefail
 							exit 1
 						else
 							# could probably adapt the 3-case
@@ -252,8 +254,8 @@ task pull_fq_from_biosample {
 						mv "$THING" "temp/$THING"
 					done
 					cd temp
-					READ1=$(fdfind _1)
-					READ2=$(fdfind _2)
+					READ1=$(fdfind "$SRR_1")
+					READ2=$(fdfind "$SRR_2")
 					mv "$READ1" "../$READ1"
 					mv "$READ2" "../$READ2"
 					BARCODE=$(fdfind ".fastq")
@@ -262,19 +264,23 @@ task pull_fq_from_biosample {
 					echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
 
 					# check size -- if very large, we should subsample
-					fastq1size=$(du -m "$READ1" | cut -f1)
-					if (( fastq1size > ~{subsample_cutoff} ))
+					if [[ ! "~{subsample_cutoff}" = "-1" ]]
 					then
-						seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
-						seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
-						rm "$READ1"
-						rm "$READ2"
-						mv temp1.fq "$READ1"
-						mv temp2.fq "$READ2"
-						echo "    $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
-					else
-						# not bigger than the cutoff, but still a triplet, so make note of that
-						echo "    $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
+						echo "Checking size of $READ1..."
+						fastq1size=$(du -m "$READ1" | cut -f1)
+						if (( fastq1size > ~{subsample_cutoff} ))
+						then
+							seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+							seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+							rm "$READ1"
+							rm "$READ2"
+							mv temp1.fq "$READ1"
+							mv temp2.fq "$READ2"
+							echo "    $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+						else
+							# not bigger than the cutoff, but still a triplet, so make note of that
+							echo "    $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
+						fi
 					fi
 				fi
 			fi

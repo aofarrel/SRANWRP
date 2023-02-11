@@ -47,4 +47,9 @@ Three of these samples, even after being downsampled, go very slowly during cloc
 * ERS457530: Same as SAMEA2534128, should have equivalent output
 
 ## sample_edge_cases_extended
-Samples that may or may not be problematic for misremembered reasons
+* SAMEA3358985: PacBio
+* SAMN0010326: Has three SRRs:
+    * SRR12006053: Two very large (2 GB) fastqs
+    * SRR032851: Relatively normal
+    * SRR023456: One fastq
+* SAMN02045564: Has four SRRs, only the first of which has more than one fastq file
