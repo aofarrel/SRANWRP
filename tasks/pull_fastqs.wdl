@@ -232,19 +232,22 @@ task pull_fq_from_biosample {
 					echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
 
 					# check size -- if very large, we should subsample
-					fastq1size=$(du -m "$READ1" | cut -f1)
-					if (( fastq1size > ~{subsample_cutoff} ))
+					if [[ ! "~{subsample_cutoff}" = "-1" ]]
 					then
-						seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
-						seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
-						rm "$READ1"
-						rm "$READ2"
-						mv temp1.fq "$READ1"
-						mv temp2.fq "$READ2"
-						echo "    $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
-					else
-						# not bigger than the cutoff, but still a triplet, so make note of that
-						echo "    $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
+						fastq1size=$(du -m "$READ1" | cut -f1)
+						if (( fastq1size > ~{subsample_cutoff} ))
+						then
+							seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+							seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+							rm "$READ1"
+							rm "$READ2"
+							mv temp1.fq "$READ1"
+							mv temp2.fq "$READ2"
+							echo "    $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+						else
+							# not bigger than the cutoff, but still a triplet, so make note of that
+							echo "    $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
+						fi
 					fi
 				fi
 			fi
