@@ -134,8 +134,6 @@ task pull_fq_from_biosample {
 	}
 
 	command <<<
-		set -eux pipefail
-
 		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
 		
 		# 1. get SRA accessions from biosample
@@ -164,8 +162,8 @@ task pull_fq_from_biosample {
 				# check size, unless cutoff is -1
 				if [[ ! "~{subsample_cutoff}" = "-1" ]]
 				then
-					READ1=$(fdfind _1)
-					READ2=$(fdfind _2)
+					READ1=$(fdfind "$SRR_1")
+					READ2=$(fdfind "$SRR_2")
 					echo "Checking size of $READ1..."
 					fastq1size=$(du -m "$READ1" | cut -f1)
 					if [[ fastq1size -gt ~{subsample_cutoff} ]]
@@ -191,6 +189,7 @@ task pull_fq_from_biosample {
 					echo "    $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
 					if [ "~{fail_on_invalid}" == "true" ]
 					then
+						set -eux pipefail
 						exit 1
 					else
 						# don't fail, but give no output for this SRR
@@ -205,6 +204,7 @@ task pull_fq_from_biosample {
 						echo "    $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
 						if [ "~{fail_on_invalid}" == "true" ]
 						then
+							set -eux pipefail
 							exit 1
 						else
 							# could probably adapt the 3-case
@@ -223,8 +223,8 @@ task pull_fq_from_biosample {
 						mv "$THING" "temp/$THING"
 					done
 					cd temp
-					READ1=$(fdfind _1)
-					READ2=$(fdfind _2)
+					READ1=$(fdfind "$SRR_1")
+					READ2=$(fdfind "$SRR_2")
 					mv "$READ1" "../$READ1"
 					mv "$READ2" "../$READ2"
 					BARCODE=$(fdfind ".fastq")
