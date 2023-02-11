@@ -192,8 +192,8 @@ task pull_fq_from_biosample {
 					then
 						exit 1
 					else
-						# don't fail, but give no output
-						rm ./*.fastq
+						# don't fail, but give no output for this SRR
+						rm ./$SRR.fastq
 					fi
 				else
 					if [[ $NUMBER_OF_FQ != 3 ]]
