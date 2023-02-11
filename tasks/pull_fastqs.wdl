@@ -161,9 +161,7 @@ task pull_fq_from_biosample {
 					set -eux -o pipefail
 					exit 1
 				else
-					# don't fail, but give no output
-					rm ./*.fastq
-					exit 0
+					rm ./"$SRR"*.fastq
 				fi
 			fi
 
@@ -177,9 +175,7 @@ task pull_fq_from_biosample {
 					set -eux -o pipefail
 					exit 1
 				else
-					# don't fail, but give no output
-					rm ./*.fastq
-					exit 0
+					rm ./"$SRR"*.fastq
 				fi
 			fi
 
@@ -224,7 +220,7 @@ task pull_fq_from_biosample {
 						exit 1
 					else
 						# don't fail, but give no output for this SRR
-						rm "./$SRR.fastq"
+						rm ./"$SRR"*.fastq
 					fi
 				else
 					if [[ $NUMBER_OF_FQ != 3 ]]
@@ -239,7 +235,7 @@ task pull_fq_from_biosample {
 							exit 1
 						else
 							# could probably adapt the 3-case
-							rm ./*.fastq
+							rm ./"$SRR"*.fastq
 						fi
 
 					fi
