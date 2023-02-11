@@ -189,8 +189,8 @@ task pull_fq_from_biosample {
 					# check size, unless cutoff is -1
 					if [[ ! "~{subsample_cutoff}" = "-1" ]]
 					then
-						READ1=$(fdfind "$SRR_1.fastq")
-						READ2=$(fdfind "$SRR_2.fastq")
+						READ1=$(fdfind "$SRR_1.fastq" -d 1 --exclude "*_2*")
+						READ2=$(fdfind "$SRR_2.fastq" -d 1 --exclude "*_1*")
 						echo "Checking size of $READ1..."
 						fastq1size=$(du -m "$READ1" | cut -f1)
 						if [[ fastq1size -gt ~{subsample_cutoff} ]]
@@ -220,6 +220,7 @@ task pull_fq_from_biosample {
 							exit 1
 						else
 							# don't fail, but give no output for this SRR
+							remove=$(fdfind $SRR -d 1)
 							rm ./"$SRR"*.fastq
 						fi
 					else
@@ -250,8 +251,8 @@ task pull_fq_from_biosample {
 							mv "$THING" "temp/$THING"
 						done
 						cd temp
-						READ1=$(fdfind "$SRR_1.fastq")
-						READ2=$(fdfind "$SRR_2.fastq")
+						READ1=$(fdfind "$SRR_1.fastq" -d 1 --exclude "*_2*")
+						READ1=$(fdfind "$SRR_2.fastq" -d 1 --exclude "*_1*")
 						mv "$READ1" "../$READ1"
 						mv "$READ2" "../$READ2"
 						BARCODE=$(fdfind ".fastq")
@@ -281,8 +282,6 @@ task pull_fq_from_biosample {
 					fi
 				fi
 			fi
-
-			
 		done
 
 		# 3. append biosample name to the fastq filenames
