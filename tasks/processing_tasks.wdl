@@ -80,7 +80,7 @@ task cat_strings {
 	}
 
 	output {
-		outfile = out
+		File outfile = out
 	}
 }
 
