@@ -133,6 +133,9 @@ task pull_fq_from_biosample {
     	tar_outputs:         "Tarball all fastqs into one output file"
 	}
 
+	# an easy to test the find commands:
+	# touch ERR551697_1.fastq ERR551697_2.fastq ERR551697.fastq ERR551698_1.fastq ERR551698_2.fastq
+
 	command <<<
 		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
 		
@@ -187,8 +190,8 @@ task pull_fq_from_biosample {
 					# check size, unless cutoff is -1
 					if [[ ! "~{subsample_cutoff}" = "-1" ]]
 					then
-						READ1=$(fdfind "$SRR_1.fastq" -d 1 --exclude "*_2*")
-						READ2=$(fdfind "$SRR_2.fastq" -d 1 --exclude "*_1*")
+						READ1=$(fdfind "$SRR"_1.fastq -d 1)
+						READ2=$(fdfind "$SRR"_2.fastq -d 1)
 						echo "Checking size of $READ1..."
 						fastq1size=$(du -m "$READ1" | cut -f1)
 						if [[ fastq1size -gt ~{subsample_cutoff} ]]
@@ -249,11 +252,11 @@ task pull_fq_from_biosample {
 							mv "$THING" "temp/$THING"
 						done
 						cd temp
-						READ1=$(fdfind "$SRR_1.fastq" -d 1 --exclude "*_2*")
-						READ1=$(fdfind "$SRR_2.fastq" -d 1 --exclude "*_1*")
+						READ1=$(fdfind _1.fastq -d 1)
+						READ2=$(fdfind _2.fastq -d 1)
 						mv "$READ1" "../$READ1"
 						mv "$READ2" "../$READ2"
-						BARCODE=$(fdfind ".fastq")
+						BARCODE=$(fdfind ".fastq" -d 1)
 						rm "$BARCODE"
 						cd ..
 						echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
@@ -280,10 +283,6 @@ task pull_fq_from_biosample {
 					fi
 				fi
 			fi
-		# hijack fdfind ignoring things in a .gitignore so subsequent
-		# iterations' size checks do not pick up things that are off
-		# by one character
-		echo "$SRR_1.fastq" >> .gitignore
 		done
 
 		# 3. append biosample name to the fastq filenames
