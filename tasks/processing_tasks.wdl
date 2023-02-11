@@ -68,7 +68,7 @@ task cat_strings {
 	}
 
 	command <<<
-		printf "~{sep='\n' strings}"
+		printf "~{sep='\n' strings}" > "~{out}"
 	>>>
 
 	runtime {
@@ -77,6 +77,10 @@ task cat_strings {
 		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: 2
+	}
+
+	output {
+		outfile = out
 	}
 }
 
