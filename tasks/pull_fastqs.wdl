@@ -283,7 +283,7 @@ task pull_fq_from_biosample {
 		# hijack fdfind ignoring things in a .gitignore so subsequent
 		# iterations' size checks do not pick up things that are off
 		# by one character
-		"$SRR_1.fastq" >> .gitignore
+		echo "$SRR_1.fastq" >> .gitignore
 		done
 
 		# 3. append biosample name to the fastq filenames
