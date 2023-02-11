@@ -166,6 +166,7 @@ task pull_fq_from_biosample {
 				then
 					READ1=$(fdfind _1)
 					READ2=$(fdfind _2)
+					echo "Checking size of $READ1..."
 					fastq1size=$(du -m "$READ1" | cut -f1)
 					if [[ fastq1size -gt ~{subsample_cutoff} ]]
 					then
@@ -193,7 +194,7 @@ task pull_fq_from_biosample {
 						exit 1
 					else
 						# don't fail, but give no output for this SRR
-						rm ./$SRR.fastq
+						rm "./$SRR.fastq"
 					fi
 				else
 					if [[ $NUMBER_OF_FQ != 3 ]]
@@ -234,6 +235,7 @@ task pull_fq_from_biosample {
 					# check size -- if very large, we should subsample
 					if [[ ! "~{subsample_cutoff}" = "-1" ]]
 					then
+						echo "Checking size of $READ1..."
 						fastq1size=$(du -m "$READ1" | cut -f1)
 						if (( fastq1size > ~{subsample_cutoff} ))
 						then
