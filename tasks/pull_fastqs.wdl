@@ -312,7 +312,7 @@ task pull_fq_from_biosample {
 	output {
 		Array[File?] fastqs = glob("*.fastq")
 		File? tarball_fastqs = "~{biosample_accession}.tar"
-		File results = "~{biosample_accession}_pull_results.txt"
+		String results = read_string("~{biosample_accession}_pull_results.txt")
 	}
 }
 
