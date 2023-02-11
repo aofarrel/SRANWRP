@@ -47,10 +47,24 @@ Three of these samples, even after being downsampled, go very slowly during cloc
 * ERS457530: Same as SAMEA2534128, should have equivalent output
 
 ## sample_edge_cases_extended
-* SAMEA3358985: PacBio
-* SAMN0010326: Has three SRRs:
+* ERS457530: Same as SAMEA2534128, should have equivalent output
+* SAMEA2534128: Two runs with different ERX accessions
+* SAMEA11744633
+* SAMEA3358985: Single PacBio run
+* SAMN00103264: Has three runs, and they're a bit unusual
     * SRR12006053: Two very large (2 GB) fastqs
     * SRR032851: Relatively normal
     * SRR023456: One fastq
 * SAMN02045564: Has four SRRs, only the first of which has more than one fastq file
+* SAMN02599053: Two runs with the same ERX accession
+* SAMN04276653: Two runs, one of which has only one fastq
+* SAMN07190145
 * SAMN09090431: Has one SRR that has three fastqs, and the two normal ones are kind of big
+* SAMN27519992
+* SAMN27519993
+* SAMN29944050
+* SRS15536530: SRS accession
+
+
+
+
