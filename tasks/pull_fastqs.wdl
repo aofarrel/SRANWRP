@@ -150,8 +150,39 @@ task pull_fq_from_biosample {
 		for SRR in "${SRRS_ARRAY[@]}"
 		do
 			echo "searching $SRR"
+
 			prefetch "$SRR"
+			exit=$?
+			if [[ ! $exit = 0 ]]
+			then
+				echo "ERROR -- prefetch returned $exit"
+				if [[ "~{fail_on_invalid}" = "true" ]]
+				then
+					set -eux -o pipefail
+					exit 1
+				else
+					# don't fail, but give no output
+					rm ./*.fastq
+					exit 0
+				fi
+			fi
+
 			fasterq-dump "$SRR"
+			exit=$?
+			if [[ ! $exit = 0 ]]
+			then
+				echo "ERROR -- prefetch returned $exit"
+				if [[ "~{fail_on_invalid}" = "true" ]]
+				then
+					set -eux -o pipefail
+					exit 1
+				else
+					# don't fail, but give no output
+					rm ./*.fastq
+					exit 0
+				fi
+			fi
+
 			rm -rf "${SRR:?}/"
 			NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
 			IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
