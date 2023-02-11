@@ -144,9 +144,7 @@ task pull_fq_from_biosample {
 		SRRS_ARRAY=($SRRS_STR)
 
 		# 2. loop through every SRA accession and pull the fastqs
-		# TODO: This loop doesn't work as expected. It's sending the whole array.
-		# fasterq-dump and prefetch can handle that, but it likely messes up the
-		# file check.
+		touch .gitignore
 		for SRR in "${SRRS_ARRAY[@]}"
 		do
 			echo "searching $SRR"
@@ -169,8 +167,8 @@ task pull_fq_from_biosample {
 			exit=$?
 			if [[ ! $exit = 0 ]]
 			then
-				echo "ERROR -- fasterqdump returned $exit"
-				echo "    $SRR: FAIL -- fasterqdump did not succeed"
+				echo "ERROR -- fasterq-dump returned $exit"
+				echo "    $SRR: FAIL -- fasterqdump did not succeed" >> ~{biosample_accession}_pull_results.txt
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
 					set -eux -o pipefail
@@ -220,8 +218,8 @@ task pull_fq_from_biosample {
 							exit 1
 						else
 							# don't fail, but give no output for this SRR
-							remove=$(fdfind $SRR -d 1)
-							rm ./"$SRR"*.fastq
+							remove=$(fdfind "$SRR" -d 1)
+							rm "./$remove"
 						fi
 					else
 						if [[ $NUMBER_OF_FQ != 3 ]]
@@ -282,6 +280,10 @@ task pull_fq_from_biosample {
 					fi
 				fi
 			fi
+		# hijack fdfind ignoring things in a .gitignore so subsequent
+		# iterations' size checks do not pick up things that are off
+		# by one character
+		"$SRR_1.fastq" >> .gitignore
 		done
 
 		# 3. append biosample name to the fastq filenames
