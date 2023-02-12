@@ -37,13 +37,14 @@ apt-get install -y wget && \
 apt-get install -y zlib1g-dev && \
 apt-get clean
 
-# good to have: bc, cpan, curl, fd-find, pigz, tree, vim
+# good to have: bc, cpan, curl, fd-find, pigz, screen, tree, vim
 RUN apt-get update && \
 apt-get install -y bc && \
 apt-get install -y cpanminus && \
 apt-get install -y curl && \
 apt-get install -y fd-find && \
 apt-get install -y pigz && \
+apt-get install -y screen && \
 apt-get install -y tree && \
 apt-get install -y vim && \
 apt-get clean
