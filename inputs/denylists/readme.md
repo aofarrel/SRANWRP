@@ -5,8 +5,9 @@ In release 1.1.7, improvements to the pull_fq_from_biosample task means that a f
 
 # Why Deny?
 
-## some reads within sample fail prefetch/faster-dump 3.0.1
+## Some reads are invalid (partialfail_*.txt)
 *pull_fq_from_biosample can handle these sample as of 1.1.7*  
+Some reads within these sample fail prefetch/faster-dump 3.0.1, but not all of them.
 
 ### prefetch failure
 error:
@@ -23,33 +24,19 @@ SAMEA3231653 has two reads that do succeed, and SAMEA3231746 has one that does s
 I asked NLM about ERR760606 and was told there are errors in the run, and that prevented NCBI SRA from processing it properly. They also [linked the EBI version](https://www.ebi.ac.uk/ena/browser/view/ERR760606?dataType=&show=xrefs), where it can still be accessed. It's possible that `curl -s -X POST "https://locate.ncbi.nlm.nih.gov/sdl/2/locality?acc=[some_run_accesion]"` could be used to spot weird runs like this at runtime.
 
 ### mixed accession types
-These BioSamples have some Illumina and some PacBio runs within them.
+These BioSamples have some Illumina and some PacBio runs within them. fasterq-dump can't handle PacBio so it throws an error.
 ```
-SRR5879396 (SAMN07312468, no lineage)
 SRR17234897 (SAMN24042990, no lineage)
-(SAMN03257097, L3)
+SRR3668213 (SAMN03257097, L3)
+SRR3668214 (SAMN03257097, L3)
+SRR5879396 (SAMN07312468, no lineage)
 ```
 
-## all reads within sample fail prefetch-3.0.1 or fasterq-dump-3.0.1
-
-### unknown error
-error:
-```
-2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c run_producer_pool() : processed lookup rows: 35 of 36
-2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c execute_lookup_production() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
-2023-02-17T21:19:39 fasterq-dump.3.0.1 err: fasterq-dump.c produce_lookup_files() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
-```
-reads affected (both from SRS544089/SAMN02580571):
-```
-SRR1180610
-SRR1180764
-```
-
-### `int: no error - failed to verify`
-ERR2179830 (SAMEA104357625, L1.2.1)
-ERR2179842 (SAMEA104357637, L3)
+## All reads fail prefetch or fasterq-dump (allerror_*.txt)
+All reads within these samples fail prefetch-3.0.1 or fasterq-dump-3.0.1
 
 ### `err: row #x : READ.len(x) != QUALITY.len(x) (F)`
+```
 ERR234214 (SAMEA1877221, L1.2.1)  
 ERR234218 (SAMEA1877166, L3)
 ERR234219 (SAMEA1877131, L3)
@@ -65,8 +52,27 @@ ERR538430 (SAMEA2609934, L2)
 ERR538431 (SAMEA2609935, L2)  
 ERR538432 (SAMEA2609936, L2)  
 SRR960962 (SAMN02339318, L2)  
+```
 
-## series of L4 accessions set up with "sample groups"
+### `int: no error - failed to verify`
+```
+ERR2179830 (SAMEA104357625, L1.2.1)
+ERR2179842 (SAMEA104357637, L3)
+```
+
+### unknown error
+error:
+```
+2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c run_producer_pool() : processed lookup rows: 35 of 36
+2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c execute_lookup_production() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
+2023-02-17T21:19:39 fasterq-dump.3.0.1 err: fasterq-dump.c produce_lookup_files() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
+```
+```
+SRR1180610 (SAMN02580571)
+SRR1180764 (SAMN02580571)
+```
+
+## Accessions within sample groups (samplegroups_*.txt)
 If you run the get-sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
 
 It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particularly odd, appearing not only in multiple groups below, but also multiple unrelated studies.
@@ -137,9 +143,6 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007739    	    | SAMEA968139    |
 | ERS007741    	    | SAMEA968138    |
 | ERS007743    	    | SAMEA968101    |
-
-
-
 
 ### sample group C
 | run       	| lineage       |
@@ -234,25 +237,25 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007703         | SAMEA968201    |
 | ERS007704         | SAMEA968195    |
 
-## fails later down the pipeline
+## Fails later down the pipeline (somewheredownthelane_*.txt)
 
 ### fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
-ERR3063110
-ERR3063109
-ERR3063108
-ERR3063107
 ERR3063106
+ERR3063107
+ERR3063108
+ERR3063109
+ERR3063110
 
 ## not on google mirror, seem to have no data, do not have a biosample accession
-ERR3256208
 ERR1274706
+ERR181439
+ERR181441
 ERR1873513
+ERR3256208
 ERR760606
 ERR760780
 ERR760898
 ERR845308
-ERR181439
-ERR181441
 
 ## appear in list Z, but aren't TB (biosample: SRS000422/SAMN00000188/307)
 SRR001703
