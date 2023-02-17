@@ -1,52 +1,48 @@
-# Which list to use?
-denylist_samples.txt is currently more complete, except for the ones that lack a biosample accession entirely.
+# denylists
+A list of denylists of samples known to be problematic when fed through [myco_sra](https://github.com/aofarrel/myco) and/or this repo's pull_fastqs.wdl (specifically the pull_fq_from_biosample task). denylist_samples.txt is currently more complete, except for the ones that lack a BioSample accession entirely.
+
+In release 1.1.7, improvements to the pull_fq_from_biosample task means that a few more edge cases are tolerated. Most samples should still be skipped entirely because they have no useful data, but a handful have at least one acceptable read accession and don't need to be avoided entirely anymore.
 
 # Why Deny?
 
-## very large number of runs
-SAMEA968096 (L3)   
-SAMEA968095 (L3)  
+## some reads within sample fail prefetch/faster-dump 3.0.1
+*pull_fq_from_biosample can handle these sample as of 1.1.7*  
 
-## fails prefetch-3.0.1 or fasterq-dump-3.0.1
-
-### mixed run types
-SAMN24042990 (SRR17234897 is PacBio, SRR17234904 is Illumina)
-
-### `prefetch.3.0.1 err: name not found while resolving query within virtual file system module - failed to resolve accession 'x' - no data ( 404 )`
-ERR760606 (SAMEA3231653, L4.1) -- the other two runs for this sample seem okay  
-ERR760898 (SAMEA3231746, L4.1) -- other run for this sample seems okay  
-
-I asked NLM about ERR760606 specifically, and got this response (shoutout to their support team by the way!)
-
-> This is an odd case - the issue is that there are errors in the run, that prevented NCBI SRA from processing it properly. You will need to check ENA site to get the original file to see it yourself.
-
-They also [linked the EBI version](https://www.ebi.ac.uk/ena/browser/view/ERR760606?dataType=&show=xrefs), and indicated this could be queried from the command line. It might be worth implementing something like this in the pull task in the future. 
-
+### prefetch failure
+error:
 ```
-$ curl -s -X POST "https://locate.ncbi.nlm.nih.gov/sdl/2/locality?acc=ERR760606"
-[
-    {
-        "accession": "ERR760606",
-        "status": 200,
-        "message": "ok",
-        "files": [
-            {
-                "object": "srapub_files|10620372",
-                "type": "fastq",
-                "accession": "ERR760606",
-                "name": "1206_ATTCCT_L001_R2_001.gz",
-                "size": 522811080,
-                "md5": "1c9a4a85cea7bc17410959e0b452acae",
-                "modificationDate": "2015-02-21T00:30:42Z",
-                "locality": [
-                    {
-                        "service": "ebi"
-                    }
-                ]
-            }
-        ]
-    }
-]
+`prefetch.3.0.1 err: name not found while resolving query within virtual file system module - failed to resolve accession 'x' - no data ( 404 )`
+```
+reads affected:
+```
+ERR760606 (SAMEA3231653, L4.1)
+ERR760898 (SAMEA3231746, L4.1)
+```  
+SAMEA3231653 has two reads that do succeed, and SAMEA3231746 has one that does succeed. 
+
+I asked NLM about ERR760606 and was told there are errors in the run, and that prevented NCBI SRA from processing it properly. They also [linked the EBI version](https://www.ebi.ac.uk/ena/browser/view/ERR760606?dataType=&show=xrefs), where it can still be accessed. It's possible that `curl -s -X POST "https://locate.ncbi.nlm.nih.gov/sdl/2/locality?acc=[some_run_accesion]"` could be used to spot weird runs like this at runtime.
+
+### mixed accession types
+These BioSamples have some Illumina and some PacBio runs within them.
+```
+SRR5879396 (SAMN07312468, no lineage)
+SRR17234897 (SAMN24042990, no lineage)
+(SAMN03257097, L3)
+```
+
+## all reads within sample fail prefetch-3.0.1 or fasterq-dump-3.0.1
+
+### unknown error
+error:
+```
+2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c run_producer_pool() : processed lookup rows: 35 of 36
+2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c execute_lookup_production() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
+2023-02-17T21:19:39 fasterq-dump.3.0.1 err: fasterq-dump.c produce_lookup_files() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
+```
+reads affected (both from SRS544089/SAMN02580571):
+```
+SRR1180610
+SRR1180764
 ```
 
 ### `int: no error - failed to verify`
@@ -55,28 +51,27 @@ ERR2179842 (SAMEA104357637, L3)
 
 ### `err: row #x : READ.len(x) != QUALITY.len(x) (F)`
 ERR234214 (SAMEA1877221, L1.2.1)  
-ERR538429 (SAMEA2609933, L2)  
-ERR538424 (SAMEA2609928, L2)  
-ERR538426 (SAMEA2609930, L2)  
-ERR538425 (SAMEA2609929, L2)  
-ERR538430 (SAMEA2609934, L2)  
-ERR538428 (SAMEA2609932, L2)  
-ERR538431 (SAMEA2609935, L2)  
-ERR538432 (SAMEA2609936, L2)  
-ERR538427 (SAMEA2609931, L2)  
+ERR234218 (SAMEA1877166, L3)
+ERR234219 (SAMEA1877131, L3)
 ERR538422 (SAMEA2609926, L2)  
 ERR538423 (SAMEA2609927, L2)  
+ERR538424 (SAMEA2609928, L2)  
+ERR538425 (SAMEA2609929, L2)  
+ERR538426 (SAMEA2609930, L2)  
+ERR538427 (SAMEA2609931, L2)  
+ERR538428 (SAMEA2609932, L2)  
+ERR538429 (SAMEA2609933, L2)  
+ERR538430 (SAMEA2609934, L2)  
+ERR538431 (SAMEA2609935, L2)  
+ERR538432 (SAMEA2609936, L2)  
 SRR960962 (SAMN02339318, L2)  
-ERR234219 (SAMEA1877131, L3)
-ERR234218 (SAMEA1877166, L3)
-
-### sample has different run types
-SAMN03257097 has four runs associated with it. Two are PacBio, two are Illumina.
 
 ## series of L4 accessions set up with "sample groups"
-If you run the sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
+If you run the get-sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
 
 It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particularly odd, appearing not only in multiple groups below, but also multiple unrelated studies.
+
+SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and were originally thrown out for having 12 reads returned. Since some of those reads are supposedly lineage 4.1, according to the lineage-4 specific file which was run-based (unlike the other files used to make my lineage lists, which were usually sample-based from the start), you should consider the lineage of sample in these groups to be suspect.
 
 ### sample group A
 | run       	| lineage
@@ -239,7 +234,9 @@ It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particula
 | ERS007703         | SAMEA968201    |
 | ERS007704         | SAMEA968195    |
 
-## fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
+## fails later down the pipeline
+
+### fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
 ERR3063110
 ERR3063109
 ERR3063108
@@ -261,10 +258,6 @@ ERR181441
 SRR001703
 SRR001704
 SRR001705
-
-## fails fasterq-dump3.0.0 (biosample: SRS544089/SAMN02580571)
-SRR1180610
-SRR1180764
 
 ## known to be TN-Seq (by sample, since there's so many of them)
 SAMN03859850
