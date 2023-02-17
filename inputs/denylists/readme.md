@@ -1,7 +1,7 @@
 # denylists
 A list of denylists of samples known to be problematic when fed through [myco_sra](https://github.com/aofarrel/myco) and/or this repo's pull_fastqs.wdl (specifically the pull_fq_from_biosample task). denylist_samples.txt is currently more complete, except for the ones that lack a BioSample accession entirely.
 
-In release 1.1.7, improvements to the pull_fq_from_biosample task means that a few more edge cases are tolerated. Most samples should still be skipped entirely because they have no useful data, but a handful have at least one acceptable read accession and don't need to be avoided entirely anymore.
+In release 1.1.7, improvements to the pull_fq_from_biosample task means that a few more edge cases are tolerated. Most samples should still be skipped entirely because they have no useful data, but a handful have at least one acceptable read accession and don't need to be avoided entirely anymore. Thus, we have **denylist_samples.txt** which is the sorted concatenation of allfail_samples.txt, samplegroup_samples.txt, and somewheredownthelane_samples.txt (ie, does not include partialfail_samples.txt).
 
 # Why Deny?
 
