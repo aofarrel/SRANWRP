@@ -13,7 +13,7 @@ tb_a3 files are derivied from a search of SRA circa November 2022. It represents
 * lineage/cat.py and filter.sh -- small scripts for putting some files together
 * lineage/L*: various lineages -- pulled by hand, so there's a chance a few are off
 
-### very import caveat
+### caveat
 When we say something "has no lineage information," what we actually mean is that it isn't on any of the TSVs from which lineage/L*.txt are derived and by extension are not in any lineage/L*.txt file. There's bound to be samples on SRA that do have lineage information that weren't on those TSVs -- in fact we already found some lineage 3 lurking around. Right now, we're deciding not to retroactively update the L*.txt files when additional samples with lineage information are found. By extension, tb_a3_no_lineage.txt and its derivatives may have some samples that actually do have lineage information (but not lineage information we were aware of when making the lineage/L*.txt files).
 
 ## tb_a3

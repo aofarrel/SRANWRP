@@ -239,12 +239,18 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 
 ## Fails later down the pipeline (somewheredownthelane_*.txt)
 
-### fails the variant caller for unknown reason (biosample: ERS3032737/SAMEA5225290)
+### fails in variant calling
+
+BioSample ERS3032737/SAMEA5225290 has a few of these...
+```
 ERR3063106
 ERR3063107
 ERR3063108
 ERR3063109
 ERR3063110
+```
+
+But SRR5818408 (SAMN07344516) and SRR5818458 (SAMN07344554) also fail.
 
 ## not on google mirror, seem to have no data, do not have a biosample accession
 ERR1274706
