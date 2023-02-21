@@ -1,7 +1,7 @@
 # denylists
 A list of denylists of samples known to be problematic when fed through [myco_sra](https://github.com/aofarrel/myco) and/or this repo's pull_fastqs.wdl (specifically the pull_fq_from_biosample task). denylist_samples.txt is currently more complete, except for the ones that lack a BioSample accession entirely.
 
-In release 1.1.7, improvements to the pull_fq_from_biosample task means that a few more edge cases are tolerated. Most samples should still be skipped entirely because they have no useful data, but a handful have at least one acceptable read accession and don't need to be avoided entirely anymore. Thus, we have **denylist_samples.txt** which is the sorted concatenation of allfail_samples.txt, samplegroup_samples.txt, and somewheredownthelane_samples.txt (ie, does not include partialfail_samples.txt).
+In release 1.1.7, improvements to the pull_fq_from_biosample task means that a few more edge cases are tolerated. Most samples should still be skipped entirely because they have no useful data, but a handful have at least one acceptable read accession and don't need to be avoided entirely anymore. Thus, we have **denylist_samples.txt** which is the sorted concatenation of allerror_samples.txt, samplegroup_samples.txt, and somewheredownthelane_samples.txt (ie, does not include partialfail_samples.txt).
 
 # Why Deny?
 
@@ -26,10 +26,18 @@ I asked NLM about ERR760606 and was told there are errors in the run, and that p
 ### mixed accession types
 These BioSamples have some Illumina and some PacBio runs within them. fasterq-dump can't handle PacBio so it throws an error.
 ```
+ERR3825345 (SAMEA5803801, no lineage)
+SRR17231608 (SAMN09651729, no lineage)
+SRR17234893 (SAMN24039640, no lineage)
 SRR17234897 (SAMN24042990, no lineage)
 SRR3668213 (SAMN03257097, L3)
 SRR3668214 (SAMN03257097, L3)
+SRR3668218 (SAMN03253093, no lineage)
+SRR3668219 (SAMN03253093, no lineage)
 SRR5879396 (SAMN07312468, no lineage)
+SRR8186770 (SAMN10417149, no lineage)
+SRR8186771 (SAMN10417149, no lineage)
+SRR8186772 (SAMN10417149, no lineage)
 ```
 
 ## All reads fail prefetch or fasterq-dump (allerror_*.txt)
@@ -40,6 +48,7 @@ All reads within these samples fail prefetch-3.0.1 or fasterq-dump-3.0.1
 ERR234214 (SAMEA1877221, L1.2.1)  
 ERR234218 (SAMEA1877166, L3)
 ERR234219 (SAMEA1877131, L3)
+ERR234231 (SAMEA1877282, no lineage)
 ERR538422 (SAMEA2609926, L2)  
 ERR538423 (SAMEA2609927, L2)  
 ERR538424 (SAMEA2609928, L2)  
