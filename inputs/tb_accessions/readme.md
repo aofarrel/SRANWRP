@@ -26,6 +26,8 @@ This has randomized subsets of tb_a3. All of them are derivied from tb_a3_pool, 
 
 tb_a3_rand00100.txt was the first of our tests and wasn't from the pool file, but just happened to have no samples with lineage information. Everything else has been derived from the pool file, and upon creation, modifies the pool file accordingly.
 
+Some files have less the number of samples than you may expect from the file name. This is because they've been filtered via the denylists -- for example, SAMN18648259 was discovered to be an issue when running an older version of tb_a3_rand00500.txt, so it's not in that file anymore.
+
 ### tb_a3 creation process
 On SRA's website, the following search was performed.
 
