@@ -248,21 +248,21 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 
 ## Fails later down the pipeline (somewheredownthelane_*.txt)
 
+We only keep track of samples here, as reads have already been combined at this point.
+
 ### fails in variant calling
 
-BioSample ERS3032737/SAMEA5225290 has a few of these...
 ```
-ERR3063106
-ERR3063107
-ERR3063108
-ERR3063109
-ERR3063110
+SAMEA5225290
+SAMEA2534285
+SAMN07344516
+SAMN07344518
+SAMN07344554
 ```
 
 If you run `java -Xmx1000m -jar /bioinf-tools/Trimmomatic-0.36/trimmomatic-0.36.jar PE -threads 1 /mounted/SAMEA2534285_1.decontam.fq /mounted/SAMEA2534285_2.decontam.fq var_call_SAMEA2534285/trimmed_reads.0.1.fq.gz /dev/null var_call_SAMEA2534285/trimmed_reads.0.2.fq.gz /dev/null ILLUMINACLIP:/bioinf-tools/Trimmomatic-0.36/adapters/TruSeq3-PE-2.fa:2:30:10  MINLEN:50 -phred33` on SAMEA2534285 after decontamination, you'll note the entire thing is trimmed. Understandably, this breaks when variants are called on the resulting empty files. It's possible this wouldn't happen if we didn't download its one read, ERR551913, which is normally 1149 MB, but for now we're adding it to the denylists.
 
-SRR5818408 (SAMN07344516) and SRR5818458 (SAMN07344554) are also known to fail, but we haven't looked deeply into why that is.
-
+The other samples on this list are tougher nuts to crack.
 
 
 ## miscellanous
