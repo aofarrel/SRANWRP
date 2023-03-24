@@ -170,9 +170,26 @@ task cat_files {
 			fi
 		done
 	else
-		# no removal guide
+		# no removal guide, so we keep things simple
 		echo "No removal guide found"
 		cat ~{sep=" " files} >> "~{out_filename}"
+
+		# output first lines if we need to
+		if [[ "~{output_first_lines}" = "true" ]]
+		then
+			FILES=(~{sep=" " files})
+			for FILE in "${FILES[@]}"
+			do
+				touch firstlines.txt
+				if [[ "~{strip_first_line_first_char}" = "true" ]]
+				then
+					firstline=$(head -1 "$FILE")
+					echo "${firstline:1}" >> firstlines.txt
+				else
+					head -1 "$FILE" >> firstlines.txt
+				fi
+			done
+		fi
 	fi
 
 	if [[ "~{keep_only_unique_lines}" = "true" ]]
