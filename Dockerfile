@@ -1,9 +1,3 @@
-########################## WARNING ##########################
-# This code exits an interactive program improperly.
-# It may cause your terminal to act in unexpected ways...
-# The image itself is fine, but be cautious when building it!
-#############################################################
-
 FROM ubuntu:jammy
 
 # hard prereqs
@@ -72,10 +66,6 @@ RUN git clone https://github.com/lh3/seqtk.git && cd seqtk && make && cd .. && m
 
 # grab premade sra-tool binaries
 RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.1-ubuntu64.tar.gz
-
-# attempt configure vdb for sra-tool
-# !!this will cause a segfault!!
-RUN x | vdb-config --interactive || :
 
 # fix some perl stuff (might not be needed but I'm taking no chances)
 RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recursive && cd ..
