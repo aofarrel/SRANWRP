@@ -286,3 +286,6 @@ ERR845308
 SRR001703
 SRR001704
 SRR001705
+
+## It's just too darn big
+SAMN17359332 has [a lot](https://www.ncbi.nlm.nih.gov/sra?LinkName=biosample_sra&from_uid=17359332) of read accessions associated with it. Eventually this blows through our disk size estimate.
