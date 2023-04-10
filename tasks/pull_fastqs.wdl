@@ -133,7 +133,7 @@ task pull_fq_from_biosample {
     	tar_outputs:         "Tarball all fastqs into one output file"
 	}
 
-	# an easy to test the find commands:
+	# an easy way to test the find commands:
 	# touch ERR551697_1.fastq ERR551697_2.fastq ERR551697.fastq ERR551698_1.fastq ERR551698_2.fastq
 
 	command <<<
@@ -147,7 +147,6 @@ task pull_fq_from_biosample {
 		SRRS_ARRAY=($SRRS_STR)
 
 		# 2. loop through every SRA accession and pull the fastqs
-		touch .gitignore
 		for SRR in "${SRRS_ARRAY[@]}"
 		do
 			echo "searching $SRR"
