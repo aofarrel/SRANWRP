@@ -145,6 +145,18 @@ task pull_fq_from_biosample {
 			xtract -pattern DocumentSummary -element Run@acc)
 
 		SRRS_ARRAY=($SRRS_STR)
+		
+		if [[ SRRS_STR = "" ]]
+		do
+			uh_oh=$("HUH -- edirect did not return any run accessions")
+			sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
+			if [[ "~{fail_on_invalid}" = true ]]
+			then
+				set -eux -o pipefail
+				exit 1
+			else
+				exit 0
+		done
 
 		# 2. loop through every SRA accession and pull the fastqs
 		for SRR in "${SRRS_ARRAY[@]}"
@@ -301,6 +313,9 @@ task pull_fq_from_biosample {
 				FQ=$(fdfind ".fastq")
 				tar -rf "~{biosample_accession}.tar" "$FQ"
 			fi
+		else
+			everything_failed=$("~{biosample_accession}: FAIL")
+			sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
 		fi
 		
 	>>>
