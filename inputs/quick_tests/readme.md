@@ -48,6 +48,10 @@ Three of these samples, even after being downsampled, go very slowly during cloc
 
 ## sample_edge_cases_extended
 * ERS457530: Same as SAMEA2534128, should have equivalent output
+* SAMEA10030610: No run accession with edirect
+* SAMEA10030619: No run accession with edirect
+* SAMEA104172432: No run accession with edirect
+* SAMEA104172457: No run accession with edirect
 * SAMEA2534128: Two runs with different ERX accessions
 * SAMEA11744633
 * SAMEA3358985: Single PacBio run
