@@ -67,7 +67,7 @@ Three of these samples, even after being downsampled, go very slowly during cloc
 * SAMN18648259: One run to downsample from 474 MB
 * SAMN24042990: Has one SRR that is Illumina, and one that is PacBio
 * SAMN27519992: One run to downsample from 1162 MB
-* SAMN27519993: Three runs, and to get downsampled from 452 MB
+* SAMN27519993: ~~Three runs, and to get downsampled from 452 MB~~ 
 * SAMN29944050: No run accession with edirect
 * SRS15536530: SRS accession
 
