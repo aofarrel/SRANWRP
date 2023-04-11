@@ -30,7 +30,13 @@ workflow BIOSAMP_YOINK {
   		}
 	}
 
+	call sranwrp_processing.cat_strings as cat_reports {
+		input:
+			strings = pull.results
+	}
+
 	output {
 		Array[Array[File]] all_fastqs = select_all(paired_fastqs)
+		File pull_report = cat_reports.outfile
 	}
 }
