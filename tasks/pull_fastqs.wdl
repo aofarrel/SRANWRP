@@ -156,7 +156,7 @@ task pull_fq_from_biosample {
 		
 		if [[ "$SRRS_STR" = "" ]]
 		then
-			uh_oh=$(echo "HUH -- edirect did not return any run accessions")
+			uh_oh=$(echo "~{biosample_accession}: HUH -- edirect did not return any run accessions")
 			sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
 			if [[ "~{fail_on_invalid}" = true ]]
 			then
