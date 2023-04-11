@@ -156,7 +156,7 @@ task pull_fq_from_biosample {
 		
 		if [[ "$SRRS_STR" = "" ]]
 		then
-			uh_oh=$("HUH -- edirect did not return any run accessions")
+			uh_oh=$(echo "HUH -- edirect did not return any run accessions")
 			sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
 			if [[ "~{fail_on_invalid}" = true ]]
 			then
@@ -314,7 +314,7 @@ task pull_fq_from_biosample {
 		NUMBER_OF_FQ=$(fdfind ".fastq" | wc -l)
 		if [[ ! $NUMBER_OF_FQ == 0 ]]
 		then
-			this_sample=$("~{biosample_accession}: YAY")
+			this_sample=$(echo "~{biosample_accession}: YAY")
 			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
 
 			# append biosample name to the fastq filenames
@@ -330,7 +330,7 @@ task pull_fq_from_biosample {
 				tar -rf "~{biosample_accession}.tar" "$FQ"
 			fi
 		else
-			this_sample=$("~{biosample_accession}: NAY")
+			this_sample=$(echo "~{biosample_accession}: NAY")
 			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
 		fi
 		

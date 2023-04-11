@@ -53,7 +53,7 @@ Three of these samples, even after being downsampled, go very slowly during cloc
 * SAMEA104172432: No run accession with edirect
 * SAMEA104172457: No run accession with edirect
 * SAMEA2534128: Two runs with different ERX accessions
-* SAMEA11744633
+* SAMEA11744633: SAME that returns an ERR
 * SAMEA3358985: Single PacBio run
 * SAMN00103264: Has three runs, and they're a bit unusual
     * SRR12006053: Two very large (2 GB) fastqs
@@ -62,13 +62,13 @@ Three of these samples, even after being downsampled, go very slowly during cloc
 * SAMN02045564: Has four SRRs, only the first of which has more than one fastq file
 * SAMN02599053: Two runs with the same ERX accession
 * SAMN04276653: Two runs, one of which has only one fastq
-* SAMN07190145
+* SAMN07190145: One run to downsample from 572 MB
 * SAMN09090431: Has one SRR that has three fastqs, and the two normal ones are kind of big
-* SAMN18648259
+* SAMN18648259: One run to downsample from 474 MB
 * SAMN24042990: Has one SRR that is Illumina, and one that is PacBio
-* SAMN27519992
-* SAMN27519993
-* SAMN29944050
+* SAMN27519992: One run to downsample from 1162 MB
+* SAMN27519993: Three runs, and to get downsampled from 452 MB
+* SAMN29944050: No run accession with edirect
 * SRS15536530: SRS accession
 
 
