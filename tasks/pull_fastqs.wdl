@@ -132,6 +132,14 @@ task pull_fq_from_biosample {
     	subsample_seed:      "Seed to use when subsampling large fastqs"
     	tar_outputs:         "Tarball all fastqs into one output file"
 	}
+	
+	# Statuses:
+	# * ERROR: this run caused fasterq-dump or prefetch to throw an error
+	# * PASS:  this run passed
+	# * FAIL:  this run failed
+	# * YAY:   this sample had at least one passing read
+	# * NAY:   this sample does not have any passing reads
+	# * HUH:   this sample did not return any run accessions (usually an issue with edirect)
 
 	# an easy way to test the find commands:
 	# touch ERR551697_1.fastq ERR551697_2.fastq ERR551697.fastq ERR551698_1.fastq ERR551698_2.fastq
@@ -167,7 +175,8 @@ task pull_fq_from_biosample {
 			exit=$?
 			if [[ ! $exit = 0 ]]
 			then
-				echo "ERROR -- prefetch returned $exit"
+				rc_prefetch=$(    "$SRR: ERROR -- prefetch returned $exit")
+				echo "$rc_prefetch"
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
 					set -eux -o pipefail
@@ -175,6 +184,8 @@ task pull_fq_from_biosample {
 				else
 					rm ./"$SRR"*.fastq
 				fi
+			else
+				rc_prefetch=$("")
 			fi
 
 			fasterq-dump "$SRR"
@@ -182,7 +193,7 @@ task pull_fq_from_biosample {
 			if [[ ! $exit = 0 ]]
 			then
 				echo "ERROR -- fasterq-dump returned $exit"
-				echo "    $SRR: FAIL -- fasterqdump did not succeed" >> ~{biosample_accession}_pull_results.txt
+				echo "    $SRR: ERROR -- fasterqdump returned $exit" >> ~{biosample_accession}_pull_results.txt
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
 					set -eux -o pipefail
@@ -302,6 +313,8 @@ task pull_fq_from_biosample {
 		NUMBER_OF_FQ=$(fdfind ".fastq" | wc -l)
 		if [[ ! $NUMBER_OF_FQ == 0 ]]
 		then
+			this_sample=$("~{biosample_accession}: YAY")
+			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
 			for fq in *.fastq
 				do
 					mv -- "$fq" "~{biosample_accession}_${fq%.fastq}.fastq"
@@ -314,8 +327,8 @@ task pull_fq_from_biosample {
 				tar -rf "~{biosample_accession}.tar" "$FQ"
 			fi
 		else
-			everything_failed=$("~{biosample_accession}: FAIL")
-			sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
+			this_sample=$("~{biosample_accession}: NAY")
+			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
 		fi
 		
 	>>>
