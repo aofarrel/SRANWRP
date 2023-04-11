@@ -30,7 +30,7 @@ workflow BIOSAMP_YOINK {
   		}
 	}
 
-	call sranwrp_processing.cat_strings as cat_reports {
+	call processingtasks.cat_strings as cat_reports {
 		input:
 			strings = pull.results
 	}
