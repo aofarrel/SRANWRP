@@ -147,15 +147,15 @@ task pull_fq_from_biosample {
 	command <<<
 		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
 		
-		# 1. get SRA accessions from biosample
+		# get SRA accessions from biosample
 		SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
 			elink -target sra | efetch -format docsum | \
 			xtract -pattern DocumentSummary -element Run@acc)
 
 		SRRS_ARRAY=($SRRS_STR)
 		
-		if [[ SRRS_STR = "" ]]
-		do
+		if [[ "$SRRS_STR" = "" ]]
+		then
 			uh_oh=$("HUH -- edirect did not return any run accessions")
 			sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
 			if [[ "~{fail_on_invalid}" = true ]]
@@ -164,19 +164,19 @@ task pull_fq_from_biosample {
 				exit 1
 			else
 				exit 0
-		done
+			fi
+		fi
 
-		# 2. loop through every SRA accession and pull the fastqs
+		# loop through every SRA accession and pull the fastqs
 		for SRR in "${SRRS_ARRAY[@]}"
 		do
 			echo "searching $SRR"
 
 			prefetch "$SRR"
-			exit=$?
-			if [[ ! $exit = 0 ]]
+			rc_prefetch=$?
+			if [[ ! $rc_prefetch = 0 ]]
 			then
-				rc_prefetch=$(    "$SRR: ERROR -- prefetch returned $exit")
-				echo "$rc_prefetch"
+				echo "$SRR: ERROR -- prefetch returned $rc_prefetch"
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
 					set -eux -o pipefail
@@ -184,16 +184,19 @@ task pull_fq_from_biosample {
 				else
 					rm ./"$SRR"*.fastq
 				fi
-			else
-				rc_prefetch=$("")
 			fi
 
 			fasterq-dump "$SRR"
-			exit=$?
-			if [[ ! $exit = 0 ]]
+			rc_fasterqdump=$?
+			if [[ ! $rc_fasterqdump = 0 ]]
 			then
-				echo "ERROR -- fasterq-dump returned $exit"
-				echo "    $SRR: ERROR -- fasterqdump returned $exit" >> ~{biosample_accession}_pull_results.txt
+				echo "ERROR -- fasterq-dump returned $rc_fasterqdump"
+				if [[ "$rc_prefetch" = "0" ]]
+				then
+					echo "    $SRR: ERROR -- fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
+				else
+					echo "    $SRR: ERROR -- prefetch returned rc_prefetch, fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
+				fi
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
 					set -eux -o pipefail
@@ -307,20 +310,20 @@ task pull_fq_from_biosample {
 			fi
 		done
 
-		# 3. append biosample name to the fastq filenames
-		
 		# double check that there actually are fastqs
 		NUMBER_OF_FQ=$(fdfind ".fastq" | wc -l)
 		if [[ ! $NUMBER_OF_FQ == 0 ]]
 		then
 			this_sample=$("~{biosample_accession}: YAY")
 			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
+
+			# append biosample name to the fastq filenames
 			for fq in *.fastq
 				do
 					mv -- "$fq" "~{biosample_accession}_${fq%.fastq}.fastq"
 				done
 
-			# 4. tar the outputs, if that's what you want
+			# tar the outputs, if that's what you want
 			if [ ~{tar_outputs} == "true" ]
 			then
 				FQ=$(fdfind ".fastq")
