@@ -269,7 +269,7 @@ If you run `java -Xmx1000m -jar /bioinf-tools/Trimmomatic-0.36/trimmomatic-0.36.
 The other samples on this list are tougher nuts to crack.
 
 
-## miscellanous
+## miscellaneous
 
 ### not on google mirror, seem to have no data, do not have a biosample accession
 ERR1274706
@@ -288,4 +288,4 @@ SRR001704
 SRR001705
 
 ## It's just too darn big
-SAMN17359332 has [a lot](https://www.ncbi.nlm.nih.gov/sra?LinkName=biosample_sra&from_uid=17359332) of read accessions associated with it. Eventually this blows through our disk size estimate.
+SAMN17359332 has [a lot](https://www.ncbi.nlm.nih.gov/sra?LinkName=biosample_sra&from_uid=17359332) of read accessions associated with it. Eventually this blows through our disk size estimate. Same story with SAMN30839965 (although in that case the error in Cromwell is out of memory -- it's actually out of disk well before that happens though).
