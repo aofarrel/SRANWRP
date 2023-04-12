@@ -147,24 +147,34 @@ task pull_fq_from_biosample {
 	command <<<
 		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
 		
-		# get SRA accessions from biosample
+		# get run accessions from biosample
 		SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
 			elink -target sra | efetch -format docsum | \
 			xtract -pattern DocumentSummary -element Run@acc)
 
-		SRRS_ARRAY=($SRRS_STR)
+		IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR"
 		
 		if [[ "$SRRS_STR" = "" ]]
 		then
-			uh_oh=$(echo "~{biosample_accession}: HUH")
-			sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
-			if [[ "~{fail_on_invalid}" = true ]]
+			echo "edirect returned no run accessions, trying again after a brief pause..."
+			sleep 5
+			SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
+				elink -target sra | efetch -format docsum | \
+				xtract -pattern DocumentSummary -element Run@acc)
+			IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR"
+			if [[ "$SRRS_STR" = "" ]]
 			then
-				set -eux -o pipefail
-				exit 1
-			else
-				exit 0
+				uh_oh="~{biosample_accession}: HUH"
+				sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
+				if [[ "~{fail_on_invalid}" = true ]]
+				then
+					set -eux -o pipefail
+					exit 1
+				else
+					exit 0
+				fi
 			fi
+			# script will continue in the else case
 		fi
 
 		# loop through every SRA accession and pull the fastqs
@@ -190,12 +200,12 @@ task pull_fq_from_biosample {
 			rc_fasterqdump=$?
 			if [[ ! $rc_fasterqdump = 0 ]]
 			then
-				echo "ERROR -- fasterq-dump returned $rc_fasterqdump"
+				echo "ERROR -- fasterq-dump returned $rc_fasterqdump" # if only prefetch fails, this is NOT noted in the final report
 				if [[ "$rc_prefetch" = "0" ]]
 				then
-					echo "    $SRR: ERROR -- fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
+					echo "        $SRR: ERROR -- prefetch succeeded but fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
 				else
-					echo "    $SRR: ERROR -- prefetch returned rc_prefetch, fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
+					echo "        $SRR: ERROR -- prefetch returned $rc_prefetch, fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
 				fi
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
@@ -227,9 +237,9 @@ task pull_fq_from_biosample {
 							rm "$READ2"
 							mv temp1.fq "$READ1"
 							mv temp2.fq "$READ2"
-							echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
 						else
-							echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
 						fi
 					fi
 
@@ -239,7 +249,7 @@ task pull_fq_from_biosample {
 					if [[ $NUMBER_OF_FQ == 1 ]]
 					then
 						echo "Only one fastq found"
-						echo "    $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
+						echo "        $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
 						if [ "~{fail_on_invalid}" == "true" ]
 						then
 							set -eux pipefail
@@ -255,7 +265,7 @@ task pull_fq_from_biosample {
 							# somehow we got 5, 7, 9, etc reads
 							# this should probably never happen
 							echo "Odd number > 3 files found"
-							echo "    $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
 							if [ "~{fail_on_invalid}" == "true" ]
 							then
 								set -eux pipefail
@@ -299,10 +309,10 @@ task pull_fq_from_biosample {
 								rm "$READ2"
 								mv temp1.fq "$READ1"
 								mv temp2.fq "$READ2"
-								echo "    $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+								echo "        $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
 							else
 								# not bigger than the cutoff, but still a triplet, so make note of that
-								echo "    $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
+								echo "        $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
 							fi
 						fi
 					fi
@@ -314,7 +324,7 @@ task pull_fq_from_biosample {
 		NUMBER_OF_FQ=$(fdfind ".fastq" | wc -l)
 		if [[ ! $NUMBER_OF_FQ == 0 ]]
 		then
-			this_sample=$(echo "~{biosample_accession}: YAY")
+			this_sample="~{biosample_accession}: YAY"
 			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
 
 			# append biosample name to the fastq filenames
@@ -330,7 +340,7 @@ task pull_fq_from_biosample {
 				tar -rf "~{biosample_accession}.tar" "$FQ"
 			fi
 		else
-			this_sample=$(echo "~{biosample_accession}: NAY")
+			this_sample="~{biosample_accession}: NAY"
 			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
 		fi
 		
