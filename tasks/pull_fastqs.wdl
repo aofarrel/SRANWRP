@@ -151,7 +151,8 @@ task pull_fq_from_biosample {
 		SRRS_STR=$(esearch -db sra -query ~{biosample_accession} | \
 			esummary | xtract -pattern DocumentSummary -element Run@acc)
 
-		IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR"
+		#IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR" # this does not work anymore
+		SRRS_ARRAY=$(echo $SRRS_STR)
 		
 		if [[ "$SRRS_STR" = "" ]]
 		then
