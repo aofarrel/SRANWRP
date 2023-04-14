@@ -148,9 +148,8 @@ task pull_fq_from_biosample {
 		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
 		
 		# get run accessions from biosample
-		SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
-			elink -target sra | efetch -format docsum | \
-			xtract -pattern DocumentSummary -element Run@acc)
+		SRRS_STR=$(esearch -db sra -query ~{biosample_accession} | \
+			esummary | xtract -pattern DocumentSummary -element Run@acc)
 
 		IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR"
 		
