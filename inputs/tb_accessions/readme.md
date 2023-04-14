@@ -20,6 +20,7 @@ When we say something "has no lineage information," what we actually mean is tha
 * tb_a3 -- list of "every" MTBC accession on SRA circa November 2022
     * see lineage/all_not_in_tb_a3.txt for some exceptions
 * tb_a3_no_lineage -- all tb_a3 samples not also in all_lineages
+* rescue_samples.txt -- list of samples that need to be reran due to #28 (includes files from rand00125, rand00200, rand01000, rand04321, rand0888, rand09999, and rand1234)
 
 ### exclusive_subsets folder
 This has randomized subsets of tb_a3. All of them are derivied from tb_a3_pool, which acts as the "pool" of valid tb_a3 samples from which more samples can be taken. Everything in the pool has no lineage information (see caveats) and also isn't already in any other tb_a3_rand* file.
