@@ -132,31 +132,61 @@ task pull_fq_from_biosample {
     	subsample_seed:      "Seed to use when subsampling large fastqs"
     	tar_outputs:         "Tarball all fastqs into one output file"
 	}
+	
+	# Statuses:
+	# * ERROR: this run caused fasterq-dump or prefetch to throw an error
+	# * PASS:  this run passed
+	# * FAIL:  this run failed
+	# * YAY:   this sample had at least one passing read
+	# * NAY:   this sample does not have any passing reads
+	# * HUH:   this sample did not return any run accessions (usually an issue with edirect)
 
-	# an easy to test the find commands:
+	# an easy way to test the find commands:
 	# touch ERR551697_1.fastq ERR551697_2.fastq ERR551697.fastq ERR551698_1.fastq ERR551698_2.fastq
 
 	command <<<
 		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
 		
-		# 1. get SRA accessions from biosample
-		SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
-			elink -target sra | efetch -format docsum | \
-			xtract -pattern DocumentSummary -element Run@acc)
+		# get run accessions from biosample
+		SRRS_STR=$(esearch -db sra -query ~{biosample_accession} | \
+			esummary | xtract -pattern DocumentSummary -element Run@acc)
 
-		SRRS_ARRAY=($SRRS_STR)
+		#IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR" # this does not work anymore
+		SRRS_ARRAY=$(echo $SRRS_STR)
+		
+		if [[ "$SRRS_STR" = "" ]]
+		then
+			echo "edirect returned no run accessions, trying again after a brief pause..."
+			sleep 5
+			SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
+				elink -target sra | efetch -format docsum | \
+				xtract -pattern DocumentSummary -element Run@acc)
+			IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR"
+			if [[ "$SRRS_STR" = "" ]]
+			then
+				uh_oh="~{biosample_accession}: HUH"
+				sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
+				if [[ "~{fail_on_invalid}" = true ]]
+				then
+					set -eux -o pipefail
+					exit 1
+				else
+					exit 0
+				fi
+			fi
+			# script will continue in the else case
+		fi
 
-		# 2. loop through every SRA accession and pull the fastqs
-		touch .gitignore
+		# loop through every SRA accession and pull the fastqs
 		for SRR in "${SRRS_ARRAY[@]}"
 		do
 			echo "searching $SRR"
 
 			prefetch "$SRR"
-			exit=$?
-			if [[ ! $exit = 0 ]]
+			rc_prefetch=$?
+			if [[ ! $rc_prefetch = 0 ]]
 			then
-				echo "ERROR -- prefetch returned $exit"
+				echo "$SRR: ERROR -- prefetch returned $rc_prefetch"
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
 					set -eux -o pipefail
@@ -167,11 +197,16 @@ task pull_fq_from_biosample {
 			fi
 
 			fasterq-dump "$SRR"
-			exit=$?
-			if [[ ! $exit = 0 ]]
+			rc_fasterqdump=$?
+			if [[ ! $rc_fasterqdump = 0 ]]
 			then
-				echo "ERROR -- fasterq-dump returned $exit"
-				echo "    $SRR: FAIL -- fasterqdump did not succeed" >> ~{biosample_accession}_pull_results.txt
+				echo "ERROR -- fasterq-dump returned $rc_fasterqdump" # if only prefetch fails, this is NOT noted in the final report
+				if [[ "$rc_prefetch" = "0" ]]
+				then
+					echo "        $SRR: ERROR -- prefetch succeeded but fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
+				else
+					echo "        $SRR: ERROR -- prefetch returned $rc_prefetch, fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
+				fi
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
 					set -eux -o pipefail
@@ -202,9 +237,9 @@ task pull_fq_from_biosample {
 							rm "$READ2"
 							mv temp1.fq "$READ1"
 							mv temp2.fq "$READ2"
-							echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
 						else
-							echo "    $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
 						fi
 					fi
 
@@ -214,7 +249,7 @@ task pull_fq_from_biosample {
 					if [[ $NUMBER_OF_FQ == 1 ]]
 					then
 						echo "Only one fastq found"
-						echo "    $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
+						echo "        $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
 						if [ "~{fail_on_invalid}" == "true" ]
 						then
 							set -eux pipefail
@@ -230,7 +265,7 @@ task pull_fq_from_biosample {
 							# somehow we got 5, 7, 9, etc reads
 							# this should probably never happen
 							echo "Odd number > 3 files found"
-							echo "    $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
 							if [ "~{fail_on_invalid}" == "true" ]
 							then
 								set -eux pipefail
@@ -274,10 +309,10 @@ task pull_fq_from_biosample {
 								rm "$READ2"
 								mv temp1.fq "$READ1"
 								mv temp2.fq "$READ2"
-								echo "    $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
+								echo "        $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
 							else
 								# not bigger than the cutoff, but still a triplet, so make note of that
-								echo "    $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
+								echo "        $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
 							fi
 						fi
 					fi
@@ -285,23 +320,28 @@ task pull_fq_from_biosample {
 			fi
 		done
 
-		# 3. append biosample name to the fastq filenames
-		
 		# double check that there actually are fastqs
 		NUMBER_OF_FQ=$(fdfind ".fastq" | wc -l)
 		if [[ ! $NUMBER_OF_FQ == 0 ]]
 		then
+			this_sample="~{biosample_accession}: YAY"
+			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
+
+			# append biosample name to the fastq filenames
 			for fq in *.fastq
 				do
 					mv -- "$fq" "~{biosample_accession}_${fq%.fastq}.fastq"
 				done
 
-			# 4. tar the outputs, if that's what you want
+			# tar the outputs, if that's what you want
 			if [ ~{tar_outputs} == "true" ]
 			then
 				FQ=$(fdfind ".fastq")
 				tar -rf "~{biosample_accession}.tar" "$FQ"
 			fi
+		else
+			this_sample="~{biosample_accession}: NAY"
+			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
 		fi
 		
 	>>>
