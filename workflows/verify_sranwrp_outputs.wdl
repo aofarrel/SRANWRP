@@ -30,7 +30,7 @@ workflow verify_old_downloads {
             out = "run_accessions_by_biosample.txt"
 	}
 
-    call compare_files {
+    call processingtasks.compare_files {
         input:
             query_file = cat_queries.outfile,
             pull_report = pull_report
@@ -38,27 +38,5 @@ workflow verify_old_downloads {
 
     output {
         File compare = compare_files.difference
-    }
-}
-
-task compare_files {
-    input {
-        File query_file
-        File pull_report
-    }
-
-    command <<<
-    python3 << CODE
-    from difflib import Differ
-    with open("~{query_file}", "r") as query_file, open("~{pull_report}, "r") as pull_file:
-        differ = Differ()
-        with open("difference.txt", "w") as difference:
-            for line in differ.compare(query_file.readlines(), pull_file.readlines()):
-                difference.write(line)
-    CODE
-    >>>
-
-    output {
-        File difference = "difference.txt"
     }
 }

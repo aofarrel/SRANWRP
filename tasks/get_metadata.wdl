@@ -124,7 +124,7 @@ task get_SRA_accession_IDs_by_biosample_new {
 	}
 
 	command <<<
-		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
+		echo "~{biosample_accession}" >> ~{biosample_accession}_accessions.txt
 		SRRS_STR=$(esearch -db sra -query ~{biosample_accession} | \
 			esummary | xtract -pattern DocumentSummary -element Run@acc)
 		read -ra SRRS_ARRAY -d ' ' <<<"$SRRS_STR"

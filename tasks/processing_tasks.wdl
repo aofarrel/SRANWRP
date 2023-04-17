@@ -216,6 +216,36 @@ task cat_files {
 	}
 }
 
+task compare_files {
+    input {
+        File query_file
+        File pull_report
+    }
+
+    command <<<
+    python3 << CODE
+    from difflib import Differ
+    with open("~{query_file}", "r") as query_file, open("~{pull_report}", "r") as pull_file:
+        differ = Differ()
+        with open("difference.txt", "w") as difference:
+            for line in differ.compare(query_file.readlines(), pull_file.readlines()):
+                difference.write(line)
+    CODE
+    >>>
+
+    runtime {
+		cpu: 4
+		disks: "local-disk " + 10 + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.1.8"
+		memory: "8 GB"
+		preemptible: 2
+	}
+
+    output {
+        File difference = "difference.txt"
+    }
+}
+
 
 ## This task removes invalid output from pull_from_SRA_accession.
 ## Array[Array[File]?] will return empty subarrays sometimes, such
