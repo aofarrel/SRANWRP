@@ -110,6 +110,44 @@ task pull_fq_from_SRA_accession {
 	}
 }
 
+task query_fq_from_biosample {
+	# Query, but do not download, the run accessions for a BioSample accession
+	input {
+		String biosample_accession
+		Int disk_size = 10
+		Int preempt = 2
+	}
+
+	parameter_meta {
+    	biosample_accession: "BioSample accession to query run accesions for"
+    	disk_size:           "Size, in GB, of disk (acts as a limit on GCP)"
+    	preempt:             "Number of times to attempt task on a preemptible VM (GCP only)"
+	}
+
+	command <<<
+		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
+		SRRS_STR=$(esearch -db sra -query ~{biosample_accession} | \
+			esummary | xtract -pattern DocumentSummary -element Run@acc)
+		read -ra SRRS_ARRAY -d ' ' <<<"$SRRS_STR"
+		for SRR in "${SRRS_ARRAY[@]}"
+		do
+			echo "        $SRR" >> "~{biosample_accession}"_accessions.txt
+		done
+		>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
+		memory: "8 GB"
+		preemptible: preempt
+	}
+
+	output {
+		String results = read_string("~{biosample_accession}_accessions.txt")
+	}
+}
+
 task pull_fq_from_biosample {
 	input {
 		String biosample_accession
@@ -150,13 +188,11 @@ task pull_fq_from_biosample {
 		# get run accessions from biosample
 		SRRS_STR=$(esearch -db sra -query ~{biosample_accession} | \
 			esummary | xtract -pattern DocumentSummary -element Run@acc)
+		read -ra SRRS_ARRAY -d ' ' <<<"$SRRS_STR"
 
-		#IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR" # this does not work anymore
-		SRRS_ARRAY=$(echo $SRRS_STR)
-		
 		if [[ "$SRRS_STR" = "" ]]
 		then
-			echo "edirect returned no run accessions, trying again after a brief pause..."
+			echo "edirect returned no run accessions, trying another method after a brief pause..."
 			sleep 5
 			SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
 				elink -target sra | efetch -format docsum | \
