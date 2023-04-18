@@ -217,23 +217,33 @@ task cat_files {
 }
 
 task compare_files {
-    input {
-        File query_file
-        File pull_report
-    }
+	# NOTE: This modifies an input file
+	input {
+		File query_file
+		File pull_report
+	}
 
-    command <<<
-    python3 << CODE
-    from difflib import Differ
-    with open("~{query_file}", "r") as query_file, open("~{pull_report}", "r") as pull_file:
-        differ = Differ()
-        with open("difference.txt", "w") as difference:
-            for line in differ.compare(query_file.readlines(), pull_file.readlines()):
-                difference.write(line)
-    CODE
-    >>>
+	command <<<
+	python3 << CODE
+	import re
+	from difflib import Differ
+	pull_sample_minues_status = []
+	with open("~{pull_report}", "r") as pull_file_read:
+		for line in pull_file_read.readlines():
+			subbed=re.sub(": .*", "", line)
+			print(f"changing {line} to {subbed}")
+			pull_sample_minues_status.append(subbed)
+	with open("~{pull_report}", "w") as pull_file_write:
+		pull_file_write.writelines(pull_sample_minues_status)
+	with open("~{query_file}", "r") as query_file, open("~{pull_report}", "r") as pull_file:
+		differ = Differ()
+		with open("difference.txt", "w") as difference:
+			for line in differ.compare(query_file.readlines(), pull_file.readlines()):
+				difference.write(line)
+	CODE
+	>>>
 
-    runtime {
+	runtime {
 		cpu: 4
 		disks: "local-disk " + 10 + " HDD"
 		docker: "ashedpotatoes/sranwrp:1.1.8"
@@ -241,9 +251,9 @@ task compare_files {
 		preemptible: 2
 	}
 
-    output {
-        File difference = "difference.txt"
-    }
+	output {
+		File difference = "difference.txt"
+	}
 }
 
 
