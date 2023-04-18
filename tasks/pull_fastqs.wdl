@@ -150,13 +150,11 @@ task pull_fq_from_biosample {
 		# get run accessions from biosample
 		SRRS_STR=$(esearch -db sra -query ~{biosample_accession} | \
 			esummary | xtract -pattern DocumentSummary -element Run@acc)
+		read -ra SRRS_ARRAY -d ' ' <<<"$SRRS_STR"
 
-		#IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR" # this does not work anymore
-		SRRS_ARRAY=$(echo $SRRS_STR)
-		
 		if [[ "$SRRS_STR" = "" ]]
 		then
-			echo "edirect returned no run accessions, trying again after a brief pause..."
+			echo "edirect returned no run accessions, trying another method after a brief pause..."
 			sleep 5
 			SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
 				elink -target sra | efetch -format docsum | \
