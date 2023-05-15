@@ -90,9 +90,10 @@ task cat_files {
 	# Files going into removal_candidates should be formatted as TSVs
 	# where the first column is the filename and the second column is
 	# a float value. (Other columns will be ignored.) These TSVs will
-	# be cat to create a single big TSV. Then, any values above the
+	# be cat to create a single big TSV. Then, any values ABOVE the
 	# user-input float removal_threshold will have their associated
-	# file removed, preventing it from being cat'd.
+	# file removed, preventing it from being cat'd. In other words,
+	# this is a lowpass filter.
 	#
 	# For example:
 	# files = [SAMEA10030079.diff, SAMEA7555065.diff]
@@ -142,10 +143,12 @@ task cat_files {
 			if [[ ! "$this_files_info" = "" ]]
 			then
 				# okay, we have information about this file. is it above the removal threshold?
+				# piping an inequality to `bc` will return 0 if false, 1 if true
 				this_files_value=$(cut -f2 temp)
-				is_bigger=$(echo "$this_files_value>~{removal_threshold}" | bc)
+				is_bigger=$(echo "$this_files_value>~{removal_threshold}" | bc) 
 				if [[ $is_bigger == 0 ]]
 				then
+					# this_files_value is below the removal threshold and passes
 					cat "$FILE" >> "~{out_filename}"
 
 					# now, check if we're grabbing first lines
@@ -162,8 +165,8 @@ task cat_files {
 					fi
 				
 				else
-					# this is below the theshold
-					echo "$basename_file's value of $this_files_value is below threshold. It won't be included."
+					# this_files_value is above the removal threshold and fails
+					echo "$basename_file's value of $this_files_value is above threshold. It won't be included."
 				fi
 			else
 				echo "WARNING: Removal guide exists but can't find $basename_file in it! Skipping..."
@@ -171,7 +174,7 @@ task cat_files {
 		done
 	else
 		# no removal guide, so we keep things simple
-		echo "No removal guide found"
+		echo "No removal guide found, so we'll add all the files we have to the outfile..."
 		cat ~{sep=" " files} >> "~{out_filename}"
 
 		# output first lines if we need to
@@ -199,6 +202,13 @@ task cat_files {
 		rm "~{out_filename}"
 		mv temp "~{out_filename}"
 	fi
+
+	if [[ ! -f "~{out_filename}" ]]
+	then
+		echo "ERROR: Could not locate cat'd file. This probably means nothing passed the removal threshold (remember, it's a lowpass, not a highpass)."
+		return 1
+	fi
+ 
 	>>>
 
 	runtime {
