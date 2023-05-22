@@ -31,7 +31,8 @@ apt-get install -y wget && \
 apt-get install -y zlib1g-dev && \
 apt-get clean
 
-# good to have: bc, cpan, curl, fd-find, pigz, screen, tree, vim
+# general utilities: bc, cpan, curl, fd-find, pigz, screen, tree, vim
+# bc is used by parsevcf, but the others are just for good measure
 RUN apt-get update && \
 apt-get install -y bc && \
 apt-get install -y cpanminus && \
@@ -43,7 +44,7 @@ apt-get install -y tree && \
 apt-get install -y vim && \
 apt-get clean
 
-# install python and friends
+# install python and friends (warning: this takes about 15 minutes)
 RUN wget https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tgz && tar -xf Python-3.11.1.tgz && cd Python-3.11.1 && ./configure --disable-test-modules --enable-optimizations && make && sudo make install 
 RUN pip3 install numpy
 RUN pip3 install pandas
@@ -70,6 +71,11 @@ RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3
 # fix some perl stuff (might not be needed but I'm taking no chances)
 RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recursive && cd ..
 ENV PERL5LIB=/perlstuff:
+
+# throw in the TB reference while we're at it (used by tree_nine, matches ref in clockwork-plus)
+RUN mkdir ref
+COPY inputs/Ref.H37Rv.tar ./ref/
+RUN cd ./ref/ && tar -xvf Ref.H37Rv.tar
 
 # set path variable and some aliases
 RUN echo 'alias python="python3"' >> ~/.bashrc
