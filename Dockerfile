@@ -73,9 +73,15 @@ RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recu
 ENV PERL5LIB=/perlstuff:
 
 # throw in the TB reference while we're at it (used by tree_nine, matches ref in clockwork-plus)
+# see gs://topmed_workflow_testing/tb/ref/index_H37Rv_reference_output/Ref.H37Rv.tar
+# md5sum should be fca996be5de559f5f9f789c715f1098b
 RUN mkdir ref
-COPY inputs/Ref.H37Rv.tar ./ref/
+COPY ./Ref.H37Rv.tar ./ref/
 RUN cd ./ref/ && tar -xvf Ref.H37Rv.tar
+
+# add typical TB masked sites (used by tree_nine)
+RUN mkdir mask
+RUN wget https://raw.githubusercontent.com/iqbal-lab-org/cryptic_tb_callable_mask/master/R00000039_repregions.bed && mv R00000039_repregions.bed ./mask/
 
 # set path variable and some aliases
 RUN echo 'alias python="python3"' >> ~/.bashrc

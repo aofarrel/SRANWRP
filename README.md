@@ -1,4 +1,4 @@
-# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.1.8?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags) [![Quay.io Link](https://img.shields.io/badge/quay.io-1.1.8-blue?logo=redhat "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
+# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.1.12?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags) [![Quay.io Link](https://img.shields.io/badge/quay.io-1.1.12-blue?logo=redhat "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
 SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Ubuntu-based Docker image and some optional assorted workflows. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
 
 ## What tasks can it perform?
@@ -21,6 +21,7 @@ Here's [some other tasks](./tasks/processing_tasks.wdl) that can help you conver
 
 ## What's included in the Docker image?
 Non-exhaustive list:
+* The TB reference genome and a BED of its commonly masked regions
 * bash-5.1.16(1)-release
 * [bedtools-latest](https://github.com/arq5x/bedtools2)
 * [bc-latest](https://www.gnu.org/software/bc/)
@@ -51,7 +52,7 @@ Non-exhaustive list:
 * wget-latest
 
 ## Who builds?
-Right now, the image is built and pushed manually.
+Right now, the image is built and pushed manually. You'll need to include your own copy of the TB reference tarball -- it can be created with clockwork refprep, or downloaded from [this Google bucket](https://console.cloud.google.com/storage/browser/_details/topmed_workflow_testing/tb/ref/index_H37Rv_reference_output/Ref.H37Rv.tar). MD5s are provided in this repo as a double-check.
 
 ## Why?
 * Docker Hub's latest version of staphb/sratoolkit, as of my writing this in October 2022, [runs version 2.9.2 (see command 15)](https://hub.docker.com/layers/staphb/sratoolkit/latest/images/sha256-84fc990e6d04f263d7bea82dcbff7f5dd9182ab5234314bb0daf2e2db977e4a0?context=explore), which [doesn't work at all anymore](https://github.com/ncbi/sra-tools/issues/714)
