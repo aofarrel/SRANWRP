@@ -180,10 +180,10 @@ task cat_files {
 		# output first lines if we need to
 		if [[ "~{output_first_lines}" = "true" ]]
 		then
+			touch firstlines.txt
 			FILES=(~{sep=" " files})
 			for FILE in "${FILES[@]}"
 			do
-				touch firstlines.txt
 				if [[ "~{strip_first_line_first_char}" = "true" ]]
 				then
 					firstline=$(head -1 "$FILE")
@@ -197,6 +197,7 @@ task cat_files {
 
 	if [[ "~{keep_only_unique_lines}" = "true" ]]
 	then
+		echo "Sorting and removing non-unique lines..."
 		touch temp
 		sort "~{out_filename}" | uniq -u >> temp
 		rm "~{out_filename}"
