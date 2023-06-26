@@ -207,11 +207,12 @@ task cat_files {
 
 	if [[ -f removed.txt ]]
 	then
-		number_of_removed_files="$(wc -l removed.txt)"
-		"$(number_of_removed_files)" >> number_of_removed_files.txt
+		# wc acts differently on different OS, this is most portable way I've found
+		number_of_removed_files="$(wc -l removed.txt | awk '{print $1}')"
+		echo "$number_of_removed_files" >> number_of_removed_files.txt
 	else
 		number_of_removed_files=0
-		"$(number_of_removed_files)" >> number_of_removed_files.txt
+		echo "$number_of_removed_files" >> number_of_removed_files.txt
 	fi
 
 	if [[ ! -f "~{out_filename}" ]]
