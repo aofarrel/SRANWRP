@@ -126,6 +126,7 @@ task cat_files {
 		Boolean strip_first_line_first_char = true
 	}
 	Int disk_size = ceil(size(files, "GB")) * 2
+	Int number_of_files = length(files)
 
 	command <<<
 
@@ -166,10 +167,10 @@ task cat_files {
 				
 				else
 					# this_files_value is above the removal threshold and fails
-					echo "$basename_file's value of $this_files_value is above threshold. It won't be included."
+					echo "$basename_file's value of $this_files_value is above threshold. It won't be included." >> removed.txt
 				fi
 			else
-				echo "WARNING: Removal guide exists but can't find $basename_file in it! Skipping..."
+				echo "WARNING: Removal guide exists but can't find $basename_file in it! Skipping..." >> removed.txt
 			fi
 		done
 	else
@@ -204,10 +205,33 @@ task cat_files {
 		mv temp "~{out_filename}"
 	fi
 
+	if [[ -f removed.txt ]]
+	then
+		number_of_removed_files="$(wc -l removed.txt)"
+		"$(number_of_removed_files)" >> number_of_removed_files.txt
+	else
+		number_of_removed_files=0
+		"$(number_of_removed_files)" >> number_of_removed_files.txt
+	fi
+
 	if [[ ! -f "~{out_filename}" ]]
 	then
-		echo "ERROR: Could not locate cat'd file. This probably means nothing passed the removal threshold (remember, it's a lowpass, not a highpass)."
-		return 1
+		printf "\n\n\n ========================= "
+		echo "ERROR: Could not locate cat'd file. This probably means either: "
+		echo "a) nothing passed the removal threshold (remember, it's a lowpass, not a highpass)"
+		echo "b) you didn't actually pass any files in, just an empty array"
+		echo "It looks like you tried to merge ~{number_of_files} files."
+		if [[ -f removed.txt ]]
+		then
+			echo "removal.txt doesn't seem to exist, so this looks like option B."
+			echo "This task will now exit with an error."
+			return 1
+		else
+			echo "$(number_of_removed_files) files were removed for being below the threshold, or not having removal candidate data."
+			echo "The contents of removal.txt will be printed below and this task will then exit with an error."
+			cat removed.txt
+			return 1
+		fi
 	fi
  
 	>>>
@@ -222,6 +246,7 @@ task cat_files {
 
 	output {
 		File outfile = "~{out_filename}"
+		Int number_of_removed_files = read_int("number_of_removed_files.txt")
 		File? first_lines = "firstlines.txt"
 		File? removal_guide = "removal_guide.tsv"
 	}
