@@ -247,7 +247,9 @@ task cat_files {
 
 	output {
 		File outfile = "~{out_filename}"
-		Int number_of_removed_files = read_int("number_of_removed_files.txt")
+		Int files_removed = read_int("number_of_removed_files.txt")
+		Int files_input = number_of_files
+		Int files_passed = number_of_files - read_int("number_of_removed_files.txt")
 		File? first_lines = "firstlines.txt"
 		File? removal_guide = "removal_guide.tsv"
 	}
