@@ -141,7 +141,7 @@ task cat_files {
 			# check if it's in the removal guide and below threshold
 			basename_file=$(basename "$FILE")
 			this_files_info=$(awk -v file_to_check="$basename_file" '$1 == file_to_check' removal_guide.tsv)
-			baseroot_file=$(basename "$FILE" -s ".diff")
+			baseroot_file=$(basename -s ".diff" "$FILE")
 			echo "$this_files_info" > temp
 			if [[ ! "$this_files_info" = "" ]]
 			then
