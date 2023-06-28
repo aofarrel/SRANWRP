@@ -124,6 +124,7 @@ task cat_files {
 		Boolean keep_only_unique_lines = false
 		Boolean output_first_lines = true
 		Boolean strip_first_line_first_char = true
+		String first_lines_out_filename = "firstlines.txt"
 	}
 	Int disk_size = ceil(size(files, "GB")) * 2
 	Int number_of_files = length(files)
@@ -152,25 +153,27 @@ task cat_files {
 					# this_files_value is below the removal threshold and passes
 					cat "$FILE" >> "~{out_filename}"
 
-					# now, check if we're grabbing first lines
+					# now, check if we're grabbing first lines (for diffs, this means samples)
 					if [[ "~{output_first_lines}" = "true" ]]
 					then
-						touch firstlines.txt
+						touch "~{first_lines_out_filename}.txt"
 						if [[ "~{strip_first_line_first_char}" = "true" ]]
 						then
 							firstline=$(head -1 "$FILE")
-							echo "${firstline:1}" >> firstlines.txt
+							echo "${firstline:1}" >> "~{first_lines_out_filename}.txt"
 						else
-							head -1 "$FILE" >> firstlines.txt
+							head -1 "$FILE" >> "~{first_lines_out_filename}.txt"
 						fi
 					fi
 				
 				else
 					# this_files_value is above the removal threshold and fails
-					echo "$basename_file's value of $this_files_value is above threshold. It won't be included." >> removed.txt
+					echo "$basename_file" >> removed.txt
+					echo "$basename_file's value of $this_files_value is above threshold. It won't be included."
 				fi
 			else
-				echo "WARNING: Removal guide exists but can't find $basename_file in it! Skipping..." >> removed.txt
+				echo "$basename_file" >> removed.txt
+				echo "WARNING: Removal guide exists but can't find $basename_file in it! Skipping..."
 			fi
 		done
 	else
@@ -181,16 +184,16 @@ task cat_files {
 		# output first lines if we need to
 		if [[ "~{output_first_lines}" = "true" ]]
 		then
-			touch firstlines.txt
+			touch "~{first_lines_out_filename}.txt"
 			FILES=(~{sep=" " files})
 			for FILE in "${FILES[@]}"
 			do
 				if [[ "~{strip_first_line_first_char}" = "true" ]]
 				then
 					firstline=$(head -1 "$FILE")
-					echo "${firstline:1}" >> firstlines.txt
+					echo "${firstline:1}" >> "~{first_lines_out_filename}.txt"
 				else
-					head -1 "$FILE" >> firstlines.txt
+					head -1 "$FILE" >> "~{first_lines_out_filename}.txt"
 				fi
 			done
 		fi
@@ -250,7 +253,8 @@ task cat_files {
 		Int files_removed = read_int("number_of_removed_files.txt")
 		Int files_input = number_of_files
 		Int files_passed = number_of_files - read_int("number_of_removed_files.txt")
-		File? first_lines = "firstlines.txt"
+		Array[String] removed_files = read_lines("removed.txt")
+		File? first_lines = first_lines_out_filename +".txt"
 		File? removal_guide = "removal_guide.tsv"
 	}
 }
