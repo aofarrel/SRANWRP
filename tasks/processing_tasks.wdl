@@ -141,6 +141,7 @@ task cat_files {
 			# check if it's in the removal guide and below threshold
 			basename_file=$(basename "$FILE")
 			this_files_info=$(awk -v file_to_check="$basename_file" '$1 == file_to_check' removal_guide.tsv)
+			baseroot_file=$(basename "$FILE" -s ".diff")
 			echo "$this_files_info" > temp
 			if [[ ! "$this_files_info" = "" ]]
 			then
@@ -168,11 +169,11 @@ task cat_files {
 				
 				else
 					# this_files_value is above the removal threshold and fails
-					echo "$basename_file" >> removed.txt
+					echo "$baseroot_file" >> removed.txt
 					echo "$basename_file's value of $this_files_value is above threshold. It won't be included."
 				fi
 			else
-				echo "$basename_file" >> removed.txt
+				echo "$baseroot_file" >> removed.txt
 				echo "WARNING: Removal guide exists but can't find $basename_file in it! Skipping..."
 			fi
 		done
