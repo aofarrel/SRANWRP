@@ -125,6 +125,7 @@ task cat_files {
 		Boolean output_first_lines = true
 		Boolean strip_first_line_first_char = true
 		String first_lines_out_filename = "firstlines.txt"
+		Boolean verbose = false
 	}
 	Int disk_size = ceil(size(files, "GB")) * 2
 	Int number_of_files = length(files)
@@ -153,6 +154,10 @@ task cat_files {
 				then
 					# this_files_value is below the removal threshold and passes
 					cat "$FILE" >> "~{out_filename}"
+					if [[ "~{verbose}" = "true" ]]
+					then
+						echo "$FILE added."
+					fi
 
 					# now, check if we're grabbing first lines (for diffs, this means samples)
 					if [[ "~{output_first_lines}" = "true" ]]
@@ -209,16 +214,6 @@ task cat_files {
 		mv temp "~{out_filename}"
 	fi
 
-	if [[ -f removed.txt ]]
-	then
-		# wc acts differently on different OS, this is most portable way I've found
-		number_of_removed_files="$(wc -l removed.txt | awk '{print $1}')"
-		echo "$number_of_removed_files" >> number_of_removed_files.txt
-	else
-		number_of_removed_files=0
-		echo "$number_of_removed_files" >> number_of_removed_files.txt
-	fi
-
 	if [[ ! -f "~{out_filename}" ]]
 	then
 		printf "\n\n\n ========================= "
@@ -238,7 +233,20 @@ task cat_files {
 			return 1
 		fi
 	fi
- 
+
+	if [[ -f removed.txt ]]
+	then
+		# count how many samples were removed
+		# wc acts differently on different OS, this is most portable way I've found
+		number_of_removed_files="$(wc -l removed.txt | awk '{print $1}')"
+		echo "$number_of_removed_files" >> number_of_removed_files.txt
+	else
+		# no samples were removed
+		# make sure removed.txt and number_of_removed_files.txt exist so WDL doesn't crash
+		touch removed.txt
+		number_of_removed_files=0
+		echo "$number_of_removed_files" >> number_of_removed_files.txt
+	fi
 	>>>
 
 	runtime {
