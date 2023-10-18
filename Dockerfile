@@ -9,6 +9,7 @@ FROM ubuntu:jammy
 # libffi-dev:      fix some pip installs failing due to lack of '_ctypes' module
 # liblzma-dev:     use cram files
 # libncurses5-dev: use samtools tview
+# libsqlite3-dev:  fix ete3 failing to import due to lack of '_seqlite3' module
 # libssl-dev:      install python with pip
 # make:            install samtools/htslib/bcftools
 # sudo:            wrangle some installations (might not be 100% necessary)
@@ -24,6 +25,7 @@ apt-get install -y libbz2-dev && \
 apt-get install -y libffi-dev && \
 apt-get install -y liblzma-dev && \
 apt-get install -y libncurses5-dev && \
+apt-get install -y libsqlite3-dev && \
 apt-get install -y libssl-dev && \
 apt-get install -y make && \
 apt-get install -y sudo && \
@@ -45,7 +47,9 @@ apt-get install -y vim && \
 apt-get clean
 
 # install python and friends (warning: this takes about 15 minutes)
-RUN wget https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tgz && tar -xf Python-3.11.1.tgz && cd Python-3.11.1 && ./configure --disable-test-modules --enable-optimizations && make && sudo make install 
+RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0rc3.tgz && tar -xf Python-3.12.0rc3.tgz && cd Python-3.12.0rc3 && ./configure --disable-test-modules --enable-optimizations && make && sudo make install 
+RUN pip3 install ete3
+RUN pip3 install tqdm
 RUN pip3 install numpy
 RUN pip3 install pandas
 RUN pip3 install Matplotlib
@@ -66,6 +70,9 @@ RUN cd bin && wget https://github.com/samtools/bcftools/releases/download/1.16/b
 RUN git clone https://github.com/lh3/seqtk.git && cd seqtk && make && cd .. && mv seqtk bin/seqtk
 
 # grab premade sra-tool binaries
+## !! due to how SRANWRP works, we currently cannot update to 3.0.5 or higher !!
+## 3.0.5 adds pacbio support to fasterq-dump, but sranwrp relies on that failure to avoid
+## issues with clockwork, which only supports illumina data. 
 RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.1-ubuntu64.tar.gz
 
 # fix some perl stuff (might not be needed but I'm taking no chances)
@@ -89,4 +96,4 @@ RUN echo 'alias pip="pip3"' >> ~/.bashrc
 ENV PATH=/bin:/bin/seqtk:/root/edirect/:/bin/sratoolkit.3.0.1-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # cleanup
-RUN sudo rm /bin/bcftools-1.16.tar.bz2 && sudo rm /bin/samtools-1.16.1.tar.bz2 && sudo rm /bin/sratoolkit.3.0.1-ubuntu64.tar.gz && sudo rm Python-3.11.1.tgz && sudo rm -rf Python-3.11.1
+RUN sudo rm /bin/bcftools-1.16.tar.bz2 && sudo rm /bin/samtools-1.16.1.tar.bz2 && sudo rm /bin/sratoolkit.3.0.1-ubuntu64.tar.gz && sudo rm Python-3.12.0rc3.tgz && sudo rm -rf Python-3.12.0rc3
