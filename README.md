@@ -1,4 +1,4 @@
-# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.1.15?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags) [![Quay.io Link](https://img.shields.io/badge/quay.io-1.1.15-blue?logo=redhat "Docker Repository on Quay")](https://quay.io/repository/aofarrel/sranwrp)
+# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.1.15?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags)
 SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Ubuntu-based Docker image and some optional assorted workflows. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
 
 ## What tasks can it perform?
@@ -8,7 +8,7 @@ The combination of e-direct and sra-tools allows it do basically anything you ca
 * [Pull paired FASTQs from a list of run accessions (SRR/ERR/DRR)](./workflows/pull_paired_FASTQ_by_run_accession.wdl)
 * [Pull paired FASTQs from a lit of BioSample accessions - can be SRS or SAME notation](./workflows/pull_paired_FASTQ_by_biosample.wdl)
 * Plus some bonus [non-workflow pulling tasks](./tasks/pull_fastqs.wdl)
-* *Note* -- as fasterq-dump is being used, pulling non-Illumina fastqs is not supported.
+* *Note* -- as a pre-3.0.5 version of fasterq-dump is being used, pulling non-Illumina fastqs is not supported.
 
 ### Getting Organism + TaxID from a list of BioProject/BioSample accessions
 There's a lot of BioProjects on SRA, and some of them are multi-species. Use [this workflow](./workflows/get_organisms_from_bioproject.wdl) to get a list of all run accessions, and said run accessions' species and TaxIDs, from a list of BioProject accessions. If you instead have a list of BioSamples, use [this workflow](./workflows/get_organisms_from_biosample.wdl) to get species and taxid (as well as a list of all run accessions).
