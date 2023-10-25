@@ -3,6 +3,46 @@ version 1.0
 # These are tasks that synergize with the other tasks in this repo, but do not
 # query SRA (or any other NCBI platform) directly.
 
+task write_csv {
+	input {
+		Array[String] headings
+		Array[Array[String]] stuff_to_write
+		Int lines_of_data = length(stuff_to_write)
+		String outfile = "reports.csv"
+		Boolean tsv = false
+	}
+
+	command <<<
+	set -eux -o pipefail
+	python << CODE
+	
+	sep="\t" if "~{tsv}" == "true" else ","
+	
+	def write_array(array)
+		with open("~{outfile}", "a") as f:
+			f.write(thing+sep for thing in array)
+	
+	write_array(["~{sep='","' headings}"])
+	if ~{lines_of_data} == 1:
+		write_array(["~{sep='","' stuff_to_write}[0]"])
+	else:
+		pass
+
+	CODE
+	>>>
+
+	output {
+		File finalOut = outfile
+	}
+
+	runtime {
+		disks: "local-disk 10 HDD"
+		docker: "python:3.12-slim"
+		preemptible: 2
+		memory: "8 GB"
+	}
+}
+
 task extract_accessions_from_file {
 	# Convert txt file of a list of bioproj/biosamp/run accessions, one accession
 	# per newline (except for some blank lines), into an Array[String].
