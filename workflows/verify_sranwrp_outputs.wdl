@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bash-arrays-are-hard/tasks/get_metadata.wdl" as metatasks
-import "https://raw.githubusercontent.com/aofarrel/SRANWRP/bash-arrays-are-hard/tasks/processing_tasks.wdl" as processingtasks
+import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/get_metadata.wdl" as metatasks
+import "https://raw.githubusercontent.com/aofarrel/SRANWRP/main/tasks/processing_tasks.wdl" as processingtasks
 
 # This workflow verifies that older verisons SRANWRP's pull task gave the correct number of run accessions
 # by querying how many run accessions biosamples should have compared to what showed up in the pull report.
