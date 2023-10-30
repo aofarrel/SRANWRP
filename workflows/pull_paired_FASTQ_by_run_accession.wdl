@@ -14,28 +14,28 @@ task pull_fq_from_SRA_accession {
 	input {
 		String sra_accession
 
-		Int prefetch_max_size = 20  # default for prefetch is 20 GB
+		Int prefetch_max_size_KB = 20000000  # default for prefetch is 20 GB
 		Boolean fail_on_invalid = false
-		Int subsample_cutoff = -1
+		Int subsample_cutoff_MB = -1
 		Int subsample_seed = 1965
 
-		Int disk_size = 100
+		Int disk_size_GB = 100
 		Int preempt = 1	
 	}
 
 	parameter_meta {
     	sra_accession:     "SRA run accession (not BioSample) to pull fastqs from - can be SRR, ERR, etc"
-    	disk_size:         "Size, in GB, of disk - acts as a hard limit on GCP backends including Terra"
+    	disk_size_GB:         "Size, in GB, of disk - acts as a hard limit on GCP backends including Terra"
     	fail_on_invalid:   "Error (instead of exit 0 with null output) if output invalid"
     	preempt:           "Number of times to attempt task on a preemptible VM; ignored if not on a GCP backend"
-    	prefetch_max_size: "prefetch --max_size"
-    	subsample_cutoff:  "If a fastq > this value in MB, the fastq will be subsampled (set to -1 to disable)"
+    	prefetch_max_size: "prefetch --max_size. Note that this is in KB!"
+    	subsample_cutoff_MB:  "If a fastq > this value in MB, the fastq will be subsampled (set to -1 to disable)"
     	subsample_seed:    "Seed to use when subsampling large fastqs"
 	}
 
 	command <<<
 		set -eux pipefail
-		prefetch -vvv --max-size ~{prefetch_max_size} "~{sra_accession}"  # prefetch is not always required, but is good practice
+		prefetch -vvv --max-size ~{prefetch_max_size_KB} "~{sra_accession}"  # prefetch is not always required, but is good practice
 		fasterq-dump -vvv -x ./"~{sra_accession}"
 		NUMBER_OF_FQ=$(fdfind "~{sra_accession}" | wc -l)
 		echo "$NUMBER_OF_FQ" > number_of_reads.txt
@@ -88,12 +88,12 @@ task pull_fq_from_SRA_accession {
 			fi
 		fi
 		# check size, unless cutoff is -1
-		if [[ ! "~{subsample_cutoff}" = "-1" ]]
+		if [[ ! "~{subsample_cutoff_MB}" = "-1" ]]
 		then
 			READ1=$(fdfind _1)
 			READ2=$(fdfind _2)
 			fastq1size=$(du -m "$READ1" | cut -f1)
-			if [[ fastq1size -gt ~{subsample_cutoff} ]]
+			if [[ fastq1size -gt ~{subsample_cutoff_MB} ]]
 			then
 				seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
 				seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
@@ -110,7 +110,7 @@ task pull_fq_from_SRA_accession {
 
 	runtime {
 		cpu: 4
-		disks: "local-disk " + disk_size + " SSD"
+		disks: "local-disk " + disk_size_GB + " SSD"
 		docker: "ashedpotatoes/sranwrp:1.1.6"
 		memory: "8 GB"
 		preemptible: preempt
@@ -127,7 +127,7 @@ workflow SRA_YOINK {
 		Array[String] sra_accessions
 
 		# per iteration
-		Int disk_size = 100
+		Int disk_size_GB = 100
 		Int preempt = 1
 	}
 
@@ -135,7 +135,7 @@ workflow SRA_YOINK {
 		call pull_fq_from_SRA_accession as pull {
 			input:
 				sra_accession = sra_accession,
-				disk_size = disk_size,
+				disk_size_GB = disk_size_GB,
 				preempt = preempt
 		}
 		if(length(pull.fastqs)>1) {
