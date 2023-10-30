@@ -25,7 +25,7 @@ task pull_fq_from_SRA_accession {
 		set -eux pipefail
 		prefetch "~{sra_accession}"  # prefetch is not always required, but is good practice
 		fasterq-dump "~{sra_accession}"
-		NUMBER_OF_FQ=$(fdfind "$SRR" | wc -l)
+		NUMBER_OF_FQ=$(fdfind "~{sra_accession}" | wc -l)
 		echo "$NUMBER_OF_FQ" > number_of_reads.txt
 		IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
 		if [[ $IS_ODD == 0 ]]
@@ -89,9 +89,9 @@ task pull_fq_from_SRA_accession {
 				rm "$READ2"
 				mv temp1.fq "$READ1"
 				mv temp2.fq "$READ2"
-				echo "    $SRR: PASS - downsampled from $fastq1size MB" >> "~{sra_accession}"_pull_results.txt
+				echo "    ~{sra_accession}: PASS - downsampled from $fastq1size MB" >> "~{sra_accession}"_pull_results.txt
 			else
-				echo "    $SRR: PASS" >> "~{sra_accession}"_pull_results.txt
+				echo "    ~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
 	>>>
