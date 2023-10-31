@@ -14,29 +14,38 @@ task pull_fq_from_SRA_accession {
 	input {
 		String sra_accession
 
-		Int prefetch_max_size_KB = 20000000  # default for prefetch is 20 GB
-		Boolean fail_on_invalid = false
-		Int subsample_cutoff_MB = -1
-		Int subsample_seed = 1965
-
-		Int disk_size_GB = 100
-		Int preempt = 1	
+		Boolean crash_if_bad_output = false
+		Int     disk_size_GB = 100
+		Int     preempt = 1	
+		Boolean prefetch = true
+		Int     prefetch_max_size_KB = 20000000  # default for prefetch is 20 GB
+		Int     subsample_cutoff_MB = -1
+		Int     subsample_seed = 1965
 	}
 
 	parameter_meta {
-    	sra_accession:     "SRA run accession (not BioSample) to pull fastqs from - can be SRR, ERR, etc"
+    	sra_accession:        "SRA run accession (not BioSample) to pull fastqs from - can be SRR, ERR, etc"
+    	crash_if_bad_output:  "Error (instead of exit 0 with null output) if output invalid"
     	disk_size_GB:         "Size, in GB, of disk - acts as a hard limit on GCP backends including Terra"
-    	fail_on_invalid:   "Error (instead of exit 0 with null output) if output invalid"
-    	preempt:           "Number of times to attempt task on a preemptible VM; ignored if not on a GCP backend"
-    	prefetch_max_size_KB: "prefetch --max_size. Note that this is in KB!"
+    	preempt:              "Number of times to attempt task on a preemptible VM; ignored if not on a GCP backend"
+    	prefetch:             "Should we use prefetch? (recommended)"
+    	prefetch_max_size_KB: "prefetch --max_size. Note that this is in KB to align with how prefetch works."
     	subsample_cutoff_MB:  "If a fastq > this value in MB, the fastq will be subsampled (set to -1 to disable)"
-    	subsample_seed:    "Seed to use when subsampling large fastqs"
+    	subsample_seed:       "Seed to use when subsampling large fastqs"
 	}
 
 	command <<<
 		set -eux pipefail
-		prefetch -vvv --max-size ~{prefetch_max_size_KB} "~{sra_accession}"  # prefetch is not always required, but is good practice
-		fasterq-dump -vvv -x ./"~{sra_accession}"
+		if [[ "~{prefetch}" == "true" ]]
+		then
+			# prefetch is not always required, but is good practice
+			prefetch --max-size ~{prefetch_max_size_KB} "~{sra_accession}"
+			fasterq-dump -vvv -x ./"~{sra_accession}"
+		else
+			fasterq-dump -vvv -x "~{sra_accession}"
+		fi
+		
+		# check the number of fastq files we ended up with
 		NUMBER_OF_FQ=$(fdfind "~{sra_accession}" | wc -l)
 		echo "$NUMBER_OF_FQ" > number_of_reads.txt
 		IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
@@ -49,11 +58,11 @@ task pull_fq_from_SRA_accession {
 			if [[ $NUMBER_OF_FQ == 1 ]]
 			then
 				echo "Only one fastq found"
-				if [ "~{fail_on_invalid}" == "true" ]
+				if [ "~{crash_if_bad_output}" == "true" ]
 				then
 					exit 1
-				else
-					# don't fail, but give no output
+				else  # don't fail, but don't output any fastqs
+					echo "    ~{sra_accession}: FAIL (one fastq)" >> "~{sra_accession}"_pull_results.txt
 					rm ./*.fastq
 					exit 0
 				fi
@@ -63,17 +72,15 @@ task pull_fq_from_SRA_accession {
 					# somehow we got 5, 7, 9, etc reads
 					# this should probably never happen
 					echo "Odd number > 3 files found"
-					if [ "~{fail_on_invalid}" == "true" ]
+					if [ "~{crash_if_bad_output}" == "true" ]
 					then
 						exit 1
-					else
-						# could probably adapt the 3-case
+					else  # TODO: could probably adapt the 3-case?
+						echo "    ~{sra_accession}: FAIL (weird number of fastqs)" >> "~{sra_accession}"_pull_results.txt
 						rm ./*.fastq
 						exit 0
 					fi
-
 				fi
-
 				# three files present
 				READ1=$(fdfind _1)
 				READ2=$(fdfind _2)
@@ -87,6 +94,7 @@ task pull_fq_from_SRA_accession {
 				echo "~{sra_accession}" > accession.txt
 			fi
 		fi
+		
 		# check size, unless cutoff is -1
 		if [[ ! "~{subsample_cutoff_MB}" = "-1" ]]
 		then
@@ -119,6 +127,7 @@ task pull_fq_from_SRA_accession {
 	output {
 		Array[File?] fastqs = glob("*.fastq")
 		Int num_fastqs = read_int("number_of_reads.txt")
+		String status = read_string(glob("*_pull_results.txt")[0])
 	}
 }
 
