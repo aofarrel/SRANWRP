@@ -18,7 +18,7 @@ workflow SRA_YOINK {
 	}
 
 	scatter(sra_accession in sra_accessions) {
-		call pull_fq_from_SRA_accession as pull {
+		call pulltasks.pull_fq_from_SRA_accession as pull {
 			input:
 				sra_accession = sra_accession,
 				disk_size_GB = disk_size_GB,
