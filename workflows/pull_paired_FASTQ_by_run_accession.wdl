@@ -28,7 +28,7 @@ task pull_fq_from_SRA_accession {
     	disk_size_GB:         "Size, in GB, of disk - acts as a hard limit on GCP backends including Terra"
     	fail_on_invalid:   "Error (instead of exit 0 with null output) if output invalid"
     	preempt:           "Number of times to attempt task on a preemptible VM; ignored if not on a GCP backend"
-    	prefetch_max_size: "prefetch --max_size. Note that this is in KB!"
+    	prefetch_max_size_KB: "prefetch --max_size. Note that this is in KB!"
     	subsample_cutoff_MB:  "If a fastq > this value in MB, the fastq will be subsampled (set to -1 to disable)"
     	subsample_seed:    "Seed to use when subsampling large fastqs"
 	}
