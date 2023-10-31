@@ -1,5 +1,126 @@
 version 1.0
 
+task pull_fq_from_SRA_accession {
+	input {
+		String sra_accession
+
+		Boolean crash_if_bad_output = false
+		Int     disk_size_GB = 100
+		Int     preempt = 1	
+		Boolean prefetch = true
+		Int     prefetch_max_size_KB = 20000000  # default for prefetch is 20 GB
+		Int     subsample_cutoff_MB = -1
+		Int     subsample_seed = 1965
+	}
+
+	parameter_meta {
+    	sra_accession:        "SRA run accession (not BioSample) to pull fastqs from - can be SRR, ERR, etc"
+    	crash_if_bad_output:  "Error (instead of exit 0 with null output) if output invalid"
+    	disk_size_GB:         "Size, in GB, of disk - acts as a hard limit on GCP backends including Terra"
+    	preempt:              "Number of times to attempt task on a preemptible VM; ignored if not on a GCP backend"
+    	prefetch:             "Should we use prefetch? (recommended)"
+    	prefetch_max_size_KB: "prefetch --max_size. Note that this is in KB to align with how prefetch works."
+    	subsample_cutoff_MB:  "If a fastq > this value in MB, the fastq will be subsampled (set to -1 to disable)"
+    	subsample_seed:       "Seed to use when subsampling large fastqs"
+	}
+
+	command <<<
+		set -eux pipefail
+		if [[ "~{prefetch}" == "true" ]]
+		then
+			# prefetch is not always required, but is good practice
+			prefetch --max-size ~{prefetch_max_size_KB} "~{sra_accession}"
+			fasterq-dump -vvv -x ./"~{sra_accession}"
+		else
+			fasterq-dump -vvv -x "~{sra_accession}"
+		fi
+		
+		# check the number of fastq files we ended up with
+		NUMBER_OF_FQ=$(fdfind "~{sra_accession}" | wc -l)
+		echo "$NUMBER_OF_FQ" > number_of_reads.txt
+		IS_ODD=$(echo "$NUMBER_OF_FQ % 2" | bc)
+		if [[ $IS_ODD == 0 ]]
+		then
+			echo "Even number of fastqs"
+			echo "~{sra_accession}" > accession.txt
+		else
+			echo "Odd number of fastqs; checking if we can still use them..."
+			if [[ $NUMBER_OF_FQ == 1 ]]
+			then
+				echo "Only one fastq found"
+				if [ "~{crash_if_bad_output}" == "true" ]
+				then
+					exit 1
+				else  # don't fail, but don't output any fastqs
+					echo "    ~{sra_accession}: FAIL (one fastq)" >> "~{sra_accession}"_pull_results.txt
+					rm ./*.fastq
+					exit 0
+				fi
+			else
+				if [[ $NUMBER_OF_FQ != 3 ]]
+				then
+					# somehow we got 5, 7, 9, etc reads
+					# this should probably never happen
+					echo "Odd number > 3 files found"
+					if [ "~{crash_if_bad_output}" == "true" ]
+					then
+						exit 1
+					else  # TODO: could probably adapt the 3-case?
+						echo "    ~{sra_accession}: FAIL (weird number of fastqs)" >> "~{sra_accession}"_pull_results.txt
+						rm ./*.fastq
+						exit 0
+					fi
+				fi
+				# three files present
+				READ1=$(fdfind _1)
+				READ2=$(fdfind _2)
+				mkdir temp
+				mv "$READ1" "temp/$READ1"
+				mv "$READ2" "temp/$READ2"
+				BARCODE=$(fdfind ".fastq")
+				rm "$BARCODE"
+				mv "temp/$READ1" "./$READ1"
+				mv "temp/$READ2" "./$READ2"
+				echo "~{sra_accession}" > accession.txt
+			fi
+		fi
+		
+		# check size, unless cutoff is -1
+		if [[ ! "~{subsample_cutoff_MB}" = "-1" ]]
+		then
+			READ1=$(fdfind _1)
+			READ2=$(fdfind _2)
+			fastq1size=$(du -m "$READ1" | cut -f1)
+			if [[ fastq1size -gt ~{subsample_cutoff_MB} ]]
+			then
+				seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+				seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+				rm "$READ1"
+				rm "$READ2"
+				mv temp1.fq "$READ1"
+				mv temp2.fq "$READ2"
+				echo "    ~{sra_accession}: PASS - downsampled from $fastq1size MB" >> "~{sra_accession}"_pull_results.txt
+			else
+				echo "    ~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
+			fi
+		fi
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size_GB + " SSD"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
+		memory: "8 GB"
+		preemptible: preempt
+	}
+
+	output {
+		Array[File?] fastqs = glob("*.fastq")
+		Int num_fastqs = read_int("number_of_reads.txt")
+		String status = read_string(glob("*_pull_results.txt")[0])
+	}
+}
+
 task pull_fq_from_biosample {
 	input {
 		String biosample_accession
