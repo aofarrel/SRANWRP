@@ -117,7 +117,7 @@ task pull_fq_from_SRA_accession {
 	output {
 		Array[File?] fastqs = glob("*.fastq")
 		Int num_fastqs = read_int("number_of_reads.txt")
-		String status = read_string(glob("*_pull_results.txt")[0])
+		String status = read_string(sra_accession+"_pull_results.txt")
 	}
 }
 
