@@ -31,7 +31,6 @@ workflow SRA_YOINK {
 
 	output {
 		Array[Array[File]] all_fastqs = select_all(paired_fastqs)
-		Array[Int] number_of_fastqs_per_accession = pull.num_fastqs
 	}
 
 }
