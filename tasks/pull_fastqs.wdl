@@ -25,14 +25,29 @@ task pull_fq_from_SRA_accession {
 	}
 
 	command <<<
-		set -eux pipefail
+		# shellcheck disable=SC2086  # if a return code has a space in it we have bigger problems
 		if [[ "~{prefetch}" == "true" ]]
 		then
-			# prefetch is not always required, but is good practice
 			prefetch --max-size ~{prefetch_max_size_KB} "~{sra_accession}"
-			fasterq-dump -vvv -x ./"~{sra_accession}"
+			rc_prefetch=$? 
+			if [[ ! $rc_prefetch = 0 ]]
+			then
+				echo "ERROR -- prefetch returned $rc_fasterqdump -- check ~{prefetch_max_size_KB} KB is big enough for your file"
+				echo "    ~{sra_accession}: FAIL (prefetch error)" >> "~{sra_accession}"_pull_results.txt
+				exit $rc_fasterqdump
+			else
+				fasterq-dump -vvv -x ./"~{sra_accession}"
+			fi
 		else
 			fasterq-dump -vvv -x "~{sra_accession}"
+		fi
+		
+		rc_fasterqdump=$?
+		if [[ ! $rc_fasterqdump = 0 ]]
+		then
+			echo "ERROR -- prefetch succeeded, but fasterq-dump returned $rc_fasterqdump"
+			echo "    ~{sra_accession}: FAIL (fasterq-dump error)" >> "~{sra_accession}"_pull_results.txt
+			exit $rc_fasterqdump
 		fi
 		
 		# check the number of fastq files we ended up with
@@ -42,7 +57,6 @@ task pull_fq_from_SRA_accession {
 		if [[ $IS_ODD == 0 ]]
 		then
 			echo "Even number of fastqs"
-			echo "~{sra_accession}" > accession.txt
 		else
 			echo "Odd number of fastqs; checking if we can still use them..."
 			if [[ $NUMBER_OF_FQ == 1 ]]
@@ -81,7 +95,6 @@ task pull_fq_from_SRA_accession {
 				rm "$BARCODE"
 				mv "temp/$READ1" "./$READ1"
 				mv "temp/$READ2" "./$READ2"
-				echo "~{sra_accession}" > accession.txt
 			fi
 		fi
 		
@@ -104,7 +117,8 @@ task pull_fq_from_SRA_accession {
 				echo "    ~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
-		ls -lha
+		
+		
 	>>>
 
 	runtime {
@@ -117,8 +131,8 @@ task pull_fq_from_SRA_accession {
 
 	output {
 		Array[File?] fastqs = glob("*.fastq")
+		String status = read_string(sra_accession+"_pull_results.txt")
 		#Int num_fastqs = read_int("number_of_reads.txt")
-		#String status = read_string(sra_accession+"_pull_results.txt")
 	}
 }
 
