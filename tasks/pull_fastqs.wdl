@@ -104,6 +104,7 @@ task pull_fq_from_SRA_accession {
 				echo "    ~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
+		ls -lha
 	>>>
 
 	runtime {
@@ -116,8 +117,8 @@ task pull_fq_from_SRA_accession {
 
 	output {
 		Array[File?] fastqs = glob("*.fastq")
-		Int num_fastqs = read_int("number_of_reads.txt")
-		String status = read_string(sra_accession+"_pull_results.txt")
+		#Int num_fastqs = read_int("number_of_reads.txt")
+		#String status = read_string(sra_accession+"_pull_results.txt")
 	}
 }
 
