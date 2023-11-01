@@ -33,7 +33,7 @@ task pull_fq_from_SRA_accession {
 			if [[ ! $rc_prefetch = 0 ]]
 			then
 				echo "ERROR -- prefetch returned $rc_fasterqdump -- check ~{prefetch_max_size_KB} KB is big enough for your file"
-				echo "    ~{sra_accession}: FAIL (prefetch error)" >> "~{sra_accession}"_pull_results.txt
+				echo "~{sra_accession}: FAIL (prefetch error)" >> "~{sra_accession}"_pull_results.txt
 				exit $rc_fasterqdump
 			else
 				fasterq-dump -vvv -x ./"~{sra_accession}"
@@ -46,7 +46,7 @@ task pull_fq_from_SRA_accession {
 		if [[ ! $rc_fasterqdump = 0 ]]
 		then
 			echo "ERROR -- prefetch succeeded, but fasterq-dump returned $rc_fasterqdump"
-			echo "    ~{sra_accession}: FAIL (fasterq-dump error)" >> "~{sra_accession}"_pull_results.txt
+			echo "~{sra_accession}: FAIL (fasterq-dump error)" >> "~{sra_accession}"_pull_results.txt
 			exit $rc_fasterqdump
 		fi
 		
@@ -57,6 +57,7 @@ task pull_fq_from_SRA_accession {
 		if [[ $IS_ODD == 0 ]]
 		then
 			echo "Even number of fastqs"
+			echo "~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
 		else
 			echo "Odd number of fastqs; checking if we can still use them..."
 			if [[ $NUMBER_OF_FQ == 1 ]]
@@ -66,7 +67,7 @@ task pull_fq_from_SRA_accession {
 				then
 					exit 1
 				else  # don't fail, but don't output any fastqs
-					echo "    ~{sra_accession}: FAIL (one fastq)" >> "~{sra_accession}"_pull_results.txt
+					echo "~{sra_accession}: FAIL (one fastq)" >> "~{sra_accession}"_pull_results.txt
 					rm ./*.fastq
 					exit 0
 				fi
@@ -80,7 +81,7 @@ task pull_fq_from_SRA_accession {
 					then
 						exit 1
 					else  # TODO: could probably adapt the 3-case?
-						echo "    ~{sra_accession}: FAIL (weird number of fastqs)" >> "~{sra_accession}"_pull_results.txt
+						echo "~{sra_accession}: FAIL (weird number of fastqs)" >> "~{sra_accession}"_pull_results.txt
 						rm ./*.fastq
 						exit 0
 					fi
@@ -95,6 +96,7 @@ task pull_fq_from_SRA_accession {
 				rm "$BARCODE"
 				mv "temp/$READ1" "./$READ1"
 				mv "temp/$READ2" "./$READ2"
+				echo "~{sra_accession}: PASS (three fastqs, deleted the odd one out)" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
 		
@@ -112,13 +114,12 @@ task pull_fq_from_SRA_accession {
 				rm "$READ2"
 				mv temp1.fq "$READ1"
 				mv temp2.fq "$READ2"
-				echo "    ~{sra_accession}: PASS - downsampled from $fastq1size MB" >> "~{sra_accession}"_pull_results.txt
+				echo "~{sra_accession}: PASS - downsampled from $fastq1size MB" >> "~{sra_accession}"_pull_results.txt
 			else
-				echo "    ~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
+				echo "~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
-		
-		
+		ls -lha
 	>>>
 
 	runtime {
