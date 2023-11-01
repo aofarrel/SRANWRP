@@ -348,14 +348,31 @@ task compare_files {
 	}
 }
 
-task map_to_tsv {
+task map_to_tsv_or_csv {
 	input {
 		Map[String, String] the_map
-		String outfile = "something.tsv"
+		String outfile = "something"
+		Boolean csv = true
+		Boolean ordered = true
+		Boolean transpose = true
 	}
 	
 	command <<<
-	mv ~{write_map(the_map)} ~{outfile}
+	mv ~{write_map(the_map)} ~{outfile}.tsv
+	if [[ "~{ordered}" == "true" ]]
+	then
+		sort -o ~{outfile}.tsv ~{outfile}.tsv
+	fi
+	python 3 << CODE
+	import pandas
+	unordered = pd.read_csv("~{outfile}", sep='\t')
+	if "~{transpose}" == "true":
+		transposed = unordered.T
+		if "~{csv}" == "true" then transposed.to_csv("~{outfile}.csv"); else transposed.to_csv("~{outfile}.tsv", sep='\t')
+	else:
+		if "~{csv}" == "true" then unordered.to_csv("~{outfile}.csv"); else unordered.to_csv("~{outfile}.tsv", sep='\t')
+	CODE
+	
 	>>>
 	
 	runtime {
@@ -367,7 +384,7 @@ task map_to_tsv {
 	}
 
 	output {
-		File tsv = outfile
+		File tsv_or_csv = glob(outfile+"*")[0]
 	}
 }
 
