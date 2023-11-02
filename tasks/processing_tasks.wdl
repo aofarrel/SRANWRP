@@ -363,14 +363,20 @@ task map_to_tsv_or_csv {
 	then
 		sort -o ~{outfile}.tsv ~{outfile}.tsv
 	fi
-	python 3 << CODE
+	python3 << CODE
 	import pandas
-	unordered = pd.read_csv("~{outfile}", sep='\t')
+	unordered = pandas.read_csv("~{outfile}", sep='\t')
 	if "~{transpose}" == "true":
 		transposed = unordered.T
-		if "~{csv}" == "true" then transposed.to_csv("~{outfile}.csv"); else transposed.to_csv("~{outfile}.tsv", sep='\t')
+		if "~{csv}" == "true":
+			transposed.to_csv("~{outfile}.csv")
+		else:
+			transposed.to_csv("~{outfile}.tsv", sep='\t')
 	else:
-		if "~{csv}" == "true" then unordered.to_csv("~{outfile}.csv"); else unordered.to_csv("~{outfile}.tsv", sep='\t')
+		if "~{csv}" == "true":
+			unordered.to_csv("~{outfile}.csv")
+		else:
+			unordered.to_csv("~{outfile}.tsv", sep='\t')
 	CODE
 	
 	>>>
@@ -378,7 +384,7 @@ task map_to_tsv_or_csv {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + 10 + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.1.8"
+		docker: "ashedpotatoes/sranwrp:1.1.15"
 		memory: "8 GB"
 		preemptible: 2
 	}
