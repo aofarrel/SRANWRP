@@ -9,6 +9,7 @@ The combination of e-direct and sra-tools allows it do basically anything you ca
 * [Pull paired FASTQs from a lit of BioSample accessions - can be SRS or SAME notation](./workflows/pull_paired_FASTQ_by_biosample.wdl)
 * Plus some bonus [non-workflow pulling tasks](./tasks/pull_fastqs.wdl)
 * *Note* -- as a pre-3.0.5 version of fasterq-dump is being used, pulling non-Illumina fastqs is not supported.
+* *Note* -- it is recommended you set the disk_size variable to 20x the size of the largest .sra that you want to download.
 
 ### Getting Organism + TaxID from a list of BioProject/BioSample accessions
 There's a lot of BioProjects on SRA, and some of them are multi-species. Use [this workflow](./workflows/get_organisms_from_bioproject.wdl) to get a list of all run accessions, and said run accessions' species and TaxIDs, from a list of BioProject accessions. If you instead have a list of BioSamples, use [this workflow](./workflows/get_organisms_from_biosample.wdl) to get species and taxid (as well as a list of all run accessions).
