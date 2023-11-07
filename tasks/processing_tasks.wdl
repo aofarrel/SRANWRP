@@ -358,25 +358,25 @@ task map_to_tsv_or_csv {
 	}
 	
 	command <<<
-	mv ~{write_map(the_map)} ~{outfile}.tsv
+	mv ~{write_map(the_map)} map.tsv
 	if [[ "~{ordered}" == "true" ]]
 	then
-		sort -o ~{outfile}.tsv ~{outfile}.tsv
+		sort -o map.tsv map.tsv
 	fi
 	python3 << CODE
 	import pandas
-	unordered = pandas.read_csv("~{outfile}", sep='\t')
+	raw = pandas.read_csv("map.tsv", sep='\t')
 	if "~{transpose}" == "true":
-		transposed = unordered.T
+		transposed = raw.T
 		if "~{csv}" == "true":
 			transposed.to_csv("~{outfile}.csv")
 		else:
 			transposed.to_csv("~{outfile}.tsv", sep='\t')
 	else:
 		if "~{csv}" == "true":
-			unordered.to_csv("~{outfile}.csv")
+			raw.to_csv("~{outfile}.csv")
 		else:
-			unordered.to_csv("~{outfile}.tsv", sep='\t')
+			raw.to_csv("~{outfile}.tsv", sep='\t')
 	CODE
 	
 	>>>
