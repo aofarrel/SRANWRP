@@ -359,6 +359,7 @@ task map_to_tsv_or_csv {
 	
 	command <<<
 	mv ~{write_map(the_map)} map.tsv
+	cat map.tsv
 	if [[ "~{ordered}" == "true" ]]
 	then
 		sort -o map.tsv map.tsv
@@ -366,17 +367,19 @@ task map_to_tsv_or_csv {
 	python3 << CODE
 	import pandas
 	raw = pandas.read_csv("map.tsv", sep='\t')
+	print(raw)
 	if "~{transpose}" == "true":
 		transposed = raw.T
+		print(transposed)
 		if "~{csv}" == "true":
-			transposed.to_csv("~{outfile}.csv")
+			transposed.to_csv("~{outfile}.csv", index=False)
 		else:
-			transposed.to_csv("~{outfile}.tsv", sep='\t')
+			transposed.to_csv("~{outfile}.tsv", sep='\t', index=False)
 	else:
 		if "~{csv}" == "true":
-			raw.to_csv("~{outfile}.csv")
+			raw.to_csv("~{outfile}.csv", index=False)
 		else:
-			raw.to_csv("~{outfile}.tsv", sep='\t')
+			raw.to_csv("~{outfile}.tsv", sep='\t', index=False)
 	CODE
 	
 	>>>
@@ -391,6 +394,7 @@ task map_to_tsv_or_csv {
 
 	output {
 		File tsv_or_csv = glob(outfile+"*")[0]
+		File? debug_map = "map.tsv"
 	}
 }
 
