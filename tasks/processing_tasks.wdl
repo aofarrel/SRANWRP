@@ -352,10 +352,14 @@ task map_to_tsv_or_csv {
 	input {
 		Map[String, String] the_map
 		String outfile = "something"
+		Array[String] column_names = ["values"] # probably should only ever be one value
 		Boolean csv = true
 		Boolean ordered = true
 		Boolean transpose = true
+		Boolean round = true
 	}
+	
+	# TODO: make the values column the name of the sample or something
 	
 	command <<<
 	mv ~{write_map(the_map)} map.tsv
@@ -366,20 +370,35 @@ task map_to_tsv_or_csv {
 	fi
 	python3 << CODE
 	import pandas
-	raw = pandas.read_csv("map.tsv", sep='\t')
-	raw.fillna("N/A")  # necessary b/c Pandas thinks "NA" is NaN and then leaves a black space in CSV
+	raw = pandas.read_csv("map.tsv", sep='\t', index_col=0, names="~{sep='' column_names}")
+	raw.fillna("N/A", inplace=True)  # necessary b/c Pandas thinks "NA" is NaN and then leaves a black space in CSV
+	
+	def round_values(x):
+		# will be performed on every member of the "values" column iff round is true
+		try:
+			rounded = round(float(x), 2)
+			if rounded.is_integer():
+				return int(x)
+			else:
+				return rounded
+		except ValueError:  # string
+			return x
+	
+	if "~{round}" == "true":
+		raw = raw.map(round_values)
+	
 	if "~{transpose}" == "true":
 		transposed = raw.T
 		print(transposed)
 		if "~{csv}" == "true":
-			transposed.to_csv("~{outfile}.csv", index=False)
+			transposed.to_csv("~{outfile}.csv")
 		else:
-			transposed.to_csv("~{outfile}.tsv", sep='\t', index=False)
+			transposed.to_csv("~{outfile}.tsv", sep='\t')
 	else:
 		if "~{csv}" == "true":
-			raw.to_csv("~{outfile}.csv", index=False)
+			raw.to_csv("~{outfile}.csv")
 		else:
-			raw.to_csv("~{outfile}.tsv", sep='\t', index=False)
+			raw.to_csv("~{outfile}.tsv", sep='\t')
 	CODE
 	
 	>>>
