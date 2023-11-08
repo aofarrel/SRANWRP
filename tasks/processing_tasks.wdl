@@ -370,7 +370,7 @@ task map_to_tsv_or_csv {
 	fi
 	python3 << CODE
 	import pandas
-	raw = pandas.read_csv("map.tsv", sep='\t', index_col=0, names="~{sep='' column_names}")
+	raw = pandas.read_csv("map.tsv", sep='\t', index_col=0, names=["~{sep='' column_names}"])
 	raw.fillna("N/A", inplace=True)  # necessary b/c Pandas thinks "NA" is NaN and then leaves a black space in CSV
 	
 	def round_values(x):
