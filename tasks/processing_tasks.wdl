@@ -367,7 +367,7 @@ task map_to_tsv_or_csv {
 	python3 << CODE
 	import pandas
 	raw = pandas.read_csv("map.tsv", sep='\t')
-	print(raw)
+	raw.fillna("N/A")  # necessary b/c Pandas thinks "NA" is NaN and then leaves a black space in CSV
 	if "~{transpose}" == "true":
 		transposed = raw.T
 		print(transposed)
