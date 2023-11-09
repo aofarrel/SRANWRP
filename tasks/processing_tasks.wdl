@@ -3,6 +3,46 @@ version 1.0
 # These are tasks that synergize with the other tasks in this repo, but do not
 # query SRA (or any other NCBI platform) directly.
 
+task write_csv {
+	input {
+		Array[String] headings
+		Array[Array[String]] stuff_to_write
+		Int lines_of_data = length(stuff_to_write)
+		String outfile = "reports.csv"
+		Boolean tsv = false
+	}
+
+	command <<<
+	set -eux -o pipefail
+	python << CODE
+	
+	sep="\t" if "~{tsv}" == "true" else ","
+	
+	def write_array(array)
+		with open("~{outfile}", "a") as f:
+			f.write(thing+sep for thing in array)
+	
+	write_array(["~{sep='","' headings}"])
+	if ~{lines_of_data} == 1:
+		write_array(["~{sep='","' stuff_to_write}[0]"])
+	else:
+		pass
+
+	CODE
+	>>>
+
+	output {
+		File finalOut = outfile
+	}
+
+	runtime {
+		disks: "local-disk 10 HDD"
+		docker: "python:3.12-slim"
+		preemptible: 2
+		memory: "8 GB"
+	}
+}
+
 task extract_accessions_from_file {
 	# Convert txt file of a list of bioproj/biosamp/run accessions, one accession
 	# per newline (except for some blank lines), into an Array[String].
@@ -305,6 +345,75 @@ task compare_files {
 
 	output {
 		File difference = "difference.txt"
+	}
+}
+
+task map_to_tsv_or_csv {
+	input {
+		Map[String, String] the_map
+		String outfile = "something"
+		Array[String] column_names = ["values"] # probably should only ever be one value
+		Boolean csv = true
+		Boolean ordered = true
+		Boolean transpose = true
+		Boolean round = true
+	}
+	
+	# TODO: make the values column the name of the sample or something
+	
+	command <<<
+	mv ~{write_map(the_map)} map.tsv
+	cat map.tsv
+	if [[ "~{ordered}" == "true" ]]
+	then
+		sort -o map.tsv map.tsv
+	fi
+	python3 << CODE
+	import pandas
+	raw = pandas.read_csv("map.tsv", sep='\t', index_col=0, names=["~{sep='' column_names}"])
+	raw.fillna("N/A", inplace=True)  # necessary b/c Pandas thinks "NA" is NaN and then leaves a black space in CSV
+	
+	def round_values(x):
+		# will be performed on every member of the "values" column iff round is true
+		try:
+			rounded = round(float(x), 2)
+			if rounded.is_integer():
+				return int(x)
+			else:
+				return rounded
+		except ValueError:  # string
+			return x
+	
+	if "~{round}" == "true":
+		raw = raw.map(round_values)
+	
+	if "~{transpose}" == "true":
+		transposed = raw.T
+		print(transposed)
+		if "~{csv}" == "true":
+			transposed.to_csv("~{outfile}.csv")
+		else:
+			transposed.to_csv("~{outfile}.tsv", sep='\t')
+	else:
+		if "~{csv}" == "true":
+			raw.to_csv("~{outfile}.csv")
+		else:
+			raw.to_csv("~{outfile}.tsv", sep='\t')
+	CODE
+	
+	>>>
+	
+	runtime {
+		cpu: 4
+		disks: "local-disk " + 10 + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.1.15"
+		memory: "8 GB"
+		preemptible: 2
+	}
+
+	output {
+		File tsv_or_csv = glob(outfile+"*")[0]
+		File? debug_map = "map.tsv"
 	}
 }
 
