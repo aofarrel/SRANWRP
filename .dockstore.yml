@@ -28,6 +28,11 @@ workflows:
       - /workflows/pull_paired_FASTQ_by_biosample.json
     authors:
       - orcid: 0000-0003-4896-1858
+  - name: pull_FASTQs_from_SRA_by_biosample_alt
+    subclass: WDL
+    primaryDescriptorPath: /workflows/pull_paired_FASTQ_by_biosample_alt.wdl
+    authors:
+      - orcid: 0000-0003-4896-1858
   - name: pull_FASTQs_from_SRA_by_run
     subclass: WDL
     primaryDescriptorPath: /workflows/pull_paired_FASTQ_by_run_accession.wdl
