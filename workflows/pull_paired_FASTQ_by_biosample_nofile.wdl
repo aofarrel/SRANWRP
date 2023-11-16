@@ -3,7 +3,7 @@ version 1.0
 import "../tasks/pull_fastqs.wdl" as pulltasks
 import "../tasks/processing_tasks.wdl" as processingtasks
 
-workflow BIOSAMP_YOINK_ALT {
+workflow BIOSAMP_YOINK_NOFILE {
 	input {
 		Array[String] biosample_accessions
 
