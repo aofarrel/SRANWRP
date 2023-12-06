@@ -158,25 +158,55 @@ task cat_files {
 	input {
 		Array[File] files
 		Array[File]? removal_candidates
-		Float removal_threshold = 0.05
-		String out_filename = "all.txt"
-		Int preempt = 1
+		Array[String]? overwrite_first_lines
+		
+		String  first_lines_out_filename = "firstlines.txt"
 		Boolean keep_only_unique_lines = false
-		Boolean output_first_lines = true
+		Int     preempt = 1
+		String  out_filename = "all.txt"
+		Float   removal_threshold = 0.05
 		Boolean strip_first_line_first_char = true
-		String first_lines_out_filename = "firstlines.txt"
 		Boolean verbose = false
 	}
 	Int disk_size = ceil(size(files, "GB")) * 2
 	Int number_of_files = length(files)
+	Boolean overwrite = defined(overwrite_first_lines)
 
 	command <<<
+	
+	# check for valid inputs
+	FILES=(~{sep=" " files})
+	REPORTS=(~{sep= " " removal_candidates})
+	OVERWRITES=(~{sep= " " overwrite_first_lines})
+	
+	if (( ${#REPORTS[@]} != 0 )) && (( ${#REPORTS[@]} != ${#FILES[@]} )); then echo "WARNING: Number of removal guides doesn't match number of inputs."; fi
+	if (( ${#OVERWRITES[@]} != 0 )) && (( ${#OVERWRITES[@]} != ${#FILES[@]} )); then echo "ERROR: Rename array doesn't match number of input files" && exit 1; fi
 
+	fx_cat_and_firstlines () {
+		# $1 is iteration (index), $2 is file
+		if [[ "~{overwrite}" = "true" ]]
+		then
+			ITER=$1
+			echo "${OVERWRITES[$ITER]}" >> "~{first_lines_out_filename}"
+			echo "${OVERWRITES[$ITER]}" >> "~{out_filename}"
+			tail -n +2 "$2" >> "~{out_filename}"
+		elif [[ "~{strip_first_line_first_char}" = "true" ]]
+		then
+			firstline=$(head -1 "$2")
+			echo "${firstline:1}" >> "~{first_lines_out_filename}.txt"
+			cat "$2" >> "~{out_filename}"
+		else
+			head -1 "$2" >> "~{first_lines_out_filename}.txt"
+			cat "$2" >> "~{out_filename}"
+		fi
+	}
+	
 	if [[ ! "~{sep=' ' removal_candidates}" = "" ]]
 	then
 		echo "Checking which files ought to not be included..."
 		cat ~{sep=" " removal_candidates} >> removal_guide.tsv
 		FILES=(~{sep=" " files})
+		ITER=0
 		for FILE in "${FILES[@]}"
 		do
 			# check if it's in the removal guide and below threshold
@@ -193,23 +223,10 @@ task cat_files {
 				if [[ $is_bigger == 0 ]]
 				then
 					# this_files_value is below the removal threshold and passes
-					cat "$FILE" >> "~{out_filename}"
+					fx_cat_and_firstlines $ITER "$FILE"
 					if [[ "~{verbose}" = "true" ]]
 					then
 						echo "$FILE added."
-					fi
-
-					# now, check if we're grabbing first lines (for diffs, this means samples)
-					if [[ "~{output_first_lines}" = "true" ]]
-					then
-						touch "~{first_lines_out_filename}.txt"
-						if [[ "~{strip_first_line_first_char}" = "true" ]]
-						then
-							firstline=$(head -1 "$FILE")
-							echo "${firstline:1}" >> "~{first_lines_out_filename}.txt"
-						else
-							head -1 "$FILE" >> "~{first_lines_out_filename}.txt"
-						fi
 					fi
 				
 				else
@@ -221,28 +238,21 @@ task cat_files {
 				echo "$baseroot_file" >> removed.txt
 				echo "WARNING: Removal guide exists but can't find $basename_file in it! Skipping..."
 			fi
+			(( ITER++ ))
 		done
 	else
 		# no removal guide, so we keep things simple
 		echo "No removal guide found, so we'll add all the files we have to the outfile..."
 		cat ~{sep=" " files} >> "~{out_filename}"
 
-		# output first lines if we need to
-		if [[ "~{output_first_lines}" = "true" ]]
-		then
-			touch "~{first_lines_out_filename}.txt"
-			FILES=(~{sep=" " files})
-			for FILE in "${FILES[@]}"
-			do
-				if [[ "~{strip_first_line_first_char}" = "true" ]]
-				then
-					firstline=$(head -1 "$FILE")
-					echo "${firstline:1}" >> "~{first_lines_out_filename}.txt"
-				else
-					head -1 "$FILE" >> "~{first_lines_out_filename}.txt"
-				fi
-			done
-		fi
+		# output first lines
+		ITER=0
+		FILES=(~{sep=" " files})
+		for FILE in "${FILES[@]}"
+		do
+			fx_cat_and_firstlines $ITER "$FILE"
+			(( ITER++ ))
+		done
 	fi
 
 	if [[ "~{keep_only_unique_lines}" = "true" ]]
