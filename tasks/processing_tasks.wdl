@@ -179,8 +179,8 @@ task cat_files {
 	REPORTS=(~{sep= " " removal_candidates})
 	OVERWRITES=(~{sep= " " overwrite_first_lines})
 	
-	if (( ${#REPORTS[@]} != 0 )) && (( ${#REPORTS[@]} != ${#FILES[@]} )); then echo "WARNING: Number of removal guides doesn't match number of inputs."; fi
-	if (( ${#OVERWRITES[@]} != 0 )) && (( ${#OVERWRITES[@]} != ${#FILES[@]} )); then echo "ERROR: Rename array doesn't match number of input files" && exit 1; fi
+	if (( ${#REPORTS[@]} != 0 )) && (( ${#REPORTS[@]} != ${#FILES[@]} )); then echo "WARNING: Number of removal guides (${#REPORTS[@]}) doesn't match number of inputs (${#FILES[@]})"; fi
+	if (( ${#OVERWRITES[@]} != 0 )) && (( ${#OVERWRITES[@]} != ${#FILES[@]} )); then echo "ERROR: Rename array (${#OVERWRITES[@]}) doesn't match number of input files (${#FILES[@]})" && exit 1; fi
 
 	fx_cat_and_firstlines () {
 		# $1 is iteration (index), $2 is file
@@ -188,15 +188,16 @@ task cat_files {
 		then
 			ITER=$1
 			echo "${OVERWRITES[$ITER]}" >> "~{first_lines_out_filename}"
-			echo "${OVERWRITES[$ITER]}" >> "~{out_filename}"
+			echo ">${OVERWRITES[$ITER]}" >> "~{out_filename}"
 			tail -n +2 "$2" >> "~{out_filename}"
-		elif [[ "~{strip_first_line_first_char}" = "true" ]]
+			echo iter is "$ITER" and overwrite is "${OVERWRITES[$ITER]}" at this index
+		elif [[ "~{overwrite}" = "false" && "~{strip_first_line_first_char}" = "true" ]]
 		then
 			firstline=$(head -1 "$2")
-			echo "${firstline:1}" >> "~{first_lines_out_filename}.txt"
+			echo "${firstline:1}" >> "~{first_lines_out_filename}"
 			cat "$2" >> "~{out_filename}"
 		else
-			head -1 "$2" >> "~{first_lines_out_filename}.txt"
+			head -1 "$2" >> "~{first_lines_out_filename}"
 			cat "$2" >> "~{out_filename}"
 		fi
 	}
@@ -243,7 +244,6 @@ task cat_files {
 	else
 		# no removal guide, so we keep things simple
 		echo "No removal guide found, so we'll add all the files we have to the outfile..."
-		cat ~{sep=" " files} >> "~{out_filename}"
 
 		# output first lines
 		ITER=0
@@ -313,7 +313,7 @@ task cat_files {
 		Int files_input = number_of_files
 		Int files_passed = number_of_files - read_int("number_of_removed_files.txt")
 		Array[String] removed_files = read_lines("removed.txt")
-		File? first_lines = first_lines_out_filename +".txt"
+		File? first_lines = first_lines_out_filename
 		File? removal_guide = "removal_guide.tsv"
 	}
 }
