@@ -29,17 +29,24 @@ workflow Download_FQs_From_BioProject {
         }
         
         if(length([yoink.tarball_fastqs]) != 0) {
+            # To access these files in other workflows, we only need the path to
+            # these files, not the files themselves. So let's convert to strings.
             String valid_biosample = yoink.biosample
-            String valid_fastqs = select_first([yoink.tarball_fastqs, bioproject])
+            String valid_fastqs = select_first([yoink.tarball_fastqs, bioproject])  # !StringCoercion
             Array[String] biosample_and_fqs = [valid_biosample, valid_fastqs]
+            # Outside of this if block, biosample_and_fqs becomes Array[String]?
         }
+        Array[String] coerced_biosample_and_fqs = select_first([biosample_and_fqs, ["foo"]])
+        # We do this within the scatter to get Array[Array[String]] coerced_biosample_and_fqs
+        # outside the scatter. Otherwise, we'd have Array[Array[String]?] biosample_and_fqs
+        # which seems to be impossible to make not-optional without flatten().
     }
     
     if(to_terra_data_table) {
         call processing.write_csv as make_terra_data_table {
             input:
                 headings = ["entity:sample_id", "fastqs"],
-                stuff_to_write = select_all(biosample_and_fqs),
+                stuff_to_write = coerced_biosample_and_fqs,
                 outfile = bioproject + ".tsv",
                 tsv = true
         }
