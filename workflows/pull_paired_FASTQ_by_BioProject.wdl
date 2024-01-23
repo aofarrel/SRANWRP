@@ -6,7 +6,7 @@ import "../tasks/processing_tasks.wdl" as processing
 workflow Download_FQs_From_BioProject {
     input {
         String bioproject
-        Boolean to_terra_data_table = true
+        Boolean to_terra_data_table = false
     }
     
     call metadata.get_BioSample_accession_IDs_by_bioproject as get_biosamples {
@@ -36,25 +36,11 @@ workflow Download_FQs_From_BioProject {
             Array[String] biosample_and_fqs = [valid_biosample, valid_fastqs]
             # Outside of this if block, biosample_and_fqs becomes Array[String]?
         }
-        Array[String] coerced_biosample_and_fqs = select_first([biosample_and_fqs, ["foo"]])
-        # We do this within the scatter to get Array[Array[String]] coerced_biosample_and_fqs
-        # outside the scatter. Otherwise, we'd have Array[Array[String]?] biosample_and_fqs
-        # which seems to be impossible to make not-optional without flatten().
-    }
-    
-    if(to_terra_data_table) {
-        call processing.write_csv as make_terra_data_table {
-            input:
-                headings = ["entity:sample_id", "fastqs"],
-                stuff_to_write = coerced_biosample_and_fqs,
-                outfile = bioproject + ".tsv",
-                tsv = true
-        }
     }
     
     output {
-        Array[File?] fqs_per_biosample = yoink.tarball_fastqs
-        File? terra_tsv = make_terra_data_table.finalOut
+        Array[File?] fastq_tarballs = yoink.tarball_fastqs
+        Array[Array[String?]?] fqs_per_biosample = biosample_and_fqs
     }
 
 }
