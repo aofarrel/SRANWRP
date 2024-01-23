@@ -361,8 +361,9 @@ task pull_fq_from_biosample {
 			# tar the outputs, if that's what you want
 			if [ ~{tar_outputs} == "true" ]
 			then
-				FQ=$(fdfind ".fastq")
-				tar -rf "~{biosample_accession}.tar" "$FQ"
+				FQ=$(fdfind ".fastq" | tr '\n' ' ')
+				# shellcheck disable=SC2086
+				tar -rf "~{biosample_accession}.tar" $FQ
 			fi
 		else
 			this_sample="~{biosample_accession}: NAY"
