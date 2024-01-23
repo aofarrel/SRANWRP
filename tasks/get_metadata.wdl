@@ -179,6 +179,37 @@ task get_SRA_accession_IDs_by_bioproject {
 	}
 }
 
+task get_BioSample_accession_IDs_by_bioproject {
+	# Given a BioProject accession, get its BioSample accession(s) -- but don't pull any fqs
+	input {
+		String bioproject_accession
+		Int preempt = 1
+		Int disk_size = 50
+	}
+
+	command {
+		esearch -db bioproject -query ~{bioproject_accession} | \
+			elink -target sra | \
+			efetch -format docsum | \
+			xtract -pattern DocumentSummary -element Sample@acc >> ~{bioproject_accession}.txt
+	}
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.0.8"
+		memory: "8 GB"
+		preemptible: preempt
+	}
+
+	output {
+		File accessions_as_file = "~{bioproject_accession}.txt"
+		# We cannot use WDL built-in read_lines() to get an Array[File] here,
+		# because there tends to be blank lines in the output.
+		# Use extract_accessions_from_file from processing_tasks.wdl instead!
+	}
+}
+
 
 task get_all_accession_IDs_by_bioproject {
 	# Given a BioProject accession, get ALL of its accessions 
