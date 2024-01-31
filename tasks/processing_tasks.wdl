@@ -13,7 +13,7 @@ task gather_files {
 	FILES=( ~{sep=' ' some_files} )
 	for FILE in "${FILES[@]}"
 	do
-		 mv "$FILE" .
+		mv "$FILE" .
 	done
 	>>>
 	output {
