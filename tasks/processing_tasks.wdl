@@ -3,6 +3,24 @@ version 1.0
 # These are tasks that synergize with the other tasks in this repo, but do not
 # query SRA (or any other NCBI platform) directly.
 
+task gather_files {
+	# A final task for workflows with a lot of outputs across a lot of tasks
+	# Useful for forcing miniwdl to put your outputs in a single folder
+	input {
+		Array[File] some_files
+	}
+	command <<<
+	FILES=( ~{sep=' ' some_files} )
+	for FILE in "${FILES[@]}"
+	do
+		 mv "$FILE" .
+	done
+	>>>
+	output {
+		Array[File] the_same_files = glob("*")
+	}
+}
+
 task write_csv {
 	input {
 		Array[String] headings
