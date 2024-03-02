@@ -1,3 +1,3 @@
 {
-  "SRA_TO_BIOSAMP.sra_accessions": "./inputs/tb_accessions/other/CRyPTIC_reuse_table_20231208.txt"
+  "SRA_TO_BIOSAMP.sra_accessions": "./inputs/tb_accessions/other/cryptic_ERS_possibly_skipped_uniq.txt"
 }
