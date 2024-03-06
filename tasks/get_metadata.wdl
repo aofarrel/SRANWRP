@@ -1,7 +1,52 @@
 version 1.0
 
-task get_biosample_accession_ID_from_SRA {
-	# Given an SRA accession, get its BioSample accession
+
+task get_biosample_from_read_or_ENA_accession_without_elink {
+	# Given a read accession (ERR023731) or ENA sample accession (ERS6422229),
+	# get a BioSample accession. 
+	# Does not use elink, which is known to be a bit unreliable.
+	input {
+		String sra_accession
+		Int preempt = 1
+		Int disk_size = 50
+		Boolean fail_if_sample_groups = true
+	}
+
+	command {
+		esearch -db sra -query ~{sra_accession} | esummary >> esummary.txt
+		cat esummary.txt | xtract -pattern DocumentSummary -element Biosample >> biosample.txt
+		if [[ "~{fail_if_sample_groups}" == "true" ]]
+		then
+			# example of a read in a sample group: ERR023730
+			# example of a read not in a sample group: ERR027295
+			cat esummary.txt | xtract -pattern DocumentSummary -element SamplePool@count >> pool.txt
+			words=$(wc -l "pool.txt")
+			if [[ ! "$words" == "0 pool.txt" ]]
+			then
+				echo "More than one biosample associated with ~{sra_accession}."
+				exit 1
+			fi
+		fi
+	}
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.0.8"
+		memory: "8 GB"
+		preemptible: preempt
+	}
+
+	output {
+		File accession_as_file = "biosample.txt"
+		String accession = read_string("biosample.txt")
+	}
+}
+
+task get_biosample_from_read_or_ENA_via_elink {
+	# Given a read accession (ERR023731) or ENA sample accession (ERS6422229),
+	# get a BioSample accession.
+	# This uses elink, which seems to be unreliable...
 	input {
 		String sra_accession
 		Int preempt = 1

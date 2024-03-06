@@ -18,7 +18,7 @@ workflow SRA_TO_BIOSAMP {
 
 
 	scatter(sra_accession in get_run_IDs.accessions) {
-		call metatasks.get_biosample_accession_ID_from_SRA as get_samples {
+		call metatasks.get_biosample_from_read_or_ENA_via_elink as get_samples {
 			input:
 				sra_accession = sra_accession
 		}
