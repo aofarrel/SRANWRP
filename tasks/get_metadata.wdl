@@ -1,7 +1,7 @@
 version 1.0
 
 
-task get_biosample_from_read_or_ENA_accession_without_elink {
+task get_biosample_from_read_or_ENA_without_elink {
 	# Given a read accession (ERR023731) or ENA sample accession (ERS6422229),
 	# get a BioSample accession. 
 	# Does not use elink, which is known to be a bit unreliable.
@@ -84,7 +84,7 @@ task get_biosample_from_read_or_ENA_via_elink {
 	}
 }
 
-task get_biosample_accession_IDs_from_SRA {
+task get_many_biosamples_from_read_or_ENA_via_elink {
 	# Given multiple SRA accessions, get a bunch of BioSample accessions
 	# It is more resource-efficient to run this instead of the above task
 	# in a scatter, but this task might obscure which accessions come from

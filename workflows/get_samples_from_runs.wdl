@@ -1,6 +1,6 @@
 version 1.0
 
-# Convert a bunch of SRA accessions into BioSample accessions, using scattered tasks and elink
+# Convert run or ENA/DDBJ accessions into BioSample accessions, using scattered tasks but avoiding elink
 # Author: Ash O'Farrell
 
 import "../tasks/processing_tasks.wdl" as processingtasks
@@ -18,7 +18,7 @@ workflow SRA_TO_BIOSAMP {
 
 
 	scatter(sra_accession in get_run_IDs.accessions) {
-		call metatasks.get_biosample_from_read_or_ENA_via_elink as get_samples {
+		call metatasks.get_biosample_from_read_or_ENA_without_elink as get_samples {
 			input:
 				sra_accession = sra_accession
 		}
