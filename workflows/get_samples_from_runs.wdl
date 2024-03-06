@@ -1,6 +1,6 @@
 version 1.0
 
-# Convert a bunch of SRA accessions into BioSample accessions
+# Convert a bunch of SRA accessions into BioSample accessions, using scattered tasks and elink
 # Author: Ash O'Farrell
 
 import "../tasks/processing_tasks.wdl" as processingtasks
