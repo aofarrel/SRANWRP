@@ -1,7 +1,8 @@
 version 1.0
 
 # Convert run or ENA/DDBJ accessions into Biosample accessions, without scattered tasks, but
-# using elink.
+# using elink. Due to how this is written, sorting always occurs, so if you need your outputs
+# to be in the exact same order as your inputs, use the other version of this workflow.
 # Author: Ash O'Farrell
 
 import "../tasks/processing_tasks.wdl" as processingtasks

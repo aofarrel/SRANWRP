@@ -9,11 +9,13 @@ import "../tasks/get_metadata.wdl" as metatasks
 workflow SRA_TO_BIOSAMP {
 	input {
 		File sra_accessions
+		Boolean sort_and_uniq = false
 	}
 
 	call processingtasks.extract_accessions_from_file as get_run_IDs {
 		input:
-			accessions_file = sra_accessions
+			accessions_file = sra_accessions,
+			sort_and_uniq = false
 	}
 
 
@@ -27,7 +29,7 @@ workflow SRA_TO_BIOSAMP {
 	call processingtasks.cat_files as cat {
 		input:
 			files = get_samples.accession_as_file,
-			keep_only_unique_lines = true
+			keep_only_unique_lines = sort_and_uniq
 	}
 
 	output {
