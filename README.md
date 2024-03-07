@@ -1,4 +1,4 @@
-# SRAnwrp [![DockerHub Link](https://img.shields.io/docker/v/ashedpotatoes/sranwrp/1.1.15?logo=docker)](https://hub.docker.com/r/ashedpotatoes/sranwrp/tags)
+# SRAnwrp
 SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Ubuntu-based Docker image and some optional assorted workflows. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
 
 ## What tasks can it perform?
