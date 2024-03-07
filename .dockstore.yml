@@ -17,6 +17,7 @@ workflows:
   - name: get_biosample_accessions_from_run_accessions
     subclass: WDL
     primaryDescriptorPath: /workflows/get_samples_from_runs.wdl
+    readMePath: /workflows/get_BioSample_from_stuff.md
     testParameterFiles:
       - /workflows/get_samples_from_runs.json
     authors:
