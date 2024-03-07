@@ -14,11 +14,22 @@ workflows:
       - /workflows/get_organisms_from_biosample.json
     authors:
       - orcid: 0000-0003-4896-1858
-  - name: get_biosample_accessions_from_run_accessions
+  - name: convert_to_biosample_elink
     subclass: WDL
-    primaryDescriptorPath: /workflows/get_samples_from_runs.wdl
+    primaryDescriptorPath: /workflows/get_BioSample_from_run_or_sample_elink.wdl
+    readMePath: /workflows/get_BioSample_from_stuff.md
     testParameterFiles:
-      - /workflows/get_samples_from_runs.json
+      - /workflows/get_BioSamp_from_ERS.json
+      - /workflows/get_BioSamp_from_SRR.json
+    authors:
+      - orcid: 0000-0003-4896-1858
+ - name: convert_to_biosample_scatter
+    subclass: WDL
+    primaryDescriptorPath: /workflows/get_biosample_from_run_or_sample_scatter.wdl
+    readMePath: /workflows/get_BioSample_from_stuff.md
+    testParameterFiles:
+      - /workflows/get_BioSamp_from_ERS.json
+      - /workflows/get_BioSamp_from_SRR.json
     authors:
       - orcid: 0000-0003-4896-1858
   - name: pull_FASTQs_from_SRA_by_biosample_nofile
