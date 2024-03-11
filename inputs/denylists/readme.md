@@ -289,3 +289,6 @@ SRR001705
 
 ## It's just too darn big
 SAMN17359332 has [a lot](https://www.ncbi.nlm.nih.gov/sra?LinkName=biosample_sra&from_uid=17359332) of read accessions associated with it. Eventually this blows through our disk size estimate. Same story with SAMN30839965 (although in that case the error in Cromwell is out of memory -- it's actually out of disk well before that happens though).
+
+## metadata nonsense
+Everything in cryptic_doubled.txt has two run accessions which are quite far apart in terms of when the sample was sequenced, and might represent two different samples. They are more likely to be resequencing of the same sample, but just to be safe... we're putting them on notice.
