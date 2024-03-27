@@ -76,14 +76,20 @@ task extract_accessions_from_file {
 		File accessions_file
 		Int preempt = 1
 		Boolean filter_na = true
+		Boolean sort_and_uniq = true
 	}
 	Int disk_size = ceil(size(accessions_file, "GB")) * 2
 
 	command <<<
-	sort "~{accessions_file}" | uniq -u > unique.txt
+	if [[ "~{sort_and_uniq}" = "true" ]]
+	then
+		sort "~{accessions_file}" | uniq -u > likely_valid.txt
+	else
+		cp "~{accessions_file}" ./likely_valid.txt
+	fi
 	python3 << CODE
 	import os
-	f = open("unique.txt", "r")
+	f = open("likely_valid.txt", "r")
 	valid = []
 	for line in (f.readlines()):
 		if line == "":
