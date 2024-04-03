@@ -264,7 +264,7 @@ SAMN07344518
 SAMN07344554
 ```
 
-If you run `java -Xmx1000m -jar /bioinf-tools/Trimmomatic-0.36/trimmomatic-0.36.jar PE -threads 1 /mounted/SAMEA2534285_1.decontam.fq /mounted/SAMEA2534285_2.decontam.fq var_call_SAMEA2534285/trimmed_reads.0.1.fq.gz /dev/null var_call_SAMEA2534285/trimmed_reads.0.2.fq.gz /dev/null ILLUMINACLIP:/bioinf-tools/Trimmomatic-0.36/adapters/TruSeq3-PE-2.fa:2:30:10  MINLEN:50 -phred33` on SAMEA2534285 after decontamination, you'll note the entire thing is trimmed. Understandably, this breaks when variants are called on the resulting empty files. It's possible this wouldn't happen if we didn't download its one read, ERR551913, which is normally 1149 MB, but for now we're adding it to the denylists. SAMEA2534824 and SAMN01797599 have the same issue.
+If you run `java -Xmx1000m -jar /bioinf-tools/Trimmomatic-0.36/trimmomatic-0.36.jar PE -threads 1 /mounted/SAMEA2534285_1.decontam.fq /mounted/SAMEA2534285_2.decontam.fq var_call_SAMEA2534285/trimmed_reads.0.1.fq.gz /dev/null var_call_SAMEA2534285/trimmed_reads.0.2.fq.gz /dev/null ILLUMINACLIP:/bioinf-tools/Trimmomatic-0.36/adapters/TruSeq3-PE-2.fa:2:30:10  MINLEN:50 -phred33` on SAMEA2534285 after decontamination, you'll note the entire thing is trimmed. Understandably, this breaks when variants are called on the resulting empty files. It's possible this wouldn't happen if we didn't downsample its one read, ERR551913, which is normally 1149 MB, but for now we're adding it to the denylists. SAMEA2534824 and SAMN01797599 have the same issue.
 
 The other samples on this list are tougher nuts to crack.
 
