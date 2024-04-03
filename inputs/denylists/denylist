@@ -16,6 +16,9 @@ SAMN08612795	nuked_post_decon
 SAMEA2534824	nuked_post_decon
 SAMN01797599	nuked_post_decon
 SAMEA2534285	nuked_post_deocn
+SAMN08379696	nuked_post_decon
+SAMN08612764	nuked_post_decon
+SAMN08612863	nuked_post_decon
 SAMEA5225290	varcall_other_failure
 SAMEA7550961	varcall_other_failure
 SAMEA7552104	varcall_other_failure
@@ -229,3 +232,4 @@ SAMN18872549    failed_pull
 SAMN18872554    failed_pull
 SAMN20355897    failed_pull
 SAMN20355901    failed_pull
+SAMN1041714	failed_pull
