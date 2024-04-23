@@ -1,87 +1,51 @@
 # denylists
-A list of denylists of samples known to be problematic when fed through [myco_sra](https://github.com/aofarrel/myco) and/or this repo's pull_fastqs.wdl (specifically the pull_fq_from_biosample task). denylist_samples.txt is currently more complete, except for the ones that lack a BioSample accession entirely.
+A list of denylists of samples known to be problematic when fed through [myco_sra](https://github.com/aofarrel/myco) and/or this repo's pull_fastqs.wdl (specifically the pull_fq_from_biosample task).
 
-In release 1.1.7, improvements to the pull_fq_from_biosample task means that a few more edge cases are tolerated. Most samples should still be skipped entirely because they have no useful data, but a handful have at least one acceptable read accession and don't need to be avoided entirely anymore. Thus, we have **denylist_samples.txt** which is the sorted concatenation of allerror_samples.txt, samplegroup_samples.txt, and somewheredownthelane_samples.txt (ie, does not include partialfail_samples.txt).
+In [release 1.1.7](https://github.com/aofarrel/SRANWRP/releases/tag/v1.1.7) and onwards, pull_fq_from_biosample's default behavior is to attempt to exit gracefully (rather than crash the entire WDL pipeline) if a sample is invalid. This prevents the entire WDL pipeline from crashing if a run accession fails to download due to an error in prefetch or fasterq-dump. However, some particularly tricky data still causes problems, so we still need a denylist.
 
-# Why Deny?
+In release 1.1.19, denylists were greatly expanded and reorganized.
 
-## Some reads are invalid (partialfail_*.txt)
-*pull_fq_from_biosample can handle these sample as of 1.1.7*  
-Some reads within these sample fail prefetch/faster-dump 3.0.1, but not all of them.
+# Why deny?
 
-### prefetch failure
-error:
-```
-`prefetch.3.0.1 err: name not found while resolving query within virtual file system module - failed to resolve accession 'x' - no data ( 404 )`
-```
-reads affected:
-```
-ERR760606 (SAMEA3231653, L4.1)
-ERR760898 (SAMEA3231746, L4.1)
-```  
-SAMEA3231653 has two reads that do succeed, and SAMEA3231746 has one that does succeed. 
+## Doesn't really fit what we're trying to do here
+PRJNA706121 is full of synthetic data. While it's great for testing our decontamination pipeline, that data should not be on the final phylogenetic tree.
 
-I asked NLM about ERR760606 and was told there are errors in the run, and that prevented NCBI SRA from processing it properly. They also [linked the EBI version](https://www.ebi.ac.uk/ena/browser/view/ERR760606?dataType=&show=xrefs), where it can still be accessed. It's possible that `curl -s -X POST "https://locate.ncbi.nlm.nih.gov/sdl/2/locality?acc=[some_run_accesion]"` could be used to spot weird runs like this at runtime.
+PRJNA323744 is hundreds of resequences of the same 44 patients, with data taken from various body parts post-mortem. This has implications for decontamination, but is likely to create false clusters on our phylogenetic tree due to so much of the data being near-identical. (We could grab one sample per each of the 44 patients, but it is "safest" to exclude the entire BioProject.)
 
-### mixed accession types
-These BioSamples have some Illumina and some PacBio runs within them. fasterq-dump can't handle PacBio so it throws an error.
-```
-ERR3825345 (SAMEA5803801, no lineage)
-SRR17231608 (SAMN09651729, no lineage)
-SRR17234893 (SAMN24039640, no lineage)
-SRR17234897 (SAMN24042990, no lineage)
-SRR3668213 (SAMN03257097, L3)
-SRR3668214 (SAMN03257097, L3)
-SRR3668218 (SAMN03253093, no lineage)
-SRR3668219 (SAMN03253093, no lineage)
-SRR5879396 (SAMN07312468, no lineage)
-SRR8186770 (SAMN10417149, no lineage)
-SRR8186771 (SAMN10417149, no lineage)
-SRR8186772 (SAMN10417149, no lineage)
-```
+## It's just too darn big
+SAMN17359332 has [a lot](https://www.ncbi.nlm.nih.gov/sra?LinkName=biosample_sra&from_uid=17359332) of read accessions associated with it. Eventually this blows through our disk size estimate. Same story with SAMN30839965 (although in that case the error in Cromwell is out of memory -- it's actually out of disk well before that happens though).
 
-## All reads fail prefetch or fasterq-dump (allerror_*.txt)
-All reads within these samples fail prefetch-3.0.1 or fasterq-dump-3.0.1
+## Fails in variant calling
+Examples: 
+* SAMEA2534824
+* SAMEA2534285
+* SAMEA5225290
+* SAMEA7550961
+* SAMEA7552104
+* SAMN01797599
+* SAMN07344516
+* SAMN07344518
+* SAMN07344554
 
-### `err: row #x : READ.len(x) != QUALITY.len(x) (F)`
-```
-ERR234214 (SAMEA1877221, L1.2.1)  
-ERR234218 (SAMEA1877166, L3)
-ERR234219 (SAMEA1877131, L3)
-ERR234231 (SAMEA1877282, no lineage)
-ERR538422 (SAMEA2609926, L2)  
-ERR538423 (SAMEA2609927, L2)  
-ERR538424 (SAMEA2609928, L2)  
-ERR538425 (SAMEA2609929, L2)  
-ERR538426 (SAMEA2609930, L2)  
-ERR538427 (SAMEA2609931, L2)  
-ERR538428 (SAMEA2609932, L2)  
-ERR538429 (SAMEA2609933, L2)  
-ERR538430 (SAMEA2609934, L2)  
-ERR538431 (SAMEA2609935, L2)  
-ERR538432 (SAMEA2609936, L2)  
-SRR960962 (SAMN02339318, L2)  
-```
+If you run `java -Xmx1000m -jar /bioinf-tools/Trimmomatic-0.36/trimmomatic-0.36.jar PE -threads 1 /mounted/SAMEA2534285_1.decontam.fq /mounted/SAMEA2534285_2.decontam.fq var_call_SAMEA2534285/trimmed_reads.0.1.fq.gz /dev/null var_call_SAMEA2534285/trimmed_reads.0.2.fq.gz /dev/null ILLUMINACLIP:/bioinf-tools/Trimmomatic-0.36/adapters/TruSeq3-PE-2.fa:2:30:10  MINLEN:50 -phred33` on SAMEA2534285 after decontamination, you'll note the entire thing is trimmed. Understandably, this breaks when variants are called on the resulting empty files. It's possible this wouldn't happen if we didn't downsample its one read, ERR551913, which is normally 1149 MB, but for now we're adding it to the denylists. SAMEA2534824 and SAMN01797599 have the same issue.
 
-### `int: no error - failed to verify`
-```
-ERR2179830 (SAMEA104357625, L1.2.1)
-ERR2179842 (SAMEA104357637, L3)
-```
+## Not actually TB
+Input list tb_z included "307", which does link to SAMN00000188 (SRS000422), which is indeed tagged as TB. However, it is also tagged as basically everything else.
 
-### unknown error
-error:
-```
-2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c run_producer_pool() : processed lookup rows: 35 of 36
-2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c execute_lookup_production() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
-2023-02-17T21:19:39 fasterq-dump.3.0.1 err: fasterq-dump.c produce_lookup_files() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
-```
-```
-SRR1180610 (SAMN02580571)
-SRR1180764 (SAMN02580571)
-```
+But why stop there? Get yourself a BioSample that can be it all: steph AND staph AND tuberculosis AND cdiff AND zebrafish AND salmonella AND plague AND western lowland gorilla: https://www.ncbi.nlm.nih.gov/biosample/9845
 
-## Accessions within sample groups (samplegroups_*.txt)
+## Not on google mirror, seem to have no data, do not have a biosample accession
+ERR1274706
+ERR181439
+ERR181441
+ERR1873513
+ERR3256208
+ERR760606
+ERR760780
+ERR760898
+ERR845308
+
+## Accessions within sample groups
 If you run the get-sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
 
 It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particularly odd, appearing not only in multiple groups below, but also multiple unrelated studies.
@@ -89,7 +53,7 @@ It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particula
 SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and were originally thrown out for having 12 reads returned. Since some of those reads are supposedly lineage 4.1, according to the lineage-4 specific file which was run-based (unlike the other files used to make my lineage lists, which were usually sample-based from the start), you should consider the lineage of sample in these groups to be suspect.
 
 ### sample group A
-| run       	| lineage
+| run       	| supposed lineage
 |-----------	|-----------	|
 | ERR023728 	| unknown       |
 | ERR023729 	| L4.7          |
@@ -123,7 +87,7 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 
 
 ### sample group B
-| run       	| lineage       |
+| run       	| supposed lineage       |
 |-----------	|-----------	|
 | ERR024348 	| unknown       |
 | ERR024349 	| unknown       |
@@ -154,7 +118,7 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007743    	    | SAMEA968101    |
 
 ### sample group C
-| run       	| lineage       |
+| run       	| supposed lineage       |
 |-----------	|-----------	|
 | ERR023741     | unknown       |	
 | ERR023742     | unknown       |	
@@ -185,7 +149,7 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007688         | SAMEA968183    |
 
 ### sample group D
-| run       	| lineage       |
+| run       	| supposed lineage       |
 |-----------	|-----------	|
 | ERR024336     | unknown       |
 | ERR024337     | unknown       |
@@ -216,7 +180,7 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007722         | SAMEA968137    |
 
 ### sample group E
-| run       	| lineage       |
+| run       	| supposed lineage       |
 |-----------	|-----------	|
 | ERR023753     | unknown       |
 | ERR023754     | unknown       |
@@ -246,46 +210,85 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007703         | SAMEA968201    |
 | ERS007704         | SAMEA968195    |
 
-## Fails later down the pipeline (somewheredownthelane_*.txt)
+# Previously bad, but work now!
 
-We only keep track of samples here, as reads have already been combined at this point.
-
-### fails in variant calling
+## Failure in prefetch
+**How it's currently handled:** The invalid read accession will be skipped.
 
 ```
-SAMEA2534824
-SAMEA2534285
-SAMEA5225290
-SAMEA7550961
-SAMEA7552104
-SAMN01797599
-SAMN07344516
-SAMN07344518
-SAMN07344554
+`prefetch.3.0.1 err: name not found while resolving query within virtual file system module - failed to resolve accession 'x' - no data ( 404 )`
 ```
 
-If you run `java -Xmx1000m -jar /bioinf-tools/Trimmomatic-0.36/trimmomatic-0.36.jar PE -threads 1 /mounted/SAMEA2534285_1.decontam.fq /mounted/SAMEA2534285_2.decontam.fq var_call_SAMEA2534285/trimmed_reads.0.1.fq.gz /dev/null var_call_SAMEA2534285/trimmed_reads.0.2.fq.gz /dev/null ILLUMINACLIP:/bioinf-tools/Trimmomatic-0.36/adapters/TruSeq3-PE-2.fa:2:30:10  MINLEN:50 -phred33` on SAMEA2534285 after decontamination, you'll note the entire thing is trimmed. Understandably, this breaks when variants are called on the resulting empty files. It's possible this wouldn't happen if we didn't downsample its one read, ERR551913, which is normally 1149 MB, but for now we're adding it to the denylists. SAMEA2534824 and SAMN01797599 have the same issue.
+Examples: 
+* ERR760606 (part of SAMEA3231653, which has other valid reads)
+* ERR760898 (part of SAMEA3231746, which has other valid reads)
 
-The other samples on this list are tougher nuts to crack.
+I asked NLM about ERR760606 and was told there are errors in the run, and that prevented NCBI SRA from processing it properly. They also [linked the EBI version](https://www.ebi.ac.uk/ena/browser/view/ERR760606?dataType=&show=xrefs), where it can still be accessed. It's possible that `curl -s -X POST "https://locate.ncbi.nlm.nih.gov/sdl/2/locality?acc=[some_run_accesion]"` could be used to spot weird runs like this at runtime.
 
 
-## miscellaneous
+## Relatively large samples
+**How it's currently handled:** Downsampling and really big disk size estimates.
 
-### not on google mirror, seem to have no data, do not have a biosample accession
-ERR1274706
-ERR181439
-ERR181441
-ERR1873513
-ERR3256208
-ERR760606
-ERR760780
-ERR760898
-ERR845308
+By default, reads are downsampled if they are over 450 MB in size. However, when running on GCP, we are still beholden to disk size limits, which is why ludicrously oversized samples such as SAMN17359332 still needs to be on the denylist.
 
-### appear in list Z, but aren't TB (biosample: SRS000422/SAMN00000188/307)
-SRR001703
-SRR001704
-SRR001705
+## Mixed accession types
+**How it's currently handled:** The invalid read accession will be skipped, and the valid one will be downloaded.
 
-## It's just too darn big
-SAMN17359332 has [a lot](https://www.ncbi.nlm.nih.gov/sra?LinkName=biosample_sra&from_uid=17359332) of read accessions associated with it. Eventually this blows through our disk size estimate. Same story with SAMN30839965 (although in that case the error in Cromwell is out of memory -- it's actually out of disk well before that happens though).
+These BioSamples have some Illumina and some PacBio runs within them. fasterq-dump can't handle PacBio so it throws an error. Examples:
+* ERR3825345 (SAMEA5803801)
+* SRR17231608 (SAMN09651729)
+* SRR17234893 (SAMN24039640)
+* SRR17234897 (SAMN24042990)
+* SRR3668213 (SAMN03257097)
+* SRR3668214 (SAMN03257097)
+* SRR3668218 (SAMN03253093)
+* SRR3668219 (SAMN03253093)
+* SRR5879396 (SAMN07312468)
+* SRR8186770 (SAMN10417149)
+* SRR8186771 (SAMN10417149)
+* SRR8186772 (SAMN10417149)
+
+## All reads fail prefetch or fasterq-dump (allerror_*.txt)
+**How it's currently handled:** Exit gracefully with no FQ output.
+
+### Read length =/= quality score
+
+`err: row #x : READ.len(x) != QUALITY.len(x) (F)`
+
+Examples: 
+* ERR234214 (SAMEA1877221)
+* ERR234218 (SAMEA1877166)
+* ERR234219 (SAMEA1877131)
+* ERR234231 (SAMEA1877282)
+* ERR538422 (SAMEA2609926)
+* ERR538423 (SAMEA2609927)
+* ERR538424 (SAMEA2609928)
+* ERR538425 (SAMEA2609929)
+* ERR538426 (SAMEA2609930)
+* ERR538427 (SAMEA2609931)
+* ERR538428 (SAMEA2609932)
+* ERR538429 (SAMEA2609933)
+* ERR538430 (SAMEA2609934)
+* ERR538431 (SAMEA2609935)
+* ERR538432 (SAMEA2609936)
+* SRR960962 (SAMN02339318)
+
+### No idea, but I guess that's bad
+
+```
+2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c run_producer_pool() : processed lookup rows: 35 of 36
+2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c execute_lookup_production() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
+2023-02-17T21:19:39 fasterq-dump.3.0.1 err: fasterq-dump.c produce_lookup_files() -> RC(rcVDB,rcNoTarg,rcConstructing,rcSize,rcInvalid)
+```
+
+Examples:
+* SRR1180610 (SAMN02580571)
+* SRR1180764 (SAMN02580571)
+
+### There's no error, but that's an error (my personal favorite)
+
+`int: no error - failed to verify`
+
+Examples: 
+* ERR2179830 (SAMEA104357625)
+* ERR2179842 (SAMEA104357637)

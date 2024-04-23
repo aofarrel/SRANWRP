@@ -1,3 +1,7 @@
+# pull_fq_from_biosample can handle these sample as of 1.1.7
+# this list is kept around just as an example of some edge cases,
+# and is not included in the overall denylist
+
 SAMEA3231653
 SAMEA3231746
 SAMEA5803801
