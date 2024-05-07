@@ -108,6 +108,8 @@ task get_SRA_accession_IDs_by_biosample_classic {
 	}
 }
 
+
+
 task get_SRA_accession_IDs_by_biosample_new {
 	# Given a BioSample accession, get its SRA accession(s) -- but don't pull any fqs.
 	# This avoid using elink and should be more reliable
@@ -291,6 +293,47 @@ task get_organism_per_biosample_multiple {
 			esearch = subprocess.Popen(["esearch", "-db", "sra", "-query", f"{accession}"], stdout=subprocess.PIPE)
 			esummary = subprocess.Popen("esummary", stdin=esearch.stdout, stdout=subprocess.PIPE)
 			xtract = subprocess.check_output(["xtract", "-pattern", "DocumentSummary", "-element", "Biosample,Run@acc,Organism@taxid,Organism@ScientificName"], stdin=esummary.stdout, text=True)
+			outs.append(xtract)
+		with open('organisms.txt', 'w') as f:
+			for out in outs:
+				f.write("%s" % out)
+		CODE
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.0.8"
+		memory: "4 GB"
+		preemptible: preempt
+	}
+
+	output {
+		File organisms_and_SRA_accessions = "organisms.txt"
+	}
+}
+
+task get_metadata_per_biosample_multiple {
+	input {
+		Array[String] biosample_accessions
+		Int preempt = 1
+		Int disk_size = 10
+	}
+
+
+esearch -db sra -query SAMEA110052003 | efetch -format xml | xtract -pattern   -element INSTRUMENT_MODEL
+
+
+	command <<<
+		python3.10 << CODE
+		import subprocess
+		accessions = ['~{sep="','" biosample_accessions}']
+		outs = []
+		subprocess.check_output(["touch organisms.txt"], shell=True)
+		for accession in accessions:
+			esearch = subprocess.Popen(["esearch", "-db", "sra", "-query", f"{accession}"], stdout=subprocess.PIPE)
+			esummary = subprocess.Popen("efect", "-format", "xml" stdin=esearch.stdout, stdout=subprocess.PIPE)
+			xtract = subprocess.check_output(["xtract", "-pattern", "EXPERIMENT_PACKAGE_SET", "-element", "Biosample,Run@acc,Organism@taxid,Organism@ScientificName"], stdin=esummary.stdout, text=True)
 			outs.append(xtract)
 		with open('organisms.txt', 'w') as f:
 			for out in outs:
