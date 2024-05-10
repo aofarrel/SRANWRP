@@ -313,6 +313,7 @@ task get_organism_per_biosample_multiple {
 	}
 }
 
+
 task get_metadata_per_biosample_multiple {
 	input {
 		Array[String] biosample_accessions
@@ -320,22 +321,18 @@ task get_metadata_per_biosample_multiple {
 		Int disk_size = 10
 	}
 
-
-esearch -db sra -query SAMEA110052003 | efetch -format xml | xtract -pattern   -element INSTRUMENT_MODEL
-
-
 	command <<<
 		python3.10 << CODE
 		import subprocess
 		accessions = ['~{sep="','" biosample_accessions}']
 		outs = []
-		subprocess.check_output(["touch organisms.txt"], shell=True)
+		subprocess.check_output(["touch metadata.tsv"], shell=True)
 		for accession in accessions:
-			esearch = subprocess.Popen(["esearch", "-db", "sra", "-query", f"{accession}"], stdout=subprocess.PIPE)
-			esummary = subprocess.Popen("efect", "-format", "xml" stdin=esearch.stdout, stdout=subprocess.PIPE)
-			xtract = subprocess.check_output(["xtract", "-pattern", "EXPERIMENT_PACKAGE_SET", "-element", "Biosample,Run@acc,Organism@taxid,Organism@ScientificName"], stdin=esummary.stdout, text=True)
+			esearch = subprocess.Popen(["esearch", "-db", "biosample", "-query", f"{accession}"], stdout=subprocess.PIPE)
+			esummary = subprocess.Popen(["efetch", "-format", "docsum"] stdin=esearch.stdout, stdout=subprocess.PIPE)
+			xtract = subprocess.check_output(["xtract", "-pattern", "BioSample", "-element", "Biosample,Run@acc,Organism@taxid,Organism@ScientificName"], stdin=esummary.stdout, text=True)
 			outs.append(xtract)
-		with open('organisms.txt', 'w') as f:
+		with open('metadata.tsv', 'w') as f:
 			for out in outs:
 				f.write("%s" % out)
 		CODE
@@ -350,6 +347,6 @@ esearch -db sra -query SAMEA110052003 | efetch -format xml | xtract -pattern   -
 	}
 
 	output {
-		File organisms_and_SRA_accessions = "organisms.txt"
+		File organisms_and_SRA_accessions = "metadata.tsv"
 	}
 }
