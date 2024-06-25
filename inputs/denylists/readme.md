@@ -12,6 +12,9 @@ PRJNA706121 is full of synthetic data. While it's great for testing our decontam
 
 PRJNA323744 is hundreds of resequences of the same 44 patients, with data taken from various body parts post-mortem. This has implications for decontamination, but is likely to create false clusters on our phylogenetic tree due to so much of the data being near-identical. (We could grab one sample per each of the 44 patients, but it is "safest" to exclude the entire BioProject.)
 
+## QC oddities
+Several (not all) samples in PRJNA1011210 have extremely low quality scores for read 2, resulting in those samples being wiped out by fastp. For simplicity we have denylisted the entire BioProject.
+
 ## It's just too darn big
 SAMN17359332 has [a lot](https://www.ncbi.nlm.nih.gov/sra?LinkName=biosample_sra&from_uid=17359332) of read accessions associated with it. Eventually this blows through our disk size estimate. Same story with SAMN30839965 (although in that case the error in Cromwell is out of memory -- it's actually out of disk well before that happens though).
 
