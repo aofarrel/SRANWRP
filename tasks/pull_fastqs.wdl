@@ -99,8 +99,23 @@ task pull_fq_from_SRA_accession {
 				echo "~{sra_accession}: PASS (three fastqs, deleted the odd one out)" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
+
+		# hacky method for minimum number of reads, as fqtools refuses to compile for me
+		number_of_reads=$(awk '{s++} END {print s/4}' $READ1)
+		if [ "$number_of_reads" -lt 20000 ]
+		then
+			echo "~{sra_accession}: FAIL (only $number_of_reads reads)"
+			if [ "~{crash_if_bad_output}" == "true" ]
+			then
+				exit 1
+			else  # don't fail, but don't output any fastqs
+				echo "~{sra_accession}: FAIL (only $number_of_reads reads)" >> "~{sra_accession}"_pull_results.txt
+				rm ./*.fastq
+				exit 0
+			fi
+		fi
 		
-		# check size, unless cutoff is -1
+		# check file size, unless cutoff is -1 (eg, maximum number of reads... kind of)
 		if [[ ! "~{subsample_cutoff_MB}" = "-1" ]]
 		then
 			READ1=$(fdfind _1)
@@ -119,7 +134,9 @@ task pull_fq_from_SRA_accession {
 				echo "~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
+
 		ls -lha
+		
 	>>>
 
 	runtime {
