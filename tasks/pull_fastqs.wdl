@@ -455,7 +455,7 @@ task pull_fq_from_biosample {
 			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
 		fi
 
-		echo "Finished pulling @ $(calculate_elapsed_minutes) minutes."
+		echo "Finished pulling @ $(fx_calculate_elapsed_minutes) minutes."
 		
 	>>>
 
