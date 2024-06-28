@@ -11,6 +11,7 @@ task pull_fq_from_SRA_accession {
 		Int     prefetch_max_size_KB = 20000000  # default for prefetch is 20 GB
 		Int     subsample_cutoff_MB = -1
 		Int     subsample_seed = 1965
+		Int     timeout_minutes = 120
 	}
 
 	parameter_meta {
@@ -22,31 +23,38 @@ task pull_fq_from_SRA_accession {
     	prefetch_max_size_KB: "prefetch --max_size. Note that this is in KB to align with how prefetch works."
     	subsample_cutoff_MB:  "If a fastq > this value in MB, the fastq will be subsampled (set to -1 to disable)"
     	subsample_seed:       "Seed to use when subsampling large fastqs"
+		timeout_minutes:      "Time out and give no output if prefetch or the pull itself takes longer than n minutes"
 	}
 
 	command <<<
 		# shellcheck disable=SC2086  # if a return code has a space in it we have bigger problems
+
+		start_time=$(date +%s)
+
 		if [[ "~{prefetch}" == "true" ]]
 		then
-			prefetch --max-size ~{prefetch_max_size_KB} "~{sra_accession}"
+			timeout -v ~{timeout_minutes}m prefetch --max-size ~{prefetch_max_size_KB} "~{sra_accession}"
 			rc_prefetch=$? 
 			if [[ ! $rc_prefetch = 0 ]]
 			then
 				echo "ERROR -- prefetch returned $rc_fasterqdump -- check ~{prefetch_max_size_KB} KB is big enough for your file"
-				echo "~{sra_accession}: FAIL (prefetch error)" >> "~{sra_accession}"_pull_results.txt
+				end_time=$(date +%s)
+				elapsed_time=$(( end_time - start_time ))
+				elapsed_minutes=$(( elapsed_time / 60 ))
+				echo "~{sra_accession}: FAIL (prefetch error $rc_fasterqdump) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
 				exit $rc_fasterqdump
 			else
-				fasterq-dump -vvv -x ./"~{sra_accession}"
+				timeout -v ~{timeout_minutes}m fasterq-dump -vvv -x ./"~{sra_accession}"
 			fi
 		else
-			fasterq-dump -vvv -x "~{sra_accession}"
+			timeout -v ~{timeout_minutes}m fasterq-dump -vvv -x "~{sra_accession}"
 		fi
 		
 		rc_fasterqdump=$?
 		if [[ ! $rc_fasterqdump = 0 ]]
 		then
 			echo "ERROR -- prefetch succeeded, but fasterq-dump returned $rc_fasterqdump"
-			echo "~{sra_accession}: FAIL (fasterq-dump error)" >> "~{sra_accession}"_pull_results.txt
+			echo "~{sra_accession}: FAIL (fasterq-dump error $rc_fasterqdump) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
 			exit $rc_fasterqdump
 		fi
 		
@@ -57,7 +65,11 @@ task pull_fq_from_SRA_accession {
 		if [[ $IS_ODD == 0 ]]
 		then
 			echo "Even number of fastqs"
-			echo "~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
+			end_time=$(date +%s)
+			elapsed_time=$(( end_time - start_time ))
+			elapsed_minutes=$(( elapsed_time / 60 ))
+			echo "~{sra_accession}: PASS @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
+			# don't exit yet!
 		else
 			echo "Odd number of fastqs; checking if we can still use them..."
 			if [[ $NUMBER_OF_FQ == 1 ]]
@@ -67,7 +79,10 @@ task pull_fq_from_SRA_accession {
 				then
 					exit 1
 				else  # don't fail, but don't output any fastqs
-					echo "~{sra_accession}: FAIL (one fastq)" >> "~{sra_accession}"_pull_results.txt
+					end_time=$(date +%s)
+					elapsed_time=$(( end_time - start_time ))
+					elapsed_minutes=$(( elapsed_time / 60 ))
+					echo "~{sra_accession}: FAIL (one fastq) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
 					rm ./*.fastq
 					exit 0
 				fi
@@ -81,7 +96,10 @@ task pull_fq_from_SRA_accession {
 					then
 						exit 1
 					else  # TODO: could probably adapt the 3-case?
-						echo "~{sra_accession}: FAIL (weird number of fastqs)" >> "~{sra_accession}"_pull_results.txt
+						end_time=$(date +%s)
+						elapsed_time=$(( end_time - start_time ))
+						elapsed_minutes=$(( elapsed_time / 60 ))
+						echo "~{sra_accession}: FAIL (weird number of fastqs) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
 						rm ./*.fastq
 						exit 0
 					fi
@@ -96,7 +114,10 @@ task pull_fq_from_SRA_accession {
 				rm "$BARCODE"
 				mv "temp/$READ1" "./$READ1"
 				mv "temp/$READ2" "./$READ2"
-				echo "~{sra_accession}: PASS (three fastqs, deleted the odd one out)" >> "~{sra_accession}"_pull_results.txt
+				end_time=$(date +%s)
+				elapsed_time=$(( end_time - start_time ))
+				elapsed_minutes=$(( elapsed_time / 60 ))
+				echo "~{sra_accession}: PASS (three fastqs, deleted the odd one out) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
 
@@ -108,8 +129,11 @@ task pull_fq_from_SRA_accession {
 			if [ "~{crash_if_bad_output}" == "true" ]
 			then
 				exit 1
-			else  # don't fail, but don't output any fastqs
-				echo "~{sra_accession}: FAIL (only $number_of_reads reads)" >> "~{sra_accession}"_pull_results.txt
+			else  # don't crash, but don't output any fastqs
+				end_time=$(date +%s)
+				elapsed_time=$(( end_time - start_time ))
+				elapsed_minutes=$(( elapsed_time / 60 ))
+				echo "~{sra_accession}: FAIL (only $number_of_reads reads) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
 				rm ./*.fastq
 				exit 0
 			fi
@@ -129,9 +153,15 @@ task pull_fq_from_SRA_accession {
 				rm "$READ2"
 				mv temp1.fq "$READ1"
 				mv temp2.fq "$READ2"
-				echo "~{sra_accession}: PASS - downsampled from $fastq1size MB" >> "~{sra_accession}"_pull_results.txt
+				end_time=$(date +%s)
+				elapsed_time=$(( end_time - start_time ))
+				elapsed_minutes=$(( elapsed_time / 60 ))
+				echo "~{sra_accession}: PASS (downsampled from $fastq1size MB) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
 			else
-				echo "~{sra_accession}: PASS" >> "~{sra_accession}"_pull_results.txt
+				end_time=$(date +%s)
+				elapsed_time=$(( end_time - start_time ))
+				elapsed_minutes=$(( elapsed_time / 60 ))
+				echo "~{sra_accession}: PASS @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
 			fi
 		fi
 
