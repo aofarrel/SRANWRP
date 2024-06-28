@@ -27,8 +27,6 @@ task pull_fq_from_SRA_accession {
 	}
 
 	command <<<
-		# shellcheck disable=SC2086  # if a return code has a space in it we have bigger problems
-
 		start_time=$(date +%s)
 
 		if [[ "~{prefetch}" == "true" ]]
@@ -42,6 +40,7 @@ task pull_fq_from_SRA_accession {
 				elapsed_time=$(( end_time - start_time ))
 				elapsed_minutes=$(( elapsed_time / 60 ))
 				echo "~{sra_accession}: FAIL (prefetch error $rc_fasterqdump) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
+				#shellcheck disable=SC2086
 				exit $rc_fasterqdump
 			else
 				timeout -v ~{timeout_minutes}m fasterq-dump -vvv -x ./"~{sra_accession}"
@@ -122,6 +121,7 @@ task pull_fq_from_SRA_accession {
 		fi
 
 		# hacky method for minimum number of reads, as fqtools refuses to compile for me
+		#shellcheck disable=SC2086
 		number_of_reads=$(awk '{s++} END {print s/4}' $READ1)
 		if [ "$number_of_reads" -lt 20000 ]
 		then
@@ -144,8 +144,8 @@ task pull_fq_from_SRA_accession {
 		then
 			READ1=$(fdfind _1)
 			READ2=$(fdfind _2)
-			fastq1size=$(du -m "$READ1" | cut -f1)
-			if [[ fastq1size -gt ~{subsample_cutoff_MB} ]]
+			fq1megabytes=$(du -m "$READ1" | cut -f1)
+			if [[ fq1megabytes -gt ~{subsample_cutoff_MB} ]]
 			then
 				seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
 				seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
@@ -156,7 +156,7 @@ task pull_fq_from_SRA_accession {
 				end_time=$(date +%s)
 				elapsed_time=$(( end_time - start_time ))
 				elapsed_minutes=$(( elapsed_time / 60 ))
-				echo "~{sra_accession}: PASS (downsampled from $fastq1size MB) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
+				echo "~{sra_accession}: PASS (downsampled from $fq1megabytes MB) @ ${elapsed_minutes} minutes" >> "~{sra_accession}"_pull_results.txt
 			else
 				end_time=$(date +%s)
 				elapsed_time=$(( end_time - start_time ))
@@ -189,9 +189,11 @@ task pull_fq_from_biosample {
 		String biosample_accession
 
 		Boolean fail_on_invalid = false
-		Boolean tar_outputs = false
+		Int minimum_reads = 20000
 		Int subsample_cutoff = 450
 		Int subsample_seed = 1965
+		Boolean tar_outputs = false
+		Int timeout_minutes = 120
 
 		Int disk_size = 100
 		Int preempt = 1
@@ -201,10 +203,12 @@ task pull_fq_from_biosample {
     	biosample_accession: "BioSample accession to pull fastqs from"
     	disk_size:           "Size, in GB, of disk (acts as a limit on GCP)"
     	fail_on_invalid:     "Error (instead of exit 0 with null output) if output invalid"
+		minimum_reads:       "Minimum number of reads a FQ file needs in order for that FQ to pass"
     	preempt:             "Number of times to attempt task on a preemptible VM (GCP only)"
     	subsample_cutoff:    "If a fastq > this value in MB, the fastq will be subsampled (set to -1 to disable)"
     	subsample_seed:      "Seed to use when subsampling large fastqs"
     	tar_outputs:         "Tarball all fastqs into one output file"
+		timeout_minutes:      "Time out and give no output if prefetch or the pull itself takes longer than n minutes"
 	}
 	
 	# Statuses:
@@ -220,23 +224,34 @@ task pull_fq_from_biosample {
 
 	command <<<
 		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
+
+		fx_calculate_elapsed_minutes() {
+			local end_time
+			end_time=$(date +%s)
+			local elapsed_time=$(( end_time - start_time ))
+			echo $(( elapsed_time / 60 ))
+		}
+
+		start_time=$(date +%s)
 		
 		# get run accessions from biosample
-		SRRS_STR=$(esearch -db sra -query ~{biosample_accession} | \
+		SRRS_STR=$(timeout -v ~{timeout_minutes}m esearch -db sra -query ~{biosample_accession} | \
 			esummary | xtract -pattern DocumentSummary -element Run@acc)
 		read -ra SRRS_ARRAY -d ' ' <<<"$SRRS_STR"
 
+		echo "$(calculate_elapsed_minutes) minutes to esearch"
+		
 		if [[ "$SRRS_STR" = "" ]]
 		then
 			echo "edirect returned no run accessions, trying another method after a brief pause..."
 			sleep 5
-			SRRS_STR=$(esearch -db biosample -query ~{biosample_accession} | \
+			SRRS_STR=$(timeout -v ~{timeout_minutes}m esearch -db biosample -query ~{biosample_accession} | \
 				elink -target sra | efetch -format docsum | \
 				xtract -pattern DocumentSummary -element Run@acc)
 			IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR"
 			if [[ "$SRRS_STR" = "" ]]
 			then
-				uh_oh="~{biosample_accession}: HUH"
+				uh_oh="~{biosample_accession}: HUH @ $(calculate_elapsed_minutes) minutes"
 				sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
 				if [[ "~{fail_on_invalid}" = true ]]
 				then
@@ -254,30 +269,31 @@ task pull_fq_from_biosample {
 		do
 			echo "searching $SRR"
 
-			prefetch "$SRR"
+			timeout -v ~{timeout_minutes}m prefetch "$SRR"
 			rc_prefetch=$?
 			if [[ ! $rc_prefetch = 0 ]]
 			then
-				echo "$SRR: ERROR -- prefetch returned $rc_prefetch"
+				echo "$SRR: ERROR -- prefetch returned $rc_prefetch @ $(calculate_elapsed_minutes) minutes"
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
 					set -eux -o pipefail
 					exit 1
 				else
+					# not necessarily a fatal error so continue
 					rm ./"$SRR"*.fastq
 				fi
 			fi
 
-			fasterq-dump "$SRR"
+			timeout -v ~{timeout_minutes}m fasterq-dump "$SRR"
 			rc_fasterqdump=$?
 			if [[ ! $rc_fasterqdump = 0 ]]
 			then
-				echo "ERROR -- fasterq-dump returned $rc_fasterqdump" # if only prefetch fails, this is NOT noted in the final report
+				echo "ERROR -- fasterq-dump returned $rc_fasterqdump @ $(calculate_elapsed_minutes) minutes"
 				if [[ "$rc_prefetch" = "0" ]]
 				then
-					echo "        $SRR: ERROR -- prefetch succeeded but fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
+					echo "        $SRR: ERROR -- prefetch succeeded but fasterqdump returned $rc_fasterqdump @ $(calculate_elapsed_minutes) minutes" >> ~{biosample_accession}_pull_results.txt
 				else
-					echo "        $SRR: ERROR -- prefetch returned $rc_prefetch, fasterqdump returned $rc_fasterqdump" >> ~{biosample_accession}_pull_results.txt
+					echo "        $SRR: ERROR -- prefetch returned $rc_prefetch, fasterqdump returned $rc_fasterqdump @ $(calculate_elapsed_minutes) minutes" >> ~{biosample_accession}_pull_results.txt
 				fi
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
@@ -294,34 +310,46 @@ task pull_fq_from_biosample {
 				then
 					echo "Even number of fastqs"
 					
-					# check size, unless cutoff is -1
-					if [[ ! "~{subsample_cutoff}" = "-1" ]]
+					# check if too small or too large
+					READ1=$(fdfind "$SRR"_1.fastq -d 1)
+					READ2=$(fdfind "$SRR"_2.fastq -d 1)
+					echo "Checking size of $READ1..."
+					fq1megabytes=$(du -m "$READ1" | cut -f1)
+					#shellcheck disable=SC2086
+					number_of_reads=$(awk '{s++} END {print s/4}' $READ1)  # this is hacky but good enough since fqtools refuses to compile
+					if [[ fq1megabytes -gt ~{subsample_cutoff} ]]
 					then
-						READ1=$(fdfind "$SRR"_1.fastq -d 1)
-						READ2=$(fdfind "$SRR"_2.fastq -d 1)
-						echo "Checking size of $READ1..."
-						fastq1size=$(du -m "$READ1" | cut -f1)
-						if [[ fastq1size -gt ~{subsample_cutoff} ]]
+						seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+						seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+						rm "$READ1"
+						rm "$READ2"
+						mv temp1.fq "$READ1"
+						mv temp2.fq "$READ2"
+						echo "        $SRR: PASS - downsampled from $fq1megabytes MB @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
+					elif [ "$number_of_reads" -lt ~{minimum_reads} ]
+					then
+						echo "        $SRR: FAIL - only $number_of_reads reads @ $(calculate_elapsed_minutes) minutes"
+						if [ "~{fail_on_invalid}" == "true" ]
 						then
-							seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
-							seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
-							rm "$READ1"
-							rm "$READ2"
-							mv temp1.fq "$READ1"
-							mv temp2.fq "$READ2"
-							echo "        $SRR: PASS - downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
-						else
-							echo "        $SRR: PASS" >> "~{biosample_accession}"_pull_results.txt
+							exit 1
+						else  # don't crash, but don't output any fastqs
+							echo "        $SRR: FAIL - only $number_of_reads reads @ ${elapsed_minutes} minutes" >> "~{biosample_accession}"_pull_results.txt
+							rm ./*.fastq
+							exit 0
 						fi
+					else
+						echo "        $SRR: PASS @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 					fi
-
 
 				else
 					echo "Odd number of fastqs; checking if we can still use them..."
 					if [[ $NUMBER_OF_FQ == 1 ]]
 					then
 						echo "Only one fastq found"
-						echo "        $SRR: FAIL - one fastq" >> "~{biosample_accession}"_pull_results.txt
+						end_time=$(date +%s)
+						elapsed_time=$(( end_time - start_time ))
+						elapsed_minutes=$(( elapsed_time / 60 ))
+						echo "        $SRR: FAIL - one fastq @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 						if [ "~{fail_on_invalid}" == "true" ]
 						then
 							set -eux pipefail
@@ -337,7 +365,7 @@ task pull_fq_from_biosample {
 							# somehow we got 5, 7, 9, etc reads
 							# this should probably never happen
 							echo "Odd number > 3 files found"
-							echo "        $SRR: FAIL - odd number > 3 fastqs" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: FAIL - odd number > 3 fastqs @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 							if [ "~{fail_on_invalid}" == "true" ]
 							then
 								set -eux pipefail
@@ -366,26 +394,37 @@ task pull_fq_from_biosample {
 						BARCODE=$(fdfind ".fastq" -d 1)
 						rm "$BARCODE"
 						cd ..
-						echo "$BARCODE has been deleted, $READ1 and $READ2 remain."
+						echo "$BARCODE has been deleted, $READ1 and $READ2 remain @ $(calculate_elapsed_minutes) minutes."
 
-						# check size -- if very large, we should subsample
-						if [[ ! "~{subsample_cutoff}" = "-1" ]]
+						# check if too small or too large
+						READ1=$(fdfind "$SRR"_1.fastq -d 1)
+						READ2=$(fdfind "$SRR"_2.fastq -d 1)
+						echo "Checking size of $READ1..."
+						fq1megabytes=$(du -m "$READ1" | cut -f1)
+						#shellcheck disable=SC2086
+						number_of_reads=$(awk '{s++} END {print s/4}' $READ1)  # this is hacky but good enough since fqtools refuses to compile
+						if [[ fq1megabytes -gt ~{subsample_cutoff} ]]
 						then
-							echo "Checking size of $READ1..."
-							fastq1size=$(du -m "$READ1" | cut -f1)
-							if (( fastq1size > ~{subsample_cutoff} ))
+							seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
+							seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+							rm "$READ1"
+							rm "$READ2"
+							mv temp1.fq "$READ1"
+							mv temp2.fq "$READ2"
+							echo "        $SRR: PASS - three fastqs and downsampled from $fq1megabytes MB @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
+						elif [ "$number_of_reads" -lt ~{minimum_reads} ]
+						then
+							echo "        $SRR: FAIL - only $number_of_reads reads @ $(calculate_elapsed_minutes) minutes"
+							if [ "~{fail_on_invalid}" == "true" ]
 							then
-								seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
-								seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
-								rm "$READ1"
-								rm "$READ2"
-								mv temp1.fq "$READ1"
-								mv temp2.fq "$READ2"
-								echo "        $SRR: PASS - three fastqs and downsampled from $fastq1size MB" >> "~{biosample_accession}"_pull_results.txt
-							else
-								# not bigger than the cutoff, but still a triplet, so make note of that
-								echo "        $SRR: PASS - three fastqs" >> "~{biosample_accession}"_pull_results.txt
+								exit 1
+							else  # don't crash, but don't output any fastqs
+								echo "        $SRR: FAIL - only $number_of_reads reads @ ${elapsed_minutes} minutes" >> "~{biosample_accession}"_pull_results.txt
+								rm ./*.fastq
+								exit 0
 							fi
+						else
+							echo "        $SRR: PASS - three fastqs @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 						fi
 					fi
 				fi
@@ -415,6 +454,8 @@ task pull_fq_from_biosample {
 			this_sample="~{biosample_accession}: NAY"
 			sed -i "1s/.*/$this_sample/" ~{biosample_accession}_pull_results.txt
 		fi
+
+		echo "Finished pulling @ $(calculate_elapsed_minutes) minutes."
 		
 	>>>
 
