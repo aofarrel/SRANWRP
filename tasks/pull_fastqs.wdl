@@ -239,7 +239,7 @@ task pull_fq_from_biosample {
 			esummary | xtract -pattern DocumentSummary -element Run@acc)
 		read -ra SRRS_ARRAY -d ' ' <<<"$SRRS_STR"
 
-		echo "$(calculate_elapsed_minutes) minutes to esearch"
+		echo "$(fx_calculate_elapsed_minutes) minutes to esearch"
 		
 		if [[ "$SRRS_STR" = "" ]]
 		then
@@ -251,7 +251,7 @@ task pull_fq_from_biosample {
 			IFS=" " read -r -a SRRS_ARRAY <<< "$SRRS_STR"
 			if [[ "$SRRS_STR" = "" ]]
 			then
-				uh_oh="~{biosample_accession}: HUH @ $(calculate_elapsed_minutes) minutes"
+				uh_oh="~{biosample_accession}: HUH @ $(fx_calculate_elapsed_minutes) minutes"
 				sed -i "1s/.*/$uh_oh/" ~{biosample_accession}_pull_results.txt
 				if [[ "~{fail_on_invalid}" = true ]]
 				then
@@ -273,7 +273,7 @@ task pull_fq_from_biosample {
 			rc_prefetch=$?
 			if [[ ! $rc_prefetch = 0 ]]
 			then
-				echo "$SRR: ERROR -- prefetch returned $rc_prefetch @ $(calculate_elapsed_minutes) minutes"
+				echo "$SRR: ERROR -- prefetch returned $rc_prefetch @ $(fx_calculate_elapsed_minutes) minutes"
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
 					set -eux -o pipefail
@@ -288,12 +288,12 @@ task pull_fq_from_biosample {
 			rc_fasterqdump=$?
 			if [[ ! $rc_fasterqdump = 0 ]]
 			then
-				echo "ERROR -- fasterq-dump returned $rc_fasterqdump @ $(calculate_elapsed_minutes) minutes"
+				echo "ERROR -- fasterq-dump returned $rc_fasterqdump @ $(fx_calculate_elapsed_minutes) minutes"
 				if [[ "$rc_prefetch" = "0" ]]
 				then
-					echo "        $SRR: ERROR -- prefetch succeeded but fasterqdump returned $rc_fasterqdump @ $(calculate_elapsed_minutes) minutes" >> ~{biosample_accession}_pull_results.txt
+					echo "        $SRR: ERROR -- prefetch succeeded but fasterqdump returned $rc_fasterqdump @ $(fx_calculate_elapsed_minutes) minutes" >> ~{biosample_accession}_pull_results.txt
 				else
-					echo "        $SRR: ERROR -- prefetch returned $rc_prefetch, fasterqdump returned $rc_fasterqdump @ $(calculate_elapsed_minutes) minutes" >> ~{biosample_accession}_pull_results.txt
+					echo "        $SRR: ERROR -- prefetch returned $rc_prefetch, fasterqdump returned $rc_fasterqdump @ $(fx_calculate_elapsed_minutes) minutes" >> ~{biosample_accession}_pull_results.txt
 				fi
 				if [[ "~{fail_on_invalid}" = "true" ]]
 				then
@@ -325,10 +325,10 @@ task pull_fq_from_biosample {
 						rm "$READ2"
 						mv temp1.fq "$READ1"
 						mv temp2.fq "$READ2"
-						echo "        $SRR: PASS - downsampled from $fq1megabytes MB @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
+						echo "        $SRR: PASS - downsampled from $fq1megabytes MB @ $(fx_calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 					elif [ "$number_of_reads" -lt ~{minimum_reads} ]
 					then
-						echo "        $SRR: FAIL - only $number_of_reads reads @ $(calculate_elapsed_minutes) minutes"
+						echo "        $SRR: FAIL - only $number_of_reads reads @ $(fx_calculate_elapsed_minutes) minutes"
 						if [ "~{fail_on_invalid}" == "true" ]
 						then
 							exit 1
@@ -338,7 +338,7 @@ task pull_fq_from_biosample {
 							exit 0
 						fi
 					else
-						echo "        $SRR: PASS @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
+						echo "        $SRR: PASS @ $(fx_calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 					fi
 
 				else
@@ -349,7 +349,7 @@ task pull_fq_from_biosample {
 						end_time=$(date +%s)
 						elapsed_time=$(( end_time - start_time ))
 						elapsed_minutes=$(( elapsed_time / 60 ))
-						echo "        $SRR: FAIL - one fastq @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
+						echo "        $SRR: FAIL - one fastq @ $(fx_calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 						if [ "~{fail_on_invalid}" == "true" ]
 						then
 							set -eux pipefail
@@ -365,7 +365,7 @@ task pull_fq_from_biosample {
 							# somehow we got 5, 7, 9, etc reads
 							# this should probably never happen
 							echo "Odd number > 3 files found"
-							echo "        $SRR: FAIL - odd number > 3 fastqs @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: FAIL - odd number > 3 fastqs @ $(fx_calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 							if [ "~{fail_on_invalid}" == "true" ]
 							then
 								set -eux pipefail
@@ -394,7 +394,7 @@ task pull_fq_from_biosample {
 						BARCODE=$(fdfind ".fastq" -d 1)
 						rm "$BARCODE"
 						cd ..
-						echo "$BARCODE has been deleted, $READ1 and $READ2 remain @ $(calculate_elapsed_minutes) minutes."
+						echo "$BARCODE has been deleted, $READ1 and $READ2 remain @ $(fx_calculate_elapsed_minutes) minutes."
 
 						# check if too small or too large
 						READ1=$(fdfind "$SRR"_1.fastq -d 1)
@@ -411,20 +411,20 @@ task pull_fq_from_biosample {
 							rm "$READ2"
 							mv temp1.fq "$READ1"
 							mv temp2.fq "$READ2"
-							echo "        $SRR: PASS - three fastqs and downsampled from $fq1megabytes MB @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: PASS - three fastqs and downsampled from $fq1megabytes MB @ $(fx_calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 						elif [ "$number_of_reads" -lt ~{minimum_reads} ]
 						then
-							echo "        $SRR: FAIL - only $number_of_reads reads @ $(calculate_elapsed_minutes) minutes"
+							echo "        $SRR: FAIL - only $number_of_reads reads @ $(fx_calculate_elapsed_minutes) minutes"
 							if [ "~{fail_on_invalid}" == "true" ]
 							then
 								exit 1
 							else  # don't crash, but don't output any fastqs
-								echo "        $SRR: FAIL - only $number_of_reads reads @ ${elapsed_minutes} minutes" >> "~{biosample_accession}"_pull_results.txt
+								echo "        $SRR: FAIL - only $number_of_reads reads @ $(fx_calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 								rm ./*.fastq
 								exit 0
 							fi
 						else
-							echo "        $SRR: PASS - three fastqs @ $(calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
+							echo "        $SRR: PASS - three fastqs @ $(fx_calculate_elapsed_minutes) minutes" >> "~{biosample_accession}"_pull_results.txt
 						fi
 					fi
 				fi
