@@ -15,8 +15,13 @@ PRJNA323744 is hundreds of resequences of the same 44 patients, with data taken 
 ## QC oddities
 Several (not all) samples in PRJNA1011210 have extremely low quality scores for read 2, resulting in those samples being wiped out by fastp. For simplicity we have denylisted the entire BioProject.
 
+## Metadata oddities
+Samples in PRJNA897841 appear to be missing metadata on what type of sequencer was used.
+
 ## It's just too darn big
 SAMN17359332 has [a lot](https://www.ncbi.nlm.nih.gov/sra?LinkName=biosample_sra&from_uid=17359332) of read accessions associated with it. Eventually this blows through our disk size estimate. Same story with SAMN30839965 (although in that case the error in Cromwell is out of memory -- it's actually out of disk well before that happens though).
+
+SAMN37194267 has an L9 in there somewhere, but this is considered one sample with 67 runs instead of 67 different samples, so they currently break SRANWRP.
 
 ## Fails in variant calling
 Examples: 
