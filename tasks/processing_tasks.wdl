@@ -447,9 +447,8 @@ task map_to_tsv_or_csv {
 
 task eleven_arrays_to_tsv {
 	input {
+		Boolean fix_broken_cryptic_metrics
 		Array[String] row_keys
-		Array[String] columns = ["BioSample", "cleaned_pct_above_q30", "dcntmd_pct_above_q30", "pct_loss_cleaning", "pct_loss_decon", "cleaned_total_reads", "dcntmd_total_reads",
-		"reads_is_contam", "reads_reference", "reads_unmapped"]
 		Array[Float] value1
 		Array[Float] value2
 		Array[Float] value3
@@ -461,6 +460,12 @@ task eleven_arrays_to_tsv {
 		Array[Int] value9
 		String output_filename = "qc_report.tsv"
 	}
+	Array[String] columns = if fix_broken_cryptic_metrics then ["BioSample", "cleaned_pct_above_q30", "dcntmd_pct_above_q30", 
+	"pct_loss_cleaning", "pct_loss_decon", "cleaned_total_reads", "dcntmd_total_reads",
+	"reads_bacteria", "reads_human", "reads_NTM"] else ["BioSample", "cleaned_pct_above_q30", "dcntmd_pct_above_q30", 
+	"pct_loss_cleaning", "pct_loss_decon", "cleaned_total_reads", "dcntmd_total_reads",
+	"reads_is_contam", "reads_reference", "reads_unmapped"]
+
 	command <<<
 	ROWS=( ~{sep=' ' row_keys} )
 	COLUMNS=( ~{sep=' ' columns} )
