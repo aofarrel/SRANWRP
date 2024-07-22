@@ -223,6 +223,10 @@ task pull_fq_from_biosample {
 	# touch ERR551697_1.fastq ERR551697_2.fastq ERR551697.fastq ERR551698_1.fastq ERR551698_2.fastq
 
 	command <<<
+		# test that we have any internet access at all
+		wget https://gist.githubusercontent.com/aofarrel/6b608e00c697c73c816519cdf83a9ba7/raw/c0e8a5c4a8b0fef801388e51eba9b7184ade0990/santacruz.txt
+		cat santacruz.txt > "~{sra_accession}"_pull_results.txt
+
 		echo "~{biosample_accession}" >> ~{biosample_accession}_pull_results.txt
 
 		fx_calculate_elapsed_minutes() {
