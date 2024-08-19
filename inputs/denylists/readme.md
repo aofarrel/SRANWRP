@@ -240,9 +240,7 @@ I asked NLM about ERR760606 and was told there are errors in the run, and that p
 By default, reads are downsampled if they are over 450 MB in size. However, when running on GCP, we are still beholden to disk size limits, which is why ludicrously oversized samples such as SAMN17359332 still needs to be on the denylist.
 
 ## Mixed accession types
-**How it's currently handled:** The invalid read accession will be skipped, and the valid one will be downloaded.
-
-These BioSamples have some Illumina and some PacBio runs within them. fasterq-dump can't handle PacBio so it throws an error. Examples:
+**How it's currently handled:** The invalid read accession will be skipped, and the valid one will be downloaded. Examples include:
 * ERR3825345 (SAMEA5803801)
 * SRR17231608 (SAMN09651729)
 * SRR17234893 (SAMN24039640)

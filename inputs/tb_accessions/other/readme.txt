@@ -10,4 +10,3 @@ TB accessions from special places.
     * SAMEA3250478: In rand04321, correctly ID'd as L7
     * todo: check the others
 * ref_set: TB accessions from [Borrell et al.](doi.org/10.1371/journal.pone.0214088) Some of these are already present in other datasets.
-his
