@@ -451,6 +451,82 @@ task map_to_tsv_or_csv {
 	}
 }
 
+task eleven_arrays_to_tsv {
+	input {
+		Boolean fix_broken_cryptic_metrics
+		Array[String] row_keys
+		Array[Float] value1
+		Array[Float] value2
+		Array[Float] value3
+		Array[Float] value4
+		Array[Int] value5
+		Array[Int] value6
+		Array[Int] value7
+		Array[Int] value8
+		Array[Int] value9
+		String output_filename = "qc_report.tsv"
+	}
+	Array[String] columns = if fix_broken_cryptic_metrics then ["BioSample", "cleaned_pct_above_q30", "dcntmd_pct_above_q30", 
+	"pct_loss_cleaning", "pct_loss_decon", "cleaned_total_reads", "dcntmd_total_reads",
+	"reads_bacteria", "reads_human", "reads_NTM"] else ["BioSample", "cleaned_pct_above_q30", "dcntmd_pct_above_q30", 
+	"pct_loss_cleaning", "pct_loss_decon", "cleaned_total_reads", "dcntmd_total_reads",
+	"reads_is_contam", "reads_reference", "reads_unmapped"]
+
+	command <<<
+	ROWS=( ~{sep=' ' row_keys} )
+	COLUMNS=( ~{sep=' ' columns} )
+	VALUE1=( ~{sep=' ' value1} )
+	VALUE2=( ~{sep=' ' value2} )
+	VALUE3=( ~{sep=' ' value3} )
+	VALUE4=( ~{sep=' ' value4} )
+	VALUE5=( ~{sep=' ' value5} )
+	VALUE6=( ~{sep=' ' value6} )
+	VALUE7=( ~{sep=' ' value7} )
+	VALUE8=( ~{sep=' ' value8} )
+	VALUE9=( ~{sep=' ' value9} )
+
+	TARGET_LENGTH=${#ROWS[@]}
+	NUMBER_OF_COLUMN_HEADERS=${#COLUMNS[@]}
+	EVERYTHING_ELSE=("ROWS" "VALUE1" "VALUE2" "VALUE3" "VALUE4" "VALUE5" "VALUE6" "VALUE7" "VALUE8" "VALUE9")
+
+	if [ ${#EVERYTHING_ELSE[@]} -ne $NUMBER_OF_COLUMN_HEADERS ]
+	then
+		echo "Number of columns (${#EVERYTHING_ELSE[@]}) doesn't match number of column headers ($NUMBER_OF_COLUMN_HEADERS)"
+		exit 1
+	fi
+
+	# TODO: actually get this check working
+	#for array in "${EVERYTHING_ELSE[@]}"
+	#do
+	#	if [ ${#array[@]} -ne "$TARGET_LENGTH" ]
+	#	then
+	#		printf "%s" "ERROR: ${array[@]} has length ${#array[@]} but our target length is $TARGET_LENGTH"
+	#		exit 1
+	#	fi
+	#done
+
+	echo "${COLUMNS[@]}" >> "~{output_filename}"
+
+	for ((i=0; i<TARGET_LENGTH; i++))
+	do
+		echo -e "${ROWS[i]}\t${VALUE1[i]}\t${VALUE2[i]}\t${VALUE3[i]}\t${VALUE4[i]}\t${VALUE5[i]}\t${VALUE6[i]}\t${VALUE7[i]}\t${VALUE8[i]}\t${VALUE9[i]}" >> "~{output_filename}"
+	done
+
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + 10 + " HDD"
+		docker: "ashedpotatoes/sranwrp:1.1.15"
+		memory: "8 GB"
+		preemptible: 2
+	}
+
+	output {
+		File tsv = output_filename
+	}
+}
+
 
 ## This task removes invalid output from pull_from_SRA_accession.
 ## Array[Array[File]?] will return empty subarrays sometimes, such
