@@ -114,7 +114,14 @@ task several_arrays_to_tsv {
 		fi
 	done
 
-	echo "${COLUMNS[@]}" >> "~{output_filename}"
+	for ((i=0; i<NUMBER_OF_COLUMN_HEADERS; i++))
+	do
+		# this will leave a trailing tab but I think we can live with that
+		echo -e -n "${COLUMNS[i]}\t" >> "~{output_filename}"
+	done
+
+	# psych! we can't live with a trailing tab! it bothers me too much!
+	truncate -s-1 "~{output_filename}" && echo >> "~{output_filename}"
 
 	for ((i=0; i<TARGET_LENGTH; i++))
 	do
