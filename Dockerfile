@@ -95,5 +95,11 @@ RUN echo 'alias python="python3"' >> ~/.bashrc
 RUN echo 'alias pip="pip3"' >> ~/.bashrc
 ENV PATH=/bin:/bin/seqtk:/root/edirect/:/bin/sratoolkit.3.0.1-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+# throw in some scripts
+RUN mkdir scripts
+RUN wget https://raw.githubusercontent.com/aofarrel/parsevcf/refs/tags/1.4.2/distancematrix_nwk.py && mv distancematrix_nwk.py ./scripts/
+RUN wget https://gist.githubusercontent.com/aofarrel/a638f2ff05f579193632f7921832a957/raw/baa77b4f6afefd78ae8b6a833121a413bd359a5e/marcs_incredible_script && \
+    mv marcs_incredible_script marcs_incredible_script.pl && mv marcs_incredible_script.pl ./scripts/
+
 # cleanup
 RUN sudo rm /bin/bcftools-1.16.tar.bz2 && sudo rm /bin/samtools-1.16.1.tar.bz2 && sudo rm /bin/sratoolkit.3.0.1-ubuntu64.tar.gz && sudo rm Python-3.12.0rc3.tgz && sudo rm -rf Python-3.12.0rc3
