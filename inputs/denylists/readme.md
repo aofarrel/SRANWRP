@@ -42,6 +42,8 @@ Input list tb_z included "307", which does link to SAMN00000188 (SRS000422), whi
 
 But why stop there? Get yourself a BioSample that can be it all: steph AND staph AND tuberculosis AND cdiff AND zebrafish AND salmonella AND plague AND western lowland gorilla: https://www.ncbi.nlm.nih.gov/biosample/9845
 
+The reason for some of these samples seem to be a relic from an old data submission process involving non-demultiplexed samples, according to email corresponse I've had with NCBI's metadata team.
+
 ## Not on google mirror, seem to have no data, do not have a biosample accession
 ERR1274706
 ERR181439
