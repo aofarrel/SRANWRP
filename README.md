@@ -1,5 +1,5 @@
 # SRAnwrp
-SRAnwrp ("Saran Wrap") envelops several SRA-related tools in the warm, polyethylene embrace of a single Ubuntu-based Docker image and some optional assorted workflows. For the sake of simplicity, releases on main follow the same versioning scheme as the Docker image.
+SRAnwrp ("Saran Wrap") envelops several bioinformatics-related tools in the warm, polyethylene embrace of a single Ubuntu-based Docker image. It additionally serves as a standard library of WDL functions and workflows, some of which are specifically for pulling data from NCBI SRA, but others are more general-purpose.
 
 ## What tasks can it perform?
 The combination of e-direct and sra-tools allows it do basically anything you can do from SRA's website. These exist in the form of WDL workflows -- [more on WDL here](./wdl.md).
