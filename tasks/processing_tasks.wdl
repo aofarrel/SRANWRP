@@ -185,6 +185,7 @@ task cat_files {
 		Array[String]? overwrite_first_lines
 		
 		String  first_lines_out_filename = "firstlines.txt"
+		Boolean keep_only_unique_files = false
 		Boolean keep_only_unique_lines = false
 		Int     preempt = 1
 		String  out_filename = "all.txt"
@@ -205,6 +206,11 @@ task cat_files {
 	
 	if (( ${#REPORTS[@]} != 0 )) && (( ${#REPORTS[@]} != ${#FILES[@]} )); then echo "WARNING: Number of removal guides (${#REPORTS[@]}) doesn't match number of inputs (${#FILES[@]})"; fi
 	if (( ${#OVERWRITES[@]} != 0 )) && (( ${#OVERWRITES[@]} != ${#FILES[@]} )); then echo "ERROR: Rename array (${#OVERWRITES[@]}) doesn't match number of input files (${#FILES[@]})" && exit 1; fi
+
+	if [[ "~{keep_only_unique_files}" = "true" ]]
+	then
+		mapfile -t FILES < <(printf "%s\n" "${FILES[@]}" | awk -F'/' '!seen[$NF]++')
+	fi
 
 	fx_cat_and_firstlines () {
 		# $1 is iteration (index), $2 is file
@@ -230,7 +236,6 @@ task cat_files {
 	then
 		echo "Checking which files ought to not be included..."
 		cat ~{sep=" " removal_candidates} >> removal_guide.tsv
-		FILES=(~{sep=" " files})
 		ITER=0
 		for FILE in "${FILES[@]}"
 		do
@@ -271,7 +276,6 @@ task cat_files {
 
 		# output first lines
 		ITER=0
-		FILES=(~{sep=" " files})
 		for FILE in "${FILES[@]}"
 		do
 			fx_cat_and_firstlines $ITER "$FILE"
