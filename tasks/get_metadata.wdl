@@ -13,12 +13,17 @@ task get_biosample_from_read_or_ENA_without_elink {
 	}
 
 	command {
+		# xtract is very silly and appears to requires that we pipe from cat. neither of these work:
+		# * xtract -pattern DocumentSummary -element Biosample < esummary.txt >> biosample.txt
+		# * xtract -pattern DocumentSummary -element Biosample esummary.txt >> biosample.txt
 		esearch -db sra -query ~{sra_accession} | esummary >> esummary.txt
+		# shellcheck disable=SC2002
 		cat esummary.txt | xtract -pattern DocumentSummary -element Biosample >> biosample.txt
 		if [[ "~{fail_if_sample_groups}" == "true" ]]
 		then
 			# example of a read in a sample group: ERR023730
 			# example of a read not in a sample group: ERR027295
+			# shellcheck disable=SC2002
 			cat esummary.txt | xtract -pattern DocumentSummary -element SamplePool@count >> pool.txt
 			words=$(wc -l "pool.txt")
 			if [[ ! "$words" == "0 pool.txt" ]]
