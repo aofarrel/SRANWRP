@@ -479,11 +479,14 @@ task several_arrays_to_tsv {
 	VALUE12_WITH_SPACES="~{sep='~' value12}"  # yes, we are delimiting with a tilde
 	VALUE13_WITH_SPACES="~{sep='~' value13}"
 
+	# shellcheck disable=SC2001
 	VALUE12_NO_WHITESPACE=$(echo "$VALUE12_WITH_SPACES" | sed 's/[[:space:]]/_/g')
+	# shellcheck disable=SC2001
 	VALUE12_NO_COMMAS_NOR_WHITESPACE=$(echo "$VALUE12_NO_WHITESPACE" | sed 's/,//g')
 	IFS="~" read -r -a VALUE12_FIXED <<< "$VALUE12_NO_COMMAS_NOR_WHITESPACE"
-
+	# shellcheck disable=SC2001
 	VALUE13_NO_WHITESPACE=$(echo "$VALUE13_WITH_SPACES" | sed 's/[[:space:]]/_/g')
+	# shellcheck disable=SC2001
 	VALUE13_NO_COMMAS_NOR_WHITESPACE=$(echo "$VALUE13_NO_WHITESPACE" | sed 's/,//g')
 	IFS="~" read -r -a VALUE13_FIXED <<< "$VALUE13_NO_COMMAS_NOR_WHITESPACE"
 
@@ -510,6 +513,7 @@ task several_arrays_to_tsv {
 	NUMBER_OF_COLUMN_HEADERS=${#COLUMNS[@]}
 	EVERYTHING_ELSE=("ROWS" "VALUE1" "VALUE2" "VALUE3" "VALUE4" "VALUE5" "VALUE6" "VALUE7" "VALUE8" "VALUE9" "VALUE10" "VALUE11" "VALUE12_FIXED" "VALUE13_FIXED")
 
+	# shellcheck disable=SC2086
 	if [ ${#EVERYTHING_ELSE[@]} -ne $NUMBER_OF_COLUMN_HEADERS ]
 	then
 		echo "Number of columns (${#EVERYTHING_ELSE[@]}) doesn't match number of column headers ($NUMBER_OF_COLUMN_HEADERS)"
