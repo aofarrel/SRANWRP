@@ -183,6 +183,8 @@ task cat_files {
 		Array[File] files
 		Array[File]? removal_candidates
 		Array[String]? overwrite_first_lines
+		File? king_file
+		File? king_file_first_lines
 		
 		String  first_lines_out_filename = "firstlines.txt"
 		Boolean keep_only_unique_files = false
@@ -325,6 +327,22 @@ task cat_files {
 		number_of_removed_files=0
 		echo "$number_of_removed_files" >> number_of_removed_files.txt
 	fi
+
+
+	if [[ ! "~{king_file}" = "" ]]
+	then
+		cat "~{out_filename}" "~{king_file}" > temp
+		rm "~{out_filename}"
+		mv temp "~{out_filename}"
+	fi
+
+	if [[ ! "~{king_file_first_lines}" = "" ]]
+	then
+		cat "~{first_lines_out_filename}" "~{king_file_first_lines}" > temp
+		rm "~{first_lines_out_filename}"
+		mv temp "~{first_lines_out_filename}"
+	fi
+
 	>>>
 
 	runtime {
