@@ -194,8 +194,9 @@ task cat_files {
 		Float   removal_threshold = 0.05
 		Boolean strip_first_line_first_char = true
 		Boolean verbose = false
+		Int?    disk_size_override
 	}
-	Int disk_size = ceil(size(files, "GB")) * 2
+	Int disk_size = select_first([disk_size_override, ceil(size(files, "GB")) * 2])
 	Int number_of_files = length(files)
 	Boolean overwrite = defined(overwrite_first_lines)
 
