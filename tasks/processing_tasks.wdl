@@ -224,7 +224,7 @@ task cat_files {
 		# due to how WDL works, this next line checks if king_file_first_lines exists or not -- it's an optional input so it may not!
 		if [[ ! "~{king_file_first_lines}" = "" ]]
 		then
-			mapfile -t KINGFILES < "$king_file_first_lines"
+			mapfile -t KINGFILES < "~{king_file_first_lines}"
 			KINGFILES_INPUT_LEN=${#KINGFILES[@]}
 			mapfile -t KINGFILES < <(printf "%s\n" "${KINGFILES[@]}" | awk '{if (seen[$0]++) print "Duplicate sample ID in KINGFILES:", $0 > "/dev/stderr"; else print}' )
 			KINGFILES_DEDUP_LEN=${#KINGFILES[@]}
