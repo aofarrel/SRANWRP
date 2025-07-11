@@ -3,29 +3,29 @@ A list of denylists of samples known to be problematic when fed through [myco_sr
 
 In [release 1.1.7](https://github.com/aofarrel/SRANWRP/releases/tag/v1.1.7) and onwards, pull_fq_from_biosample's default behavior is to attempt to exit gracefully (rather than crash the entire WDL pipeline) if a sample is invalid. This prevents the entire WDL pipeline from crashing if a run accession fails to download due to an error in prefetch or fasterq-dump. However, some particularly tricky data still causes problems, so we still need a denylist.
 
-The [myco](https://github.com/aofarrel/myco) pipeline was also improved over time to avoid crashing on samples that exit the decontamination task with few/no variants remaining. Some of these samples remain on the denylist as an artefact from when this handling used to manual.
+The [myco](https://github.com/aofarrel/myco) pipeline was also improved over time to avoid crashing on samples that exit the decontamination task with few/no variants remaining. Some of these samples remain on the denylist as an artifact from when these samples had to handled manually.
 
 In release 1.1.19 of SRANWRP, denylists were greatly expanded and reorganized.
 
 # Why deny?
 
-## Doesn't really fit what we're trying to do here
+### Doesn't really fit what we're trying to do here
 PRJNA706121 is full of synthetic data. While it's great for testing our decontamination pipeline, that data should not be on the final phylogenetic tree.
 
 PRJNA323744 is hundreds of resequences of the same 44 patients, with data taken from various body parts post-mortem. This has implications for decontamination, but is likely to create false clusters on our phylogenetic tree due to so much of the data being near-identical. (We could grab one sample per each of the 44 patients, but it is "safest" to exclude the entire BioProject.)
 
-## QC oddities
+### QC oddities
 Several (not all) samples in PRJNA1011210 have extremely low quality scores for read 2, resulting in those samples being wiped out by fastp. For simplicity we have denylisted the entire BioProject.
 
-## Metadata oddities
+### Metadata oddities
 Samples in PRJNA897841 appear to be missing metadata on what type of sequencer was used.
 
-## It's just too darn big
+### It's just too darn big
 SAMN17359332 has [a lot](https://www.ncbi.nlm.nih.gov/sra?LinkName=biosample_sra&from_uid=17359332) of read accessions associated with it. Eventually this blows through our disk size estimate. Same story with SAMN30839965 (although in that case the error in Cromwell is out of memory -- it's actually out of disk well before that happens though).
 
 SAMN37194267 has an L9 in there somewhere, but this is considered one sample with 67 runs instead of 67 different samples, so they currently break SRANWRP.
 
-## Fails in variant calling
+### Fails in variant calling
 Examples: 
 * SAMEA2534824
 * SAMEA2534285
@@ -39,14 +39,14 @@ Examples:
 
 If you run `java -Xmx1000m -jar /bioinf-tools/Trimmomatic-0.36/trimmomatic-0.36.jar PE -threads 1 /mounted/SAMEA2534285_1.decontam.fq /mounted/SAMEA2534285_2.decontam.fq var_call_SAMEA2534285/trimmed_reads.0.1.fq.gz /dev/null var_call_SAMEA2534285/trimmed_reads.0.2.fq.gz /dev/null ILLUMINACLIP:/bioinf-tools/Trimmomatic-0.36/adapters/TruSeq3-PE-2.fa:2:30:10  MINLEN:50 -phred33` on SAMEA2534285 after decontamination, you'll note the entire thing is trimmed. Understandably, this breaks when variants are called on the resulting empty files. It's possible this wouldn't happen if we didn't downsample its one read, ERR551913, which is normally 1149 MB, but for now we're adding it to the denylists. SAMEA2534824 and SAMN01797599 have the same issue.
 
-## Not actually TB
+### Not actually TB
 Input list tb_z included "307", which does link to SAMN00000188 (SRS000422), which is indeed tagged as TB. However, it is also tagged as basically everything else.
 
 But why stop there? Get yourself a BioSample that can be it all: steph AND staph AND tuberculosis AND cdiff AND zebrafish AND salmonella AND plague AND western lowland gorilla: https://www.ncbi.nlm.nih.gov/biosample/9845
 
 The reason for some of these samples seem to be a relic from an old data submission process involving non-demultiplexed samples, according to email corresponse I've had with NCBI's metadata team.
 
-## Not on google mirror, seem to have no data, do not have a biosample accession
+### Not on google mirror, seem to have no data, do not have a biosample accession
 ERR1274706
 ERR181439
 ERR181441
@@ -57,14 +57,14 @@ ERR760780
 ERR760898
 ERR845308
 
-## Accessions within sample groups
+### Accessions within sample groups
 If you run the get-sample-from-run workflow I wrote on a single one of these, you will get 12 samples returned. It seems likely there ought to be a one-to-one relationship between runs and samples, but it's not the dot product.
 
 It's worth noting SRS024887/SAMEA968167 and SRS024887/SAMN00009845 are particularly odd, appearing not only in multiple groups below, but also multiple unrelated studies.
 
 SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and were originally thrown out for having 12 reads returned. Since some of those reads are supposedly lineage 4.1, according to the lineage-4 specific file which was run-based (unlike the other files used to make my lineage lists, which were usually sample-based from the start), you should consider the lineage of sample in these groups to be suspect.
 
-### sample group A
+#### sample group A
 | run       	| supposed lineage
 |-----------	|-----------	|
 | ERR023728 	| unknown       |
@@ -98,7 +98,7 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007654 	    | SAMEA968216  	  |
 
 
-### sample group B
+#### sample group B
 | run       	| supposed lineage       |
 |-----------	|-----------	|
 | ERR024348 	| unknown       |
@@ -129,7 +129,7 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007741    	    | SAMEA968138    |
 | ERS007743    	    | SAMEA968101    |
 
-### sample group C
+#### sample group C
 | run       	| supposed lineage       |
 |-----------	|-----------	|
 | ERR023741     | unknown       |	
@@ -160,7 +160,7 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007686         | SAMEA968184    |
 | ERS007688         | SAMEA968183    |
 
-### sample group D
+#### sample group D
 | run       	| supposed lineage       |
 |-----------	|-----------	|
 | ERR024336     | unknown       |
@@ -191,7 +191,7 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007720         | SAMEA968136    |
 | ERS007722         | SAMEA968137    |
 
-### sample group E
+#### sample group E
 | run       	| supposed lineage       |
 |-----------	|-----------	|
 | ERR023753     | unknown       |
@@ -227,7 +227,7 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 # Previously unhandled
 The following samples/reasons were originally added to the denylist because the pipeline could not handle these edge cases in automated fashion. Later updates to SRANWRP and myco allowed for these to be handled in an automated fashion, so they don't need to be denylisted anymore -- but they remain on the overall list for legacy reasons, and to provide some guidance for those who may not be using SRANWRP/myco.
 
-## Failure in prefetch
+### Failure in prefetch
 **How it's currently handled by SRANWRP:** The invalid read accession will be skipped.
 
 ```
@@ -241,12 +241,12 @@ Examples:
 I asked NLM about ERR760606 and was told there are errors in the run, and that prevented NCBI SRA from processing it properly. They also [linked the EBI version](https://www.ebi.ac.uk/ena/browser/view/ERR760606?dataType=&show=xrefs), where it can still be accessed. It's possible that `curl -s -X POST "https://locate.ncbi.nlm.nih.gov/sdl/2/locality?acc=[some_run_accesion]"` could be used to spot weird runs like this at runtime.
 
 
-## Relatively large samples
+### Relatively large samples
 **How it's currently handled by SRANWRP:** Downsampling and really big disk size estimates.
 
 By default, reads are downsampled if they are over 450 MB in size. However, when running on GCP, we are still beholden to disk size limits, which is why ludicrously oversized samples such as SAMN17359332 still needs to be on the denylist.
 
-## Mixed accession types
+### Mixed accession types
 **How it's currently handled by SRANWRP:** The invalid read accession will be skipped, and the valid one will be downloaded. Examples include:
 * ERR3825345 (SAMEA5803801)
 * SRR17231608 (SAMN09651729)
@@ -261,10 +261,10 @@ By default, reads are downsampled if they are over 450 MB in size. However, when
 * SRR8186771 (SAMN10417149)
 * SRR8186772 (SAMN10417149)
 
-## All reads fail prefetch or fasterq-dump (allerror_*.txt)
+### All reads fail prefetch or fasterq-dump (allerror_*.txt)
 **How it's currently handled by SRANWRP:** Exit gracefully with no FQ output.
 
-### Read length =/= quality score
+#### Read length =/= quality score
 
 `err: row #x : READ.len(x) != QUALITY.len(x) (F)`
 
@@ -286,7 +286,7 @@ Examples:
 * ERR538432 (SAMEA2609936)
 * SRR960962 (SAMN02339318)
 
-### No idea, but I guess that's bad
+#### No idea, but I guess that's bad
 
 ```
 2023-02-17T21:19:39 fasterq-dump.3.0.1 err: sorter.c run_producer_pool() : processed lookup rows: 35 of 36
@@ -298,7 +298,7 @@ Examples:
 * SRR1180610 (SAMN02580571)
 * SRR1180764 (SAMN02580571)
 
-### There's no error, but that's an error (my personal favorite)
+#### There's no error, but that's an error (my personal favorite)
 
 `int: no error - failed to verify`
 
