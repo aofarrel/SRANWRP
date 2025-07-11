@@ -3,7 +3,9 @@ A list of denylists of samples known to be problematic when fed through [myco_sr
 
 In [release 1.1.7](https://github.com/aofarrel/SRANWRP/releases/tag/v1.1.7) and onwards, pull_fq_from_biosample's default behavior is to attempt to exit gracefully (rather than crash the entire WDL pipeline) if a sample is invalid. This prevents the entire WDL pipeline from crashing if a run accession fails to download due to an error in prefetch or fasterq-dump. However, some particularly tricky data still causes problems, so we still need a denylist.
 
-In release 1.1.19, denylists were greatly expanded and reorganized.
+The [myco](https://github.com/aofarrel/myco) pipeline was also improved over time to avoid crashing on samples that exit the decontamination task with few/no variants remaining. Some of these samples remain on the denylist as an artefact from when this handling used to manual.
+
+In release 1.1.19 of SRANWRP, denylists were greatly expanded and reorganized.
 
 # Why deny?
 
@@ -220,10 +222,13 @@ SAMEA968095 (L3) and SAMEA968096 (L3) are both in this sample group table and we
 | ERS007703         | SAMEA968201    |
 | ERS007704         | SAMEA968195    |
 
-# Previously bad, but work now!
+
+
+# Previously unhandled
+The following samples/reasons were originally added to the denylist because the pipeline could not handle these edge cases in automated fashion. Later updates to SRANWRP and myco allowed for these to be handled in an automated fashion, so they don't need to be denylisted anymore -- but they remain on the overall list for legacy reasons, and to provide some guidance for those who may not be using SRANWRP/myco.
 
 ## Failure in prefetch
-**How it's currently handled:** The invalid read accession will be skipped.
+**How it's currently handled by SRANWRP:** The invalid read accession will be skipped.
 
 ```
 `prefetch.3.0.1 err: name not found while resolving query within virtual file system module - failed to resolve accession 'x' - no data ( 404 )`
@@ -237,12 +242,12 @@ I asked NLM about ERR760606 and was told there are errors in the run, and that p
 
 
 ## Relatively large samples
-**How it's currently handled:** Downsampling and really big disk size estimates.
+**How it's currently handled by SRANWRP:** Downsampling and really big disk size estimates.
 
 By default, reads are downsampled if they are over 450 MB in size. However, when running on GCP, we are still beholden to disk size limits, which is why ludicrously oversized samples such as SAMN17359332 still needs to be on the denylist.
 
 ## Mixed accession types
-**How it's currently handled:** The invalid read accession will be skipped, and the valid one will be downloaded. Examples include:
+**How it's currently handled by SRANWRP:** The invalid read accession will be skipped, and the valid one will be downloaded. Examples include:
 * ERR3825345 (SAMEA5803801)
 * SRR17231608 (SAMN09651729)
 * SRR17234893 (SAMN24039640)
@@ -257,7 +262,7 @@ By default, reads are downsampled if they are over 450 MB in size. However, when
 * SRR8186772 (SAMN10417149)
 
 ## All reads fail prefetch or fasterq-dump (allerror_*.txt)
-**How it's currently handled:** Exit gracefully with no FQ output.
+**How it's currently handled by SRANWRP:** Exit gracefully with no FQ output.
 
 ### Read length =/= quality score
 
