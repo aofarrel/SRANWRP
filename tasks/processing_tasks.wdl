@@ -197,34 +197,86 @@ task cat_files {
 		Boolean sample_name_skips_first_character_on_each_first_line = true
 		Boolean verbose = false
 		Int?    disk_size_override
+		Boolean keep_only_unique_files_ignores_changed_sample_names = false
+
+		Boolean and_then_exit_1 = true              # for quick testing on Terra
 	}
-	Int disk_size = select_first([disk_size_override, ceil(size(files, "GB")) * 2])
-	Int number_of_files = length(files)
+	Int disk_size = select_first([disk_size_override, ceil(size(new_files_to_concat, "GB")) * 2])
+	Int number_of_new_files = length(new_files_to_concat)
 	Boolean yes_overwrite_sample_names = defined(new_files_override_sample_names)
 	Boolean yes_add_datestamps = defined(new_files_add_tail_to_sample_names)
 
 	command <<<
 	
 	# check for valid inputs
-	FILES=(~{sep=" " files_to_concat})
+	FILES=(~{sep=" " new_files_to_concat})
 	REPORTS=(~{sep= " " new_files_quality_reports})
 	OVERWRITES=(~{sep= " " new_files_override_sample_names})
 	DATESTAMPS=(~{sep= " " new_files_add_tail_to_sample_names})
 	
-	if (( ${#REPORTS[@]} != 0 )) && (( ${#REPORTS[@]} != ${#FILES[@]} )); then echo "WARNING: Number of removal guides (${#REPORTS[@]}) doesn't match number of inputs (${#FILES[@]})"; fi
-	if (( ${#OVERWRITES[@]} != 0 )) && (( ${#OVERWRITES[@]} != ${#FILES[@]} )); then echo "ERROR: Rename array (${#OVERWRITES[@]}) doesn't match number of input files (${#FILES[@]})" && exit 1; fi
-	if (( ${#DATESTAMPS[@]} != 0 )) && (( ${#DATESTAMPS[@]} != ${#FILES[@]} )); then echo "ERROR: Concat array (${#DATESTAMPS[@]}) doesn't match number of input files (${#FILES[@]})" && exit 1; fi
+	if (( ${#REPORTS[@]} != 0 )) && (( ${#REPORTS[@]} != ${#FILES[@]} )); then echo "WARNING: Number of removal guides (${#REPORTS[@]}) doesn't match number of input new_files_to_concat (${#FILES[@]})"; fi
+	if (( ${#OVERWRITES[@]} != 0 )) && (( ${#OVERWRITES[@]} != ${#FILES[@]} )); then echo "ERROR: Rename array (${#OVERWRITES[@]}) doesn't match number of input new_files_to_concat (${#FILES[@]})" && exit 1; fi
+	if (( ${#DATESTAMPS[@]} != 0 )) && (( ${#DATESTAMPS[@]} != ${#FILES[@]} )); then echo "ERROR: Concat array (${#DATESTAMPS[@]}) doesn't match number of input new_files_to_concat (${#FILES[@]})" && exit 1; fi
+
+	# generate SAMPLE_NAMES (remember: this DOES NOT APPLY to kingfile sample names)
+	SAMPLE_NAMES=()
+	for i in "${!FILES[@]}"; do
+		if [[ "~{yes_overwrite_sample_names}" = "true" ]]; then
+			name="${OVERWRITES[$i]}"
+		else
+			# take first line from file to derive sample name
+			firstline=$(head -1 "${FILES[$i]}")
+			if [[ "~{sample_name_skips_first_character_on_each_first_line}" = "true" ]]; then
+				name="${firstline:1}"
+			else
+				name="$firstline"
+			fi
+		fi
+
+		if [[ "~{yes_add_datestamps}" = "true" ]]; then
+			name="${name}_${DATESTAMPS[$i]}"
+		fi
+		SAMPLE_NAMES+=("$name")
+	done
+
+	FILES_INPUT_LEN=${#FILES[@]}
+	SAMPLE_NAMES_LEN=${#SAMPLE_NAMES[@]}
+
+	echo "---------- Files input in this batch ----------"
+	echo "$FILES_INPUT_LEN files input"
+	printf "%s\n" "${FILES[@]}"
+	echo "---------- Sample names of said input (after processing overwrites and datestamps, excludes anything in kingfile) ----------"
+	echo "$SAMPLE_NAMES_LEN sample names"
+	printf "%s\n" "${SAMPLE_NAMES[@]}"
+
+	# double check -- should never happen since we already did a similar check earlier, but I don't trust myself writing bash
+	if (( FILES_INPUT_LEN != SAMPLE_NAMES_LEN )); then echo "ERROR: Different number of files ($FILES_INPUT_LEN}) doesn't match number of sample names ($SAMPLE_NAMES_LEN), which should never happen this late, so please report it!" && exit 1; fi 
+
+	# now we gotta rename stuff
+	if [[ "~{keep_only_unique_files_ignores_changed_sample_names}" = "false" ]]
+	then
+		RENAMED_FILES=()
+		ITER=0
+		for FILE in "${FILES[@]}"
+		do
+			dirname=$(dirname "$FILE")
+			ext="${FILE##*.}"
+
+			# new name = same directory + new sample name + original extension
+			newfile="${dirname}/${SAMPLE_NAMES[$ITER]}.${ext}"
+			mv "$FILE" "$newfile"
+
+			RENAMED_FILES+=("$newfile")
+			(( ITER++ ))
+		done
+
+		FILES=("${RENAMED_FILES[@]}")
+	fi
 
 	if [[ "~{keep_only_unique_files}" = "true" ]]
 	then
 		# deduplicate FILES by basename (since WDL localization can put input files that share a basename into different folders)
-		FILES_INPUT_LEN=${#FILES[@]}
-
-		# TODO: change filenames per DATESTAMPS and/or OVERWRITES
-
 		mapfile -t FILES < <(printf "%s\n" "${FILES[@]}" | awk -F'/' '{if (seen[$NF]++) print "Duplicate basename in FILES:", $0 > "/dev/stderr"; else print}' )
-		echo "---------- Files input in this batch ----------"
-		printf "%s\n" "${FILES[@]}"
 		FILES_DEDUP_LEN=${#FILES[@]}
 		printf "\n%s files input, %s remain after internal deduplication" "$FILES_INPUT_LEN" "$FILES_DEDUP_LEN"
 
@@ -288,24 +340,14 @@ task cat_files {
 
 	fx_cat_and_firstlines () {
 		# $1 is iteration (index), $2 is file
+		ITER=$1
+		name="${SAMPLE_NAMES[$ITER]}"
+		echo "$name" >> "~{out_sample_names}"
+		echo ">$name" >> "~{out_concat_file}"
+		tail -n +2 "$2" >> "~{out_concat_file}"
 
-		# TODO: this might need to be modified to account for the OVERWRITE and DATESTAMP changes I want
-		
-		if [[ "~{yes_overwrite_sample_names}" = "true" ]]
-		then
-			ITER=$1
-			echo "${OVERWRITES[$ITER]}" >> "~{out_sample_names}"
-			echo ">${OVERWRITES[$ITER]}" >> "~{out_concat_file}"
-			tail -n +2 "$2" >> "~{out_concat_file}"
-			echo iter is "$ITER" and overwrite is "${OVERWRITES[$ITER]}" at this index
-		elif [[ "~{yes_overwrite_sample_names}" = "false" && "~{sample_name_skips_first_character_on_each_first_line}" = "true" ]]
-		then
-			firstline=$(head -1 "$2")
-			echo "${firstline:1}" >> "~{out_sample_names}"
-			cat "$2" >> "~{out_concat_file}"
-		else
-			head -1 "$2" >> "~{out_sample_names}"
-			cat "$2" >> "~{out_concat_file}"
+		if [[ "~{verbose}" = "true" ]]; then
+			echo "iter=$ITER file=$2 → sample_name=$name"
 		fi
 	}
 	
@@ -375,7 +417,7 @@ task cat_files {
 		echo "ERROR: Could not locate cat'd file. This probably means either: "
 		echo "a) nothing passed the removal threshold (remember, it's a lowpass, not a highpass)"
 		echo "b) you didn't actually pass any files in, just an empty array"
-		echo "It looks like you tried to merge ~{number_of_files} files."
+		echo "It looks like you tried to merge ~{number_of_new_files} files (+1 if you added a kingfile)."
 		if [[ -f removed.txt ]]
 		then
 			echo "removal.txt doesn't seem to exist, so this looks like option B."
@@ -420,6 +462,11 @@ task cat_files {
 		mv temp "~{out_sample_names}"
 	fi
 
+	if [[ "~{and_then_exit_1}" = "true" ]]
+	then
+		echo "All is well, but we're exiting one because you said so."
+	fi
+
 	>>>
 
 	runtime {
@@ -433,8 +480,8 @@ task cat_files {
 	output {
 		File outfile = "~{out_concat_file}"
 		Int files_removed = read_int("number_of_removed_files.txt")
-		Int files_input = number_of_files
-		Int files_passed = number_of_files - read_int("number_of_removed_files.txt")
+		Int files_input = number_of_new_files
+		Int files_passed = number_of_new_files - read_int("number_of_removed_files.txt")
 		Array[String] removed_files = read_lines("removed.txt")
 		File? first_lines = out_sample_names
 		File? removal_guide = "removal_guide.tsv"
