@@ -151,18 +151,18 @@ task cat_strings {
 task cat_files {
 	# Concatenate Array[File] into a single File.
 	#
-	# Files going into removal_candidates should be formatted as TSVs
+	# Files going into new_files_quality_reports should be formatted as TSVs
 	# where the first column is the filename and the second column is
 	# a float value. (Other columns will be ignored.) These TSVs will
 	# be cat to create a single big TSV. Then, any values ABOVE the
-	# user-input float removal_threshold will have their associated
+	# user-input float quality_report_removal_threshold will have their associated
 	# file removed, preventing it from being cat'd. In other words,
 	# this is a lowpass filter.
 	#
 	# For example:
 	# files = [SAMEA10030079.diff, SAMEA7555065.diff]
-	# removal_candidates = [SAMEA10030079.report, SAMEA7555065.report]
-	# removal_threshold = 0.02
+	# new_files_quality_reports = [SAMEA10030079.report, SAMEA7555065.report]
+	# quality_report_removal_threshold = 0.02
 	#
 	# Let's say SAMEA10030079.report looked like this:
 	# SAMEA10030079.diff	0.02230766998856633
@@ -175,56 +175,64 @@ task cat_files {
 	# SAMEA7555065	0.019289670799169087
 	#
 	# Then, the script would notice that SAMEA10030079 has a value above
-	# the removal_threshold of 0.02, so it deletes the SAMEA10030079.diff
+	# the quality_report_removal_threshold of 0.02, so it deletes the SAMEA10030079.diff
 	# input. As a result, the final cat file will only consist of
 	# SAMEA7555065.diff.
 
 	input {
-		Array[File] files
-		Array[File]? removal_candidates
-		Array[String]? overwrite_first_lines
-		File? king_file
-		File? king_file_first_lines
+		Array[File] new_files_to_concat
+		Array[File]? new_files_quality_reports
+		Array[String]? new_files_override_sample_names
+		Array[String]? new_files_add_tail_to_sample_names # typically date stamps
+		File? king_file               # an already concatenated file you want to concatenate to
+		File? king_file_sample_names  # the already concatenated file's sample IDs
+		# note: king_file_sample_names is not affected by new_files_override_sample_names nor new_files_add_tail_to_sample_names)
 		
-		String  first_lines_out_filename = "firstlines.txt"
+		String  out_sample_names = "firstlines.txt"
 		Boolean keep_only_unique_files = false       # Tree Nine sets this to true
-		Boolean keep_only_unique_lines = false
+		Boolean keep_only_unique_lines = false       # may not interact well with other options
 		Int     preempt = 1
-		String  out_filename = "all.txt"
-		Float   removal_threshold = 0.05
-		Boolean strip_first_line_first_char = true
+		String  out_concat_file = "all.txt"
+		Float   quality_report_removal_threshold = 0.05
+		Boolean sample_name_skips_first_character_on_each_first_line = true
 		Boolean verbose = false
 		Int?    disk_size_override
 	}
 	Int disk_size = select_first([disk_size_override, ceil(size(files, "GB")) * 2])
 	Int number_of_files = length(files)
-	Boolean overwrite = defined(overwrite_first_lines)
+	Boolean yes_overwrite_sample_names = defined(new_files_override_sample_names)
+	Boolean yes_add_datestamps = defined(new_files_add_tail_to_sample_names)
 
 	command <<<
 	
 	# check for valid inputs
-	FILES=(~{sep=" " files})
-	REPORTS=(~{sep= " " removal_candidates})
-	OVERWRITES=(~{sep= " " overwrite_first_lines})
+	FILES=(~{sep=" " files_to_concat})
+	REPORTS=(~{sep= " " new_files_quality_reports})
+	OVERWRITES=(~{sep= " " new_files_override_sample_names})
+	DATESTAMPS=(~{sep= " " new_files_add_tail_to_sample_names})
 	
 	if (( ${#REPORTS[@]} != 0 )) && (( ${#REPORTS[@]} != ${#FILES[@]} )); then echo "WARNING: Number of removal guides (${#REPORTS[@]}) doesn't match number of inputs (${#FILES[@]})"; fi
 	if (( ${#OVERWRITES[@]} != 0 )) && (( ${#OVERWRITES[@]} != ${#FILES[@]} )); then echo "ERROR: Rename array (${#OVERWRITES[@]}) doesn't match number of input files (${#FILES[@]})" && exit 1; fi
+	if (( ${#DATESTAMPS[@]} != 0 )) && (( ${#DATESTAMPS[@]} != ${#FILES[@]} )); then echo "ERROR: Concat array (${#DATESTAMPS[@]}) doesn't match number of input files (${#FILES[@]})" && exit 1; fi
 
 	if [[ "~{keep_only_unique_files}" = "true" ]]
 	then
 		# deduplicate FILES by basename (since WDL localization can put input files that share a basename into different folders)
 		FILES_INPUT_LEN=${#FILES[@]}
+
+		# TODO: change filenames per DATESTAMPS and/or OVERWRITES
+
 		mapfile -t FILES < <(printf "%s\n" "${FILES[@]}" | awk -F'/' '{if (seen[$NF]++) print "Duplicate basename in FILES:", $0 > "/dev/stderr"; else print}' )
 		echo "---------- Files input in this batch ----------"
 		printf "%s\n" "${FILES[@]}"
 		FILES_DEDUP_LEN=${#FILES[@]}
 		printf "\n%s files input, %s remain after internal deduplication" "$FILES_INPUT_LEN" "$FILES_DEDUP_LEN"
 
-		# deduplicate king_file_first_lines, which is an index of files in a file called king_file (which isn't part of FILES)
-		# due to how WDL works, this next line checks if king_file_first_lines exists or not -- it's an optional input so it may not!
-		if [[ ! "~{king_file_first_lines}" = "" ]]
+		# deduplicate king_file_sample_names, which is an index of files in a file called king_file (which isn't part of FILES)
+		# due to how WDL works, this next line checks if king_file_sample_names exists or not -- it's an optional input so it may not!
+		if [[ ! "~{king_file_sample_names}" = "" ]]
 		then
-			mapfile -t KINGFILES < "~{king_file_first_lines}"
+			mapfile -t KINGFILES < "~{king_file_sample_names}"
 			KINGFILES_INPUT_LEN=${#KINGFILES[@]}
 			mapfile -t KINGFILES < <(printf "%s\n" "${KINGFILES[@]}" | awk '{if (seen[$0]++) print "Duplicate sample ID in KINGFILES:", $0 > "/dev/stderr"; else print}' )
 			KINGFILES_DEDUP_LEN=${#KINGFILES[@]}
@@ -267,8 +275,8 @@ task cat_files {
 			printf "%s\n" "${FILES[@]}"
 			if [ ${#FILES[@]} -eq 0 ]; then
 				echo "Looks like no files are going in! Skipping removal guide (if any) and returning kingfile..."
-				mv "~{king_file}" "~{out_filename}"
-				mv "~{king_file_first_lines}" "~{first_lines_out_filename}"
+				mv "~{king_file}" "~{out_concat_file}"
+				mv "~{king_file_sample_names}" "~{out_sample_names}"
 				number_of_removed_files="$(wc -l removed.txt | awk '{print $1}')"
 				echo "$number_of_removed_files" >> number_of_removed_files.txt
 				return 0
@@ -280,28 +288,31 @@ task cat_files {
 
 	fx_cat_and_firstlines () {
 		# $1 is iteration (index), $2 is file
-		if [[ "~{overwrite}" = "true" ]]
+
+		# TODO: this might need to be modified to account for the OVERWRITE and DATESTAMP changes I want
+		
+		if [[ "~{yes_overwrite_sample_names}" = "true" ]]
 		then
 			ITER=$1
-			echo "${OVERWRITES[$ITER]}" >> "~{first_lines_out_filename}"
-			echo ">${OVERWRITES[$ITER]}" >> "~{out_filename}"
-			tail -n +2 "$2" >> "~{out_filename}"
+			echo "${OVERWRITES[$ITER]}" >> "~{out_sample_names}"
+			echo ">${OVERWRITES[$ITER]}" >> "~{out_concat_file}"
+			tail -n +2 "$2" >> "~{out_concat_file}"
 			echo iter is "$ITER" and overwrite is "${OVERWRITES[$ITER]}" at this index
-		elif [[ "~{overwrite}" = "false" && "~{strip_first_line_first_char}" = "true" ]]
+		elif [[ "~{yes_overwrite_sample_names}" = "false" && "~{sample_name_skips_first_character_on_each_first_line}" = "true" ]]
 		then
 			firstline=$(head -1 "$2")
-			echo "${firstline:1}" >> "~{first_lines_out_filename}"
-			cat "$2" >> "~{out_filename}"
+			echo "${firstline:1}" >> "~{out_sample_names}"
+			cat "$2" >> "~{out_concat_file}"
 		else
-			head -1 "$2" >> "~{first_lines_out_filename}"
-			cat "$2" >> "~{out_filename}"
+			head -1 "$2" >> "~{out_sample_names}"
+			cat "$2" >> "~{out_concat_file}"
 		fi
 	}
 	
-	if [[ ! "~{sep=' ' removal_candidates}" = "" ]]
+	if [[ ! "~{sep=' ' new_files_quality_reports}" = "" ]]
 	then
 		echo "Checking which files ought to not be included..."
-		cat ~{sep=" " removal_candidates} >> removal_guide.tsv
+		cat ~{sep=" " new_files_quality_reports} >> removal_guide.tsv
 		ITER=0
 		for FILE in "${FILES[@]}"
 		do
@@ -315,7 +326,7 @@ task cat_files {
 				# okay, we have information about this file. is it above the removal threshold?
 				# piping an inequality to `bc` will return 0 if false, 1 if true
 				this_files_value=$(cut -f2 temp)
-				is_bigger=$(echo "$this_files_value>~{removal_threshold}" | bc) 
+				is_bigger=$(echo "$this_files_value>~{quality_report_removal_threshold}" | bc) 
 				if [[ $is_bigger == 0 ]]
 				then
 					# this_files_value is below the removal threshold and passes
@@ -353,12 +364,12 @@ task cat_files {
 	then
 		echo "Sorting and removing non-unique lines..."
 		touch temp
-		sort "~{out_filename}" | uniq -u >> temp
-		rm "~{out_filename}"
-		mv temp "~{out_filename}"
+		sort "~{out_concat_file}" | uniq -u >> temp
+		rm "~{out_concat_file}"
+		mv temp "~{out_concat_file}"
 	fi
 
-	if [[ ! -f "~{out_filename}" ]]
+	if [[ ! -f "~{out_concat_file}" ]]
 	then
 		printf "\n\n\n ========================= "
 		echo "ERROR: Could not locate cat'd file. This probably means either: "
@@ -397,16 +408,16 @@ task cat_files {
 
 	if [[ ! "~{king_file}" = "" ]]
 	then
-		cat "~{out_filename}" "~{king_file}" > temp
-		rm "~{out_filename}"
-		mv temp "~{out_filename}"
+		cat "~{out_concat_file}" "~{king_file}" > temp
+		rm "~{out_concat_file}"
+		mv temp "~{out_concat_file}"
 	fi
 
-	if [[ ! "~{king_file_first_lines}" = "" ]]
+	if [[ ! "~{king_file_sample_names}" = "" ]]
 	then
-		cat "~{first_lines_out_filename}" "~{king_file_first_lines}" > temp
-		rm "~{first_lines_out_filename}"
-		mv temp "~{first_lines_out_filename}"
+		cat "~{out_sample_names}" "~{king_file_sample_names}" > temp
+		rm "~{out_sample_names}"
+		mv temp "~{out_sample_names}"
 	fi
 
 	>>>
@@ -420,12 +431,12 @@ task cat_files {
 	}
 
 	output {
-		File outfile = "~{out_filename}"
+		File outfile = "~{out_concat_file}"
 		Int files_removed = read_int("number_of_removed_files.txt")
 		Int files_input = number_of_files
 		Int files_passed = number_of_files - read_int("number_of_removed_files.txt")
 		Array[String] removed_files = read_lines("removed.txt")
-		File? first_lines = first_lines_out_filename
+		File? first_lines = out_sample_names
 		File? removal_guide = "removal_guide.tsv"
 	}
 }
