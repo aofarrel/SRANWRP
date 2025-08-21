@@ -218,7 +218,7 @@ task cat_files {
 		echo "---------- Files input in this batch ----------"
 		printf "%s\n" "${FILES[@]}"
 		FILES_DEDUP_LEN=${#FILES[@]}
-		printf "\n%s files input, %s remain after deduplication" "$FILES_INPUT_LEN" "$FILES_DEDUP_LEN"
+		printf "\n%s files input, %s remain after internal deduplication" "$FILES_INPUT_LEN" "$FILES_DEDUP_LEN"
 
 		# deduplicate king_file_first_lines, which is an index of files in a file called king_file (which isn't part of FILES)
 		# due to how WDL works, this next line checks if king_file_first_lines exists or not -- it's an optional input so it may not!
@@ -228,7 +228,7 @@ task cat_files {
 			KINGFILES_INPUT_LEN=${#KINGFILES[@]}
 			mapfile -t KINGFILES < <(printf "%s\n" "${KINGFILES[@]}" | awk '{if (seen[$0]++) print "Duplicate sample ID in KINGFILES:", $0 > "/dev/stderr"; else print}' )
 			KINGFILES_DEDUP_LEN=${#KINGFILES[@]}
-			printf "\n%s KINGFILES input, %s remain after deduplication" "$KINGFILES_INPUT_LEN" "$KINGFILES_DEDUP_LEN"
+			printf "\n%s KINGFILES input, %s remain after internal deduplication" "$KINGFILES_INPUT_LEN" "$KINGFILES_DEDUP_LEN"
 
 			# Remove any FILES that share a sample ID with KINGFILES
 			declare -A KING_SAMPLES
@@ -240,6 +240,7 @@ task cat_files {
 			for f in "${FILES[@]}"; do
 				sample_id=$(basename "$f" .diff)
 				if [[ -n "${KING_SAMPLES[$sample_id]+x}" ]]; then
+					printf "\nDuplicate sample ID in both FILES and KINGFILES: %s" "$sample_id"
 					printf "\nDuplicate sample ID in both FILES and KINGFILES: %s" "$sample_id" >&2
 				else
 					FILES_FILTERED+=("$f")
@@ -248,7 +249,7 @@ task cat_files {
 			FILES=("${FILES_FILTERED[@]}")
 
 			FILES_DEDUP_LEN=${#FILES[@]}
-			printf "\nFILES reduced to %s after removing duplicates against KINGFILES" "$FILES_DEDUP_LEN"
+			printf "\nInput files reduced to %s after removing duplicates against KINGFILES" "$FILES_DEDUP_LEN"
 
 			# Combine all sample IDs into FINAL_FILES (FILES and KINGFILES merged, with .diff extensions)
 			FINAL_FILES=()
@@ -260,10 +261,18 @@ task cat_files {
 			done
 
 			TOTAL_FINAL=${#FINAL_FILES[@]}
-			printf "\nFinal total after deduplication and merging: %d files\n" "$TOTAL_FINAL"
+			printf "\nCurrent total after deduplication and merging (before accounting for removal candidates): %d files\n" "$TOTAL_FINAL"
 
 			echo "---------- Files going into tree and stuff (so far) ----------"
 			printf "%s\n" "${FILES[@]}"
+			if [ ${#FILES[@]} -eq 0 ]; then
+				echo "Looks like no files are going in! Skipping removal guide (if any) and returning kingfile..."
+				mv "~{king_file}" "~{out_filename}"
+				mv "~{king_file_first_lines}" "~{first_lines_out_filename}"
+				number_of_removed_files="$(wc -l removed.txt | awk '{print $1}')"
+				echo "$number_of_removed_files" >> number_of_removed_files.txt
+				return 0
+			fi
 		fi
 	fi
 	echo "---------- Files going into tree and stuff ----------"
@@ -362,6 +371,8 @@ task cat_files {
 			echo "This task will now exit with an error."
 			return 1
 		else
+			number_of_removed_files="$(wc -l removed.txt | awk '{print $1}')"
+			echo "$number_of_removed_files" >> number_of_removed_files.txt
 			echo "$(number_of_removed_files) files were removed for being below the threshold, or not having removal candidate data."
 			echo "The contents of removal.txt will be printed below and this task will then exit with an error."
 			cat removed.txt
