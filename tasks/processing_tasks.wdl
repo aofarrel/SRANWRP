@@ -199,7 +199,7 @@ task cat_files {
 		Int?    disk_size_override
 		Boolean keep_only_unique_files_ignores_changed_sample_names = false
 
-		Boolean and_then_exit_1 = true              # for quick testing on Terra
+		Boolean and_then_exit_1 = false              # for quick testing on Terra
 	}
 	Int disk_size = select_first([disk_size_override, ceil(size(new_files_to_concat, "GB")) * 2])
 	Int number_of_new_files = length(new_files_to_concat)
