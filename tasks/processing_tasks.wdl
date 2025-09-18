@@ -159,6 +159,9 @@ task extract_accessions_from_file_or_string {
 		rm likely_valid.txt
 		mv likely_valid_sorted.txt likely_valid.txt
 	fi
+
+	echo "Currently under consideration:"
+	cat likely_valid.txt
 	
 	# I refuse to do this in bash
 	python3 << CODE
@@ -179,6 +182,9 @@ task extract_accessions_from_file_or_string {
 	with open("valid.txt", "a") as g:
 		g.writelines(valid)
 	CODE
+
+	echo "Returning:"
+	cat valid.txt
 	>>>
 
 	runtime {
