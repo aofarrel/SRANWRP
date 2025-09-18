@@ -122,6 +122,73 @@ task extract_accessions_from_file {
 	}
 }
 
+task extract_accessions_from_file_or_string {
+	# Either:
+	#  - extract accessions from file as per extract_accessions_from_file
+	#  - just pass the string along
+	# If both are provided, the string array takes priority.
+	# This is useful for allowing myco_sra to run on a Terra data table.
+	input {
+		Array[String]? accessions_array
+		File? accessions_file
+		Int preempt = 1
+		Boolean filter_na = true
+		Boolean sort_and_uniq = true
+	}
+	Int disk_size = ceil(size(accessions_file, "GB")) * 2
+
+	command <<<
+
+	if [[ ! "~{sep=' ' accessions_array}" = "" ]]
+	then
+		printf "%s\n" "${accessions_array[@]}" > likely_valid.txt
+	else
+		cp "~{accessions_file}" ./likely_valid.txt
+	fi
+
+	if [[ "~{sort_and_uniq}" = "true" ]]
+	then
+		sort "~{accessions_file}" | uniq -u > likely_valid.txt
+	fi
+	
+	python3 << CODE
+	import os
+	f = open("likely_valid.txt", "r")
+	valid = []
+	for line in (f.readlines()):
+		if line == "":
+			pass
+		elif line == "NA" and "~{filter_na}" == "true":
+			print("WARNING -- NA found")
+			pass
+		else:
+			split = line.split("\t")
+			for accession in split:
+				valid.append(accession.strip("\n")+"\n")
+	f.close()
+	os.system("touch valid.txt")
+	g = open("valid.txt", "a")
+	g.writelines(valid)
+	g.close()
+	CODE
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " SSD"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
+		memory: "8 GB"
+		preemptible: preempt
+	}
+
+	output {
+		Array[String] accessions = read_lines("valid.txt")
+	}
+}
+
+
+
+
 task cat_strings {
 	# Concatenate Array[String] into a single File.
 
