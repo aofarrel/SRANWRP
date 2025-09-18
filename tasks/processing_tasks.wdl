@@ -175,7 +175,7 @@ task extract_accessions_from_file_or_string {
 				for accession in split:
 					valid.append(accession.strip("\n")+"\n")
 	os.system("touch valid.txt")
-	with open("valid.txt", "a"):
+	with open("valid.txt", "a") as g:
 		g.writelines(valid)
 	CODE
 	>>>
