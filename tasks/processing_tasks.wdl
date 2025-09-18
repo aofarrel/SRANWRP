@@ -142,7 +142,8 @@ task extract_accessions_from_file_or_string {
 
 	if [[ ! "~{sep=' ' accessions_array}" = "" ]]
 	then
-		printf "%s\n" "${accessions_array[@]}" > likely_valid.txt
+		ACCESSIONSARRAY=(~{sep=' ' accessions_array})
+		printf "%s\n" "${ACCESSIONSARRAY[@]}" > likely_valid.txt
 	else
 		if [[ "~{accessions_file}" == "" ]]
 		then
