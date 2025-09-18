@@ -135,7 +135,8 @@ task extract_accessions_from_file_or_string {
 		Boolean filter_na = true
 		Boolean sort_and_uniq = true
 	}
-	Int disk_size = ceil(size(accessions_file, "GB")) * 2
+	# if no accessions file, this will return 2 GB
+	Int disk_size = ceil(size(accessions_file, "GB")) * 2 + 2
 
 	command <<<
 
