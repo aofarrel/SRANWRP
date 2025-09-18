@@ -149,24 +149,26 @@ task extract_accessions_from_file_or_string {
 			echo "Neither accessions array nor accessions file provided!"
 			exit 1
 		fi
-		cp "~{accessions_file}" ./likely_valid.txt
+		cp "~{accessions_file}" likely_valid.txt
 	fi
 
 	if [[ "~{sort_and_uniq}" = "true" ]]
 	then
-		sort "~{accessions_file}" | uniq -u > likely_valid.txt
+		sort likely_valid.txt | uniq -u > likely_valid_sorted.txt
+		rm likely_valid.txt
+		mv likely_valid_sorted.txt likely_valid.txt
 	fi
 	
 	# I refuse to do this in bash
 	python3 << CODE
 	import os
 	valid = []
-	with open("likely_valid.txt", "r"):
+	with open("likely_valid.txt", "r") as f:
 		for line in (f.readlines()):
 			if line == "":
 				pass
 			elif line == "NA" and "~{filter_na}" == "true":
-				print("WARNING -- NA found")
+				#print("WARNING -- NA found")
 				pass
 			else:
 				split = line.split("\t")
