@@ -233,18 +233,18 @@ task strings_to_csv {
 
 	passing_keys, passing_values = [], []
 	for key, lst in zip(keys, values):
-	    if len(lst) == max_len:
-	        print(f"{key}: {len(lst)} values")
-	        passing_keys.append(key)
-	        passing_values.append(lst)
-	    else:
-	    	print(f"{key} has {len(lst)} values but we expect {max_len}")
+		if len(lst) == max_len:
+			print(f"{key}: {len(lst)} values")
+			passing_keys.append(key)
+			passing_values.append(lst)
+		else:
+			print(f"{key} has {len(lst)} values but we expect {max_len}")
 	
 	# passing_keys is a flat list
 	# passing_values is a list of lists
 	padded = {
-	    key: lst
-	    for key, lst in zip(passing_keys, passing_values)
+		key: lst
+		for key, lst in zip(passing_keys, passing_values)
 	}
 	print(padded)
 	df = pl.DataFrame(padded)
