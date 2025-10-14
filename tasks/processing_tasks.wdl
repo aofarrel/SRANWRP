@@ -200,6 +200,73 @@ task extract_accessions_from_file_or_string {
 	}
 }
 
+task strings_to_csv {
+	# If you are building a metadata CSV from a Terra data table that has some null values,
+	# this should do the trick. If it has no nulls a Map[] would probably be a better option.
+	input {
+		Array[String] entity_ids
+		String        a_metadata_key
+		Array[String] a_metadata_values
+		String        b_metadata_key
+		Array[String] b_metadata_values
+	}
+	
+	command <<<
+	python3 << CODE
+	import polars as pl
+
+	entity_ids = ['~{sep="','" entity_ids}']
+	a_metadata_values = ['~{sep="','" a_metadata_values}']
+	b_metadata_values = ['~{sep="','" b_metadata_values}']
+
+	print(a_metadata_values)
+	print(b_metadata_values)
+
+	keys = ["entity_id", "~{a_metadata_key}", "~{b_metadata_key}"]
+	values = [entity_ids, a_metadata_values, b_metadata_values]
+	assert len(keys) == len(values), f"len(keys)={len(keys)} != len(values)={len(values)}"
+
+	lengths = [len(lst) for lst in values]
+
+	max_len = lengths[0]
+	assert all(l <= max_len for l in lengths), "One or more metadata lists has more values that there are entity IDs"
+
+	passing_keys, passing_values = [], []
+	for key, lst in zip(keys, values):
+	    if len(lst) == max_len:
+	        print(f"{key}: {len(lst)} values")
+	        passing_keys.append(key)
+	        passing_values.append(lst)
+	    else:
+	    	print(f"{key} has {len(lst)} values but we expect {max_len}")
+	
+	# passing_keys is a flat list
+	# passing_values is a list of lists
+	padded = {
+	    key: lst
+	    for key, lst in zip(passing_keys, passing_values)
+	}
+	print(padded)
+	df = pl.DataFrame(padded)
+	print(df)
+	df.write_csv("metadata_filtered.csv")
+	CODE
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk 10 HDD"
+		docker: "ashedpotatoes/sranwrp:1.1.27"
+		memory: "8 GB"
+		preemptible: 1
+		retries: 1
+	}
+
+	output {
+		File csv = "metadata_filtered.csv"
+	}
+
+}
 
 
 
@@ -378,31 +445,25 @@ task cat_files {
 			done
 
 			FILES_FILTERED=()
-			for f in "${FILES[@]}"; do
+			SAMPLE_NAMES_FILTERED=()
+			for i in "${!FILES[@]}"; do
+				f="${FILES[$i]}"
 				sample_id=$(basename "$f" .diff)
 				if [[ -n "${KING_SAMPLES[$sample_id]+x}" ]]; then
 					printf "\nDuplicate sample ID in both FILES and KINGFILES: %s" "$sample_id"
 					printf "\nDuplicate sample ID in both FILES and KINGFILES: %s" "$sample_id" >&2
 				else
 					FILES_FILTERED+=("$f")
+					SAMPLE_NAMES_FILTERED+=("${SAMPLE_NAMES[$i]}")
 				fi
 			done
+
+			# the actual deduplication
 			FILES=("${FILES_FILTERED[@]}")
+			SAMPLE_NAMES=("${SAMPLE_NAMES_FILTERED[@]}")
 
 			FILES_DEDUP_LEN=${#FILES[@]}
 			printf "\nInput files reduced to %s after removing duplicates against KINGFILES" "$FILES_DEDUP_LEN"
-
-			# Combine all sample IDs into FINAL_FILES (FILES and KINGFILES merged, with .diff extensions)
-			FINAL_FILES=()
-			for k in "${KINGFILES[@]}"; do
-				FINAL_FILES+=("$k.diff")
-			done
-			for f in "${FILES[@]}"; do
-				FINAL_FILES+=("$f")
-			done
-
-			TOTAL_FINAL=${#FINAL_FILES[@]}
-			printf "\nCurrent total after deduplication and merging (before accounting for removal candidates): %d files\n" "$TOTAL_FINAL"
 
 			echo "---------- Files going into tree and stuff (so far) ----------"
 			printf "%s\n" "${FILES[@]}"

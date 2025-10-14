@@ -48,13 +48,11 @@ apt-get clean
 
 # install python and friends (warning: this takes about 15 minutes)
 RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0rc3.tgz && tar -xf Python-3.12.0rc3.tgz && cd Python-3.12.0rc3 && ./configure --disable-test-modules --enable-optimizations && make && sudo make install 
+RUN pip3 install ranchero   # includes polars, tqdm, pyyaml, numpy, pandas, xmltodict
 RUN pip3 install ete3
-RUN pip3 install tqdm
-RUN pip3 install numpy
-RUN pip3 install pandas
 RUN pip3 install Matplotlib
-RUN pip3 install firecloud
 RUN pip3 install taxoniumtools
+#RUN pip3 install firecloud # no longer works: https://github.com/broadinstitute/fiss/issues/192
 
 # install entrez direct
 RUN sh -c "$(wget -q ftp://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh -O -)"
@@ -69,10 +67,13 @@ RUN cd bin && wget https://github.com/samtools/bcftools/releases/download/1.16/b
 # install seqtk
 RUN git clone https://github.com/lh3/seqtk.git && cd seqtk && make && cd .. && mv seqtk bin/seqtk
 
-# grab premade sra-tool binaries
-## !! due to how SRANWRP works, we currently cannot update to 3.0.5 or higher !!
-## 3.0.5 adds pacbio support to fasterq-dump, but sranwrp relies on that failure to avoid
-## issues with clockwork, which only supports illumina data. 
+# download existing sra-tools binaries
+# Q: Why do we use existing binaries instead of building?
+# A: Because building this particular tool is really ornery.
+# Q: Why do we use version 3.0.1?
+# A: sranwrp is designed for myco_sra first and foremost. myco_sra uses clockwork, which strictly only supports
+#    Illumina PE. sra-tools 3.0.1 throws an error (which sranwrp catches gracefully) when it encounters PacBio data.
+#    sra-tools 3.0.5 supports PacBio downloads, which we don't want!
 RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.1-ubuntu64.tar.gz
 
 # fix some perl stuff (might not be needed but I'm taking no chances)
