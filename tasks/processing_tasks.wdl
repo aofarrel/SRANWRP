@@ -328,28 +328,49 @@ task cat_files {
 	# SAMEA7555065.diff.
 
 	input {
+
+		# the new files you want to concat
 		Array[File] new_files_to_concat
+
+		# optional: quality reports for the new files; if provided, will lowpass filter to determine
+		# what actually is included (gets catted) or not
 		Array[File]? new_files_quality_reports
+
+		# if provided, and if len() matches that of new_files_to_concat, the first line of every new file,
+		# starting from the SECOND character if sample_name_skips_first_character_on_each_first_line, 
+		# will be replaced by the provided string
 		Array[String]? new_files_override_sample_names
-		Array[String]? new_files_add_tail_to_sample_names # typically date stamps
-		File? king_file               # an already concatenated file you want to concatenate to
-		File? king_file_sample_names  # the already concatenated file's sample IDs
-		# note: king_file_sample_names is not affected by new_files_override_sample_names nor new_files_add_tail_to_sample_names)
-		
-		String  out_sample_names = "firstlines.txt"
+
+		# similar to new_files_override_sample_names except instead of replacing this tacked onto the end
+		# (useful for adding pre-defined datestamps)
+		Array[String]? new_files_add_tail_to_sample_names
+
+		# an already concatenated file; new_files_to_concat will be concat'd to the bottom of this 
+		File? king_file
+
+		# the already concatenated file's sample IDs; used to detect if any incoming files in new_files_to_concat
+		# would have a sample name already in king_file. not affected by new_files_override_sample_names nor
+		# new_files_add_tail_to_sample_names
+		File? king_file_sample_names
+
+		# options
+		Boolean datestamp_main_files = false
 		Boolean keep_only_unique_files = false       # Tree Nine sets this to true
 		Boolean keep_only_unique_lines = false       # may not interact well with other options
-		Int     preempt = 1
-		String  out_concat_file = "all.txt"
+		Boolean keep_only_unique_files_ignores_changed_sample_names = false
 		Float   quality_report_removal_threshold = 0.05
 		Boolean sample_name_skips_first_character_on_each_first_line = true
 		Boolean verbose = false
+
+		# output filenames
+		String  out_sample_names = "firstlines"
+		String  out_concat_file = "all"
+		String  out_concat_extension = ".txt"
+
+		# runtime attributes
+		Int     preempt = 1
 		Int?    disk_size_override
-		Boolean keep_only_unique_files_ignores_changed_sample_names = false
-
 		Boolean and_then_exit_1 = false              # for quick testing on Terra
-
-		Boolean datestamp_main_files = false
 	}
 	Int disk_size = select_first([disk_size_override, ceil(size(new_files_to_concat, "GB")) * 2])
 	Int number_of_new_files = length(new_files_to_concat)
@@ -616,7 +637,7 @@ task cat_files {
 		mv "~{out_concat_file}" "~{out_concat_file}""$TODAY"
 		if [[ ! "~{king_file_sample_names}" = "" ]]
 		then
-			mv "~{out_sample_names}" "~{out_sample_names}""$TODAY"
+			mv "~{out_sample_names}" "~{out_sample_names}""$TODAY""~{out_concat_extension}"
 		fi
 	fi
 
@@ -624,6 +645,8 @@ task cat_files {
 	if [[ "~{and_then_exit_1}" = "true" ]]
 	then
 		echo "All is well, but we're exiting one because you said so."
+		ls -lha
+		exit 1
 	fi
 
 	>>>
