@@ -348,6 +348,8 @@ task cat_files {
 		Boolean keep_only_unique_files_ignores_changed_sample_names = false
 
 		Boolean and_then_exit_1 = false              # for quick testing on Terra
+
+		Boolean datestamp_main_files = false
 	}
 	Int disk_size = select_first([disk_size_override, ceil(size(new_files_to_concat, "GB")) * 2])
 	Int number_of_new_files = length(new_files_to_concat)
@@ -604,6 +606,21 @@ task cat_files {
 		mv temp "~{out_sample_names}"
 	fi
 
+
+	# workaround for CDPH clustering script
+	TODAY=$(date -I)
+	echo "$TODAY" >> today.txt
+
+	if [[ "~{datestamp_main_files}" = "true" ]]
+	then
+		mv "~{out_concat_file}" "~{out_concat_file}""$TODAY"
+		if [[ ! "~{king_file_sample_names}" = "" ]]
+		then
+			mv "~{out_sample_names}" "~{out_sample_names}""$TODAY"
+		fi
+	fi
+
+
 	if [[ "~{and_then_exit_1}" = "true" ]]
 	then
 		echo "All is well, but we're exiting one because you said so."
@@ -620,12 +637,13 @@ task cat_files {
 	}
 
 	output {
-		File outfile = "~{out_concat_file}"
+		File outfile = glob("~{out_concat_file}*")[0]
 		Int files_removed = read_int("number_of_removed_files.txt")
 		Int files_input = number_of_new_files
 		Int files_passed = number_of_new_files - read_int("number_of_removed_files.txt")
 		Array[String] removed_files = read_lines("removed.txt")
-		File? first_lines = out_sample_names
+		String today = read_lines("today.txt")[0]  # workaround for the CDPH cluster task
+		File? first_lines = glob("~{out_sample_names}*)[0]
 		File? removal_guide = "removal_guide.tsv"
 	}
 }
