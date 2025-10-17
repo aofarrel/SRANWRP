@@ -643,7 +643,7 @@ task cat_files {
 		Int files_passed = number_of_new_files - read_int("number_of_removed_files.txt")
 		Array[String] removed_files = read_lines("removed.txt")
 		String today = read_lines("today.txt")[0]  # workaround for the CDPH cluster task
-		File? first_lines = glob("~{out_sample_names}*)[0]
+		File? first_lines = glob("~{out_sample_names}*")[0]
 		File? removal_guide = "removal_guide.tsv"
 	}
 }
