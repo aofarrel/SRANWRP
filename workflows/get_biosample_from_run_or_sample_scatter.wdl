@@ -28,7 +28,7 @@ workflow SRA_TO_BIOSAMP {
 
 	call processingtasks.cat_files as cat {
 		input:
-			files = get_samples.accession_as_file,
+			new_files_to_concat = get_samples.accession_as_file,
 			keep_only_unique_lines = sort_and_uniq
 	}
 

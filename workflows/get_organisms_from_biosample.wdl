@@ -33,7 +33,7 @@ workflow IS_THIS_A_BUTTERFLY {
 
 		call processingtasks.cat_files as cat {
 			input:
-				files = get_organism_names_scattered.organisms_and_SRA_accessions
+				new_files_to_concat = get_organism_names_scattered.organisms_and_SRA_accessions
 		}
 	}
 

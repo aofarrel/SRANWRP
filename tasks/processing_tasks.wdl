@@ -328,25 +328,48 @@ task cat_files {
 	# SAMEA7555065.diff.
 
 	input {
+
+		# the new files you want to concat
 		Array[File] new_files_to_concat
+
+		# optional: quality reports for the new files; if provided, will lowpass filter to determine
+		# what actually is included (gets catted) or not
 		Array[File]? new_files_quality_reports
+
+		# if provided, and if len() matches that of new_files_to_concat, the first line of every new file,
+		# starting from the SECOND character if sample_name_skips_first_character_on_each_first_line, 
+		# will be replaced by the provided string
 		Array[String]? new_files_override_sample_names
-		Array[String]? new_files_add_tail_to_sample_names # typically date stamps
-		File? king_file               # an already concatenated file you want to concatenate to
-		File? king_file_sample_names  # the already concatenated file's sample IDs
-		# note: king_file_sample_names is not affected by new_files_override_sample_names nor new_files_add_tail_to_sample_names)
-		
-		String  out_sample_names = "firstlines.txt"
+
+		# similar to new_files_override_sample_names except instead of replacing this tacked onto the end
+		# (useful for adding pre-defined datestamps)
+		Array[String]? new_files_add_tail_to_sample_names
+
+		# an already concatenated file; new_files_to_concat will be concat'd to the bottom of this 
+		File? king_file
+
+		# the already concatenated file's sample IDs; used to detect if any incoming files in new_files_to_concat
+		# would have a sample name already in king_file. not affected by new_files_override_sample_names nor
+		# new_files_add_tail_to_sample_names
+		File? king_file_sample_names
+
+		# options
+		Boolean datestamp_main_files = false         # Tree Nine sets this to true
 		Boolean keep_only_unique_files = false       # Tree Nine sets this to true
 		Boolean keep_only_unique_lines = false       # may not interact well with other options
-		Int     preempt = 1
-		String  out_concat_file = "all.txt"
+		Boolean keep_only_unique_files_ignores_changed_sample_names = false
 		Float   quality_report_removal_threshold = 0.05
 		Boolean sample_name_skips_first_character_on_each_first_line = true
 		Boolean verbose = false
-		Int?    disk_size_override
-		Boolean keep_only_unique_files_ignores_changed_sample_names = false
 
+		# output filenames
+		String  out_sample_names = "firstlines"
+		String  out_concat_file = "all"
+		String  out_concat_extension = ".txt"
+
+		# runtime attributes
+		Int     preempt = 1
+		Int?    disk_size_override
 		Boolean and_then_exit_1 = false              # for quick testing on Terra
 	}
 	Int disk_size = select_first([disk_size_override, ceil(size(new_files_to_concat, "GB")) * 2])
@@ -393,7 +416,8 @@ task cat_files {
 	echo "---------- Files input in this batch ----------"
 	echo "$FILES_INPUT_LEN files input"
 	printf "%s\n" "${FILES[@]}"
-	echo "---------- Sample names of said input (after processing overwrites and datestamps, excludes anything in kingfile) ----------"
+	echo "---------- Sample names of said input ----------"
+	echo "Note: This is after processing overwrites and datestamps, but excludes anything in kingfile"
 	echo "$SAMPLE_NAMES_LEN sample names"
 	printf "%s\n" "${SAMPLE_NAMES[@]}"
 
@@ -465,7 +489,7 @@ task cat_files {
 			FILES_DEDUP_LEN=${#FILES[@]}
 			printf "\nInput files reduced to %s after removing duplicates against KINGFILES" "$FILES_DEDUP_LEN"
 
-			echo "---------- Files going into tree and stuff (so far) ----------"
+			printf "\n---------- Passing files (so far) ----------\n"
 			printf "%s\n" "${FILES[@]}"
 			if [ ${#FILES[@]} -eq 0 ]; then
 				echo "Looks like no files are going in! Skipping removal guide (if any) and returning kingfile..."
@@ -477,7 +501,7 @@ task cat_files {
 			fi
 		fi
 	fi
-	echo "---------- Files going into tree and stuff ----------"
+	printf "\n---------- Passing files (so far) ----------\n"
 	printf "%s\n" "${FILES[@]}"
 
 	fx_cat_and_firstlines () {
@@ -533,7 +557,7 @@ task cat_files {
 		done
 	else
 		# no removal guide, so we keep things simple
-		echo "No removal guide found, so we'll add all the files we have to the outfile..."
+		printf "\n\nNo removal guide found, so we'll add all the files we have to the outfile..."
 
 		# output first lines
 		ITER=0
@@ -604,9 +628,27 @@ task cat_files {
 		mv temp "~{out_sample_names}"
 	fi
 
+
+	# workaround for CDPH clustering script
+	TODAY=$(date -I)
+	echo "$TODAY" >> today.txt
+
+	if [[ "~{datestamp_main_files}" = "true" ]]
+	then
+		mv "~{out_concat_file}" "~{out_concat_file}_""$TODAY""~{out_concat_extension}"
+		if [[ -f "~{out_sample_names}" ]]
+		then
+			mv "~{out_sample_names}" "~{out_sample_names}_""$TODAY"
+		fi
+		echo -e "\nGave datestamp $TODAY to main files as requested"
+	fi
+
+
 	if [[ "~{and_then_exit_1}" = "true" ]]
 	then
 		echo "All is well, but we're exiting one because you said so."
+		ls -lha
+		exit 1
 	fi
 
 	>>>
@@ -620,12 +662,13 @@ task cat_files {
 	}
 
 	output {
-		File outfile = "~{out_concat_file}"
+		File outfile = glob("~{out_concat_file}*")[0]
 		Int files_removed = read_int("number_of_removed_files.txt")
 		Int files_input = number_of_new_files
 		Int files_passed = number_of_new_files - read_int("number_of_removed_files.txt")
 		Array[String] removed_files = read_lines("removed.txt")
-		File? first_lines = out_sample_names
+		String today = read_lines("today.txt")[0]  # workaround for the CDPH cluster task
+		File? first_lines = glob("~{out_sample_names}*")[0]
 		File? removal_guide = "removal_guide.tsv"
 	}
 }
