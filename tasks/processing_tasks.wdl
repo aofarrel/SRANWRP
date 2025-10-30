@@ -354,7 +354,7 @@ task cat_files {
 		File? king_file_sample_names
 
 		# options
-		Boolean datestamp_main_files = false
+		Boolean datestamp_main_files = false         # Tree Nine sets this to true
 		Boolean keep_only_unique_files = false       # Tree Nine sets this to true
 		Boolean keep_only_unique_lines = false       # may not interact well with other options
 		Boolean keep_only_unique_files_ignores_changed_sample_names = false
@@ -416,7 +416,8 @@ task cat_files {
 	echo "---------- Files input in this batch ----------"
 	echo "$FILES_INPUT_LEN files input"
 	printf "%s\n" "${FILES[@]}"
-	echo "---------- Sample names of said input (after processing overwrites and datestamps, excludes anything in kingfile) ----------"
+	echo "---------- Sample names of said input ----------"
+	echo "Note: This is after processing overwrites and datestamps, but excludes anything in kingfile"
 	echo "$SAMPLE_NAMES_LEN sample names"
 	printf "%s\n" "${SAMPLE_NAMES[@]}"
 
@@ -488,7 +489,7 @@ task cat_files {
 			FILES_DEDUP_LEN=${#FILES[@]}
 			printf "\nInput files reduced to %s after removing duplicates against KINGFILES" "$FILES_DEDUP_LEN"
 
-			echo "---------- Files going into tree and stuff (so far) ----------"
+			printf "\n---------- Passing files (so far) ----------\n"
 			printf "%s\n" "${FILES[@]}"
 			if [ ${#FILES[@]} -eq 0 ]; then
 				echo "Looks like no files are going in! Skipping removal guide (if any) and returning kingfile..."
@@ -500,7 +501,7 @@ task cat_files {
 			fi
 		fi
 	fi
-	echo "---------- Files going into tree and stuff ----------"
+	printf "\n---------- Passing files (so far) ----------\n"
 	printf "%s\n" "${FILES[@]}"
 
 	fx_cat_and_firstlines () {
@@ -556,7 +557,7 @@ task cat_files {
 		done
 	else
 		# no removal guide, so we keep things simple
-		echo "No removal guide found, so we'll add all the files we have to the outfile..."
+		printf "\n\nNo removal guide found, so we'll add all the files we have to the outfile..."
 
 		# output first lines
 		ITER=0
@@ -634,11 +635,12 @@ task cat_files {
 
 	if [[ "~{datestamp_main_files}" = "true" ]]
 	then
-		mv "~{out_concat_file}" "~{out_concat_file}""$TODAY"
-		if [[ ! "~{king_file_sample_names}" = "" ]]
+		mv "~{out_concat_file}" "~{out_concat_file}_""$TODAY""~{out_concat_extension}"
+		if [[ -f "~{out_sample_names}" ]]
 		then
-			mv "~{out_sample_names}" "~{out_sample_names}""$TODAY""~{out_concat_extension}"
+			mv "~{out_sample_names}" "~{out_sample_names}_""$TODAY"
 		fi
+		echo -e "\nGave datestamp $TODAY to main files as requested"
 	fi
 
 
