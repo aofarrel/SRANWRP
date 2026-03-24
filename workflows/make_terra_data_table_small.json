@@ -1,0 +1,5 @@
+{
+  "Make_Terra_Data_Table.headings": ["entity:sample_id", "fastqs"],
+  "Make_Terra_Data_Table.outfile": "PRJEB57971.tsv",
+  "Make_Terra_Data_Table.stuff_to_write": [ [ "ERS14293676", "gs://fc-4691d164-6476-4b02-8909-1451761a1d66/submissions/6f292642-d654-4340-9161-947ecea7989e/Download_FQs_From_BioProject/17e53c84-b32a-4cc2-bb40-ce32d1a6566a/call-yoink/shard-0/ERS14293676.tar" ] ]
+}
