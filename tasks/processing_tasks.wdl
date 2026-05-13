@@ -259,7 +259,7 @@ task strings_to_csv {
 		docker: "ashedpotatoes/sranwrp:1.1.27"
 		memory: "8 GB"
 		preemptible: 1
-		retries: 1
+		maxRetries: 1
 	}
 
 	output {
