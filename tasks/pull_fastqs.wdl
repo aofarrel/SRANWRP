@@ -11,6 +11,7 @@ task pull_fq_from_SRA_accession {
 		Int     prefetch_max_size_KB = 20000000  # default for prefetch is 20 GB
 		Int     subsample_cutoff_MB = -1
 		Int     subsample_seed = 1965
+		Int     subsample_to_x_reads = 1000000
 		Int     timeout_minutes = 120
 	}
 
@@ -147,8 +148,8 @@ task pull_fq_from_SRA_accession {
 			fq1megabytes=$(du -m "$READ1" | cut -f1)
 			if [[ fq1megabytes -gt ~{subsample_cutoff_MB} ]]
 			then
-				seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
-				seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+				seqtk sample -s~{subsample_seed} "$READ1" ~{subsample_to_x_reads} > temp1.fq
+				seqtk sample -s~{subsample_seed} "$READ2" ~{subsample_to_x_reads} > temp2.fq
 				rm "$READ1"
 				rm "$READ2"
 				mv temp1.fq "$READ1"
@@ -192,6 +193,7 @@ task pull_fq_from_biosample {
 		Int minimum_reads = 20000
 		Int subsample_cutoff = 450
 		Int subsample_seed = 1965
+		Int subsample_to_x_reads = 1000000
 		Boolean tar_outputs = false
 		Int timeout_minutes = 120
 
@@ -319,8 +321,8 @@ task pull_fq_from_biosample {
 					number_of_reads=$(awk '{s++} END {print s/4}' $READ1)  # this is hacky but good enough since fqtools refuses to compile
 					if [[ fq1megabytes -gt ~{subsample_cutoff} ]]
 					then
-						seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
-						seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+						seqtk sample -s~{subsample_seed} "$READ1" ~{subsample_to_x_reads} > temp1.fq
+						seqtk sample -s~{subsample_seed} "$READ2" ~{subsample_to_x_reads} > temp2.fq
 						rm "$READ1"
 						rm "$READ2"
 						mv temp1.fq "$READ1"
@@ -405,8 +407,8 @@ task pull_fq_from_biosample {
 						number_of_reads=$(awk '{s++} END {print s/4}' $READ1)  # this is hacky but good enough since fqtools refuses to compile
 						if [[ fq1megabytes -gt ~{subsample_cutoff} ]]
 						then
-							seqtk sample -s~{subsample_seed} "$READ1" 1000000 > temp1.fq
-							seqtk sample -s~{subsample_seed} "$READ2" 1000000 > temp2.fq
+							seqtk sample -s~{subsample_seed} "$READ1" ~{subsample_to_x_reads} > temp1.fq
+							seqtk sample -s~{subsample_seed} "$READ2" ~{subsample_to_x_reads} > temp2.fq
 							rm "$READ1"
 							rm "$READ2"
 							mv temp1.fq "$READ1"
