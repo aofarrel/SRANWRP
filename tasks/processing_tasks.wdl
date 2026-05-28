@@ -900,10 +900,10 @@ task process_metadata_table {
 	command <<<
 	set -eux pipefail
 
-	cat << 'EOF' > renames_map.txt
+	cat <<- 'EOF' > renames_map.txt
 	~{sep="\n" renames_safe}
 	EOF
-	
+
 	python3 << CODE
 	import json
 	import polars as pl
