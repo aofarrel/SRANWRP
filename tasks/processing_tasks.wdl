@@ -898,102 +898,103 @@ task process_metadata_table {
 	Array[Pair[String, String]] renames_safe = select_first([column_renames, []])
 
 	command <<<
-		set -eux pipefail
+	set -eux pipefail
 
-		cat << 'EOF' > renames_map.txt
-		~{sep="\n" renames_safe}
-		EOF
+	cat << 'EOF' > renames_map.txt
+	~{sep="\n" renames_safe}
+	EOF
+	
+	python3 << CODE
+	import json
+	import polars as pl
+
+	df = pl.read_csv("~{table}", separator="\t")
+	print("Read dataframe")
+	
+	raw_cols = "~{sep=',' desired_columns}"
+	if raw_cols == "":
+		print("No value for desired columns, writing unchanged table then exiting 0...")
+		df.write_csv("processed_metadata_table.tsv", separator="\t")
+		exit(0)
+	desired_columns = [c.strip() for c in raw_cols.split(",")] if raw_cols else []
+	
+	column_renames = []
+    if os.path.exists("renames_map.txt"):
+        with open("renames_map.txt", "r") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    column_renames.append(line.split("\t"))
+	
+	strict = ('~{strict}' == 'true')  # silly way to convert to python boolean
+
+	valid_renames = []
+	
+	if strict:
+		# a) assert all inner lists in column_renames have length of two
+		for item in column_renames:
+			assert len(item) == 2, f"Strict mode violation: inner list {item} does not have exactly 2 elements."
 		
-		python3 << CODE
-		import json
-		import polars as pl
-
-		df = pl.read_csv("~{table}", separator="\t")
+		# b) assert SECOND value of each inner list matches a value in desired_columns
+		for prename, post_rename in column_renames:
+			assert post_rename in desired_columns, f"Strict mode violation: post-rename column '{dest}' not found in desired_columns."
 		
-		raw_cols = "~{sep=',' desired_columns}"
-		if raw_cols == "":
-			print("No value for desired columns, writing unchanged table then exiting 0...")
-			df.write_csv("processed_metadata_table.tsv", separator="\t")
-			exit(0)
-		desired_columns = [c.strip() for c in raw_cols.split(",")] if raw_cols else []
-		
-		column_renames = []
-        if os.path.exists("renames_map.txt"):
-            with open("renames_map.txt", "r") as f:
-                for line in f:
-                    line = line.strip()
-                    if line:
-                        column_renames.append(line.split("\t"))
-		
-		strict = ('~{strict}' == 'true')  # silly way to convert to python boolean
+		valid_renames = column_renames
 
-		valid_renames = []
-		
-		if strict:
-			# a) assert all inner lists in column_renames have length of two
-			for item in column_renames:
-				assert len(item) == 2, f"Strict mode violation: inner list {item} does not have exactly 2 elements."
-			
-			# b) assert SECOND value of each inner list matches a value in desired_columns
-			for prename, post_rename in column_renames:
-				assert post_rename in desired_columns, f"Strict mode violation: post-rename column '{dest}' not found in desired_columns."
-			
-			valid_renames = column_renames
-
-			# c) assert all values in desired_columns (except those that will get renamed) are in table
-			rename_dict = {post_rename: prename for prename, post_rename in valid_renames}
-			for col in desired_columns:
-				required_in_table = rename_dict.get(col, col)
-				assert required_in_table in df.columns, f"Strict mode violation: required column '{required_in_table}' missing from input table."
-
-		else:
-			# a) drop any lists in column_renames that don't have a length of two
-			# b) drop inner lists whose SECOND value doesn't match something in desired_columns
-			for item in column_renames:
-				if len(item) == 2 and item[1] in desired_columns:
-					valid_renames.append(item)
-
-			# c) drop any values in desired_columns (except those that will get renamed) missing from table
-			rename_dict = {post_rename: prename for prename, post_rename in valid_renames}
-			filtered_desired_columns = []
-			for col in desired_columns:
-				required_in_table = rename_dict.get(col, col)
-				if required_in_table in df.columns:
-					filtered_desired_columns.append(col)
-				else:
-					if col in rename_dict:
-						valid_renames = [r for r in valid_renames if r[1] != col]
-			
-			desired_columns = filtered_desired_columns
-
-		mapping = {prename: post_rename for prename, post_rename in valid_renames if prename in df.columns}
-		if mapping:
-			df = df.rename(mapping)
-
-		# Terra data table handling
-		entity_id_columns = [
-			col for col in df.columns 
-			if col.startswith("entity:") and col.endswith("_id")
-		]
-		if len(entity_id_columns) == 1:
-			print("Found apparent Terra entity ID column named %s, will rename to sample_id", entity_id_columns[0])
-			df = df.rename({entity_id_columns[0]: "sample_id"})
-
-		# account for the entity ID rename if it was requested as 'sample_id' and do final slicing
-		final_cols_to_keep = []
+		# c) assert all values in desired_columns (except those that will get renamed) are in table
+		rename_dict = {post_rename: prename for prename, post_rename in valid_renames}
 		for col in desired_columns:
-			if col in df.columns:
-				final_cols_to_keep.append(col)
-			elif col == "sample_id" and "sample_id" in df.columns:
-				final_cols_to_keep.append("sample_id")
+			required_in_table = rename_dict.get(col, col)
+			assert required_in_table in df.columns, f"Strict mode violation: required column '{required_in_table}' missing from input table."
 
-		# if entity ID was renamed to sample_id but wasn't explicitly requested, keep it
-		if "sample_id" in df.columns and "sample_id" not in final_cols_to_keep:
-			final_cols_to_keep.insert(0, "sample_id")
+	else:
+		# a) drop any lists in column_renames that don't have a length of two
+		# b) drop inner lists whose SECOND value doesn't match something in desired_columns
+		for item in column_renames:
+			if len(item) == 2 and item[1] in desired_columns:
+				valid_renames.append(item)
 
-		df_final = df.select([col for col in df.columns if col in final_cols_to_keep])
-		df_final.write_csv("processed_metadata_table.tsv", separator="\t")
-		CODE
+		# c) drop any values in desired_columns (except those that will get renamed) missing from table
+		rename_dict = {post_rename: prename for prename, post_rename in valid_renames}
+		filtered_desired_columns = []
+		for col in desired_columns:
+			required_in_table = rename_dict.get(col, col)
+			if required_in_table in df.columns:
+				filtered_desired_columns.append(col)
+			else:
+				if col in rename_dict:
+					valid_renames = [r for r in valid_renames if r[1] != col]
+		
+		desired_columns = filtered_desired_columns
+
+	mapping = {prename: post_rename for prename, post_rename in valid_renames if prename in df.columns}
+	if mapping:
+		df = df.rename(mapping)
+
+	# Terra data table handling
+	entity_id_columns = [
+		col for col in df.columns 
+		if col.startswith("entity:") and col.endswith("_id")
+	]
+	if len(entity_id_columns) == 1:
+		print("Found apparent Terra entity ID column named %s, will rename to sample_id", entity_id_columns[0])
+		df = df.rename({entity_id_columns[0]: "sample_id"})
+
+	# account for the entity ID rename if it was requested as 'sample_id' and do final slicing
+	final_cols_to_keep = []
+	for col in desired_columns:
+		if col in df.columns:
+			final_cols_to_keep.append(col)
+		elif col == "sample_id" and "sample_id" in df.columns:
+			final_cols_to_keep.append("sample_id")
+
+	# if entity ID was renamed to sample_id but wasn't explicitly requested, keep it
+	if "sample_id" in df.columns and "sample_id" not in final_cols_to_keep:
+		final_cols_to_keep.insert(0, "sample_id")
+
+	df_final = df.select([col for col in df.columns if col in final_cols_to_keep])
+	df_final.write_csv("processed_metadata_table.tsv", separator="\t")
+	CODE
 	>>>
 
 	runtime {
