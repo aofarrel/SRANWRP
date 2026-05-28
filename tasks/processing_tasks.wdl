@@ -919,12 +919,12 @@ task process_metadata_table {
 	desired_columns = [c.strip() for c in raw_cols.split(",")] if raw_cols else []
 	
 	column_renames = []
-    if os.path.exists("renames_map.txt"):
-        with open("renames_map.txt", "r") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    column_renames.append(line.split("\t"))
+	if os.path.exists("renames_map.txt"):
+		with open("renames_map.txt", "r") as f:
+			for line in f:
+				line = line.strip()
+				if line:
+					column_renames.append(line.split("\t"))
 	
 	strict = ('~{strict}' == 'true')  # silly way to convert to python boolean
 
