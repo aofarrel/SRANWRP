@@ -900,6 +900,17 @@ task process_metadata_table {
 	command <<<
 	set -eux pipefail
 
+	# attempted workaround for people running locally on modern Macbooks
+	ARCH=$(uname -m)
+	if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+		echo "Apple Silicon / ARM64 architecture detected ($ARCH)."
+		echo "Switching to Polars LTS..."
+		pip uninstall -y polars
+		pip install polars-lts-cpu
+	else
+		echo "Standard x86_64 architecture detected ($ARCH). Proceeding with default Polars."
+	fi
+
 	python3 << CODE
 	import os
 	import ast
