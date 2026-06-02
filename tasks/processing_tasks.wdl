@@ -997,7 +997,7 @@ task process_metadata_table {
 		if col.startswith("entity:") and col.endswith("_id")
 	]
 	if len(entity_id_columns) == 1:
-		print("Found apparent Terra entity ID column named %s, will rename to sample_id", entity_id_columns[0])
+		print(f"Found apparent Terra entity ID column named {entity_id_columns[0]}, will rename to sample_id")
 		df = df.rename({entity_id_columns[0]: "sample_id"})
 
 	# account for the entity ID rename if it was requested as 'sample_id' and do final slicing
@@ -1026,7 +1026,7 @@ task process_metadata_table {
 					.then(pl.lit(values))
 					.otherwise(pl.col("~{replace_values_in_this_column}"))
 					.alias("~{replace_values_in_this_column}"))
-				print("Renamed values in ~{replace_values_in_this_column}")
+			print("Renamed values in ~{replace_values_in_this_column}")
 
 	df_final = df.select([col for col in df.columns if col in final_cols_to_keep])
 	df_final.write_csv("processed_metadata_table.tsv", separator="\t")
