@@ -886,6 +886,168 @@ task several_arrays_to_tsv {
 	}
 }
 
+task process_metadata_table {
+	input {
+		File table
+		Array[String]? desired_columns
+		Array[Pair[String, String]]? column_renames
+		Boolean strict = true
+
+		String? replace_values_in_this_column             # if in column_renames, use post-rename name
+		Array[Pair[String, String]]? value_replacements
+	}
+
+	command <<<
+	set -eux pipefail
+
+	# attempted workaround for people running locally on modern Macbooks
+	ARCH=$(uname -m)
+	if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+		echo "Apple Silicon / ARM64 architecture detected ($ARCH)."
+		echo "Switching to Polars LTS..."
+		pip uninstall -y polars
+		pip install polars-lts-cpu
+	else
+		echo "Standard x86_64 architecture detected ($ARCH). Proceeding with default Polars."
+	fi
+
+	python3 << CODE
+	import os
+	import ast
+	import json
+	import polars as pl
+
+	def deserialize_array_of_pairs_to_dict(raw_string):
+		# deserializing 2D arrays in WDL 1.0 is a nightmare but this should usually work
+		# this seems more reliable than writing to a file in the bash block
+		converted_dict = {}
+		print(f"Got this raw string: {raw_string}")
+		if raw_string:
+			try:
+				# ast.literal_eval parses '("k1","v1"),("k2","v2")' into a nested tuple structure (sometimes)
+				parsed_data = ast.literal_eval(raw_string)
+				
+				# If there's only 1 pair, literal_eval returns a single tuple: ("k1", "v1")
+				if isinstance(parsed_data, tuple) and len(parsed_data) == 2 and isinstance(parsed_data[0], str):
+					converted_dict = {parsed_data[0]: parsed_data[1]}
+				# If there are multiple pairs, it returns a nested tuple: (("k1", "v1"), ("k2", "v2"))
+				else:
+					converted_dict = dict(parsed_data)
+					
+			except (ValueError, SyntaxError) as e:
+				print(f"Warning: Could not parse column_renames string: {e}")
+				converted_dict = {}
+
+			return converted_dict
+		return None
+
+	# convert WDL cringe types into Python cool types
+	column_renames_raw = ('~{sep="," column_renames}')
+	column_renames_dict = deserialize_array_of_pairs_to_dict(column_renames_raw)
+	print("Successfully built column renames dictionary:", column_renames_dict)
+	value_renames_raw = ('~{sep="," value_replacements}')
+	value_renames_dict = deserialize_array_of_pairs_to_dict(value_renames_raw)
+	print("Successfully built value replacements dictionary:", value_renames_dict)
+
+	df = pl.read_csv("~{table}", separator="\t")
+	print("Read dataframe")
+	
+	raw_cols = "~{sep=',' desired_columns}"
+	if raw_cols == "":
+		print("No value for desired columns, writing unchanged table then exiting 0...")
+		df.write_csv("processed_metadata_table.tsv", separator="\t")
+		exit(0)
+	desired_columns = [c.strip() for c in raw_cols.split(",")] if raw_cols else []
+	print("Desired columns:", desired_columns)
+	
+	strict = ('~{strict}' == 'true')  # silly way to convert to python boolean
+
+	if column_renames_dict is not None:
+	
+		if strict:
+			# assert each post_rename column matches a value in desired_columns
+			for prename, post_rename in column_renames_dict.items():
+				assert post_rename in desired_columns, f"Strict mode violation: post-rename column '{post_rename}' not found in desired_columns."
+			
+			# b) assert all values in desired_columns (except those that will get renamed) are in table
+			for col in desired_columns:
+				if col not in column_renames_dict.values() and col not in df.columns:
+					assert col in df.columns, f"Strict mode violation: required column '{col}' missing from input table."
+
+		else:
+			filtered_desired_columns = desired_columns
+			# drop each post_rename column that does not have a value in desired_columns
+			for prename, post_rename in column_renames_dict.items():
+				if post_rename not in col:
+					filtered_desired_columns.drop(item)
+
+			# drop any values in desired_columns (except those that will get renamed) missing from table
+			for col in filtered_desired_columns:
+				if col not in column_renames_dict.values() and col not in df.columns:
+					filtered_desired_columns.drop(col)
+			desired_columns = filtered_desired_columns
+
+	if len(column_renames_dict) != 0:
+		df = df.rename(column_renames_dict)
+		print("Renamed columns")
+
+	# Terra data table handling
+	entity_id_columns = [
+		col for col in df.columns 
+		if col.startswith("entity:") and col.endswith("_id")
+	]
+	if len(entity_id_columns) == 1:
+		print(f"Found apparent Terra entity ID column named {entity_id_columns[0]}, will rename to sample_id")
+		df = df.rename({entity_id_columns[0]: "sample_id"})
+
+	# account for the entity ID rename if it was requested as 'sample_id' and do final slicing
+	final_cols_to_keep = []
+	for col in desired_columns:
+		if col in df.columns:
+			final_cols_to_keep.append(col)
+		elif col == "sample_id" and "sample_id" in df.columns:
+			final_cols_to_keep.append("sample_id")
+
+	# if entity ID was renamed to sample_id but wasn't explicitly requested, keep it
+	if "sample_id" in df.columns and "sample_id" not in final_cols_to_keep:
+		final_cols_to_keep.insert(0, "sample_id")
+
+	# do renames in special column (useful to TBProfiler lineage)
+	if "~{replace_values_in_this_column}" != "" and len(value_renames_dict) != 0:
+		if strict:
+			assert "~{replace_values_in_this_column}" in df.columns, f"Strict mode violation: can't replace values in ~{replace_values_in_this_column} as there's no such column in dataframe. existing columns: {df.columns}"
+		if "~{replace_values_in_this_column}" not in df.columns: # if strict and false, we already errored
+			print(f"You want to replace values in ~{replace_values_in_this_column} but there's no such column in dataframe! Columns: {df.columns}")
+		else:
+			for keys, values in value_renames_dict.items():
+				print(keys)
+				df = df.with_columns(
+					pl.when(pl.col("~{replace_values_in_this_column}") == pl.lit(keys))
+					.then(pl.lit(values))
+					.otherwise(pl.col("~{replace_values_in_this_column}"))
+					.alias("~{replace_values_in_this_column}"))
+			print("Renamed values in ~{replace_values_in_this_column}")
+
+	df_final = df.select([col for col in df.columns if col in final_cols_to_keep])
+	df_final.write_csv("processed_metadata_table.tsv", separator="\t")
+	print("Finished")
+	CODE
+	>>>
+
+	runtime {
+		docker: "ashedpotatoes/sranwrp:1.1.27"
+		# this should be able to run on a shoebox (as long it's not ARM, thanks Polars)
+		cpu: 4
+		disk: "local-disk " + 50 + " HDD"
+		memory: "4 GB"
+		preemptible: 2
+	}
+
+	output {
+		File processed_metadata_table = "processed_metadata_table.tsv"
+	}
+}
+
 
 ## This task removes invalid output from pull_from_SRA_accession.
 ## Array[Array[File]?] will return empty subarrays sometimes, such
