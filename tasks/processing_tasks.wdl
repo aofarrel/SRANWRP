@@ -889,10 +889,13 @@ task several_arrays_to_tsv {
 task process_metadata_table {
 	input {
 		File table
-		Array[String]? desired_columns
-		Array[Pair[String, String]]? column_renames
 		Boolean strict = true
+		Array[String]? desired_columns  # if column_renames, use post-rename name
 
+		# If running on Cromwell, you must leave column_renames, replace_values_in_this_column, and value_replacements
+		# undefined due to https://github.com/broadinstitute/cromwell/issues/7883 or else this WILL crash!
+
+		Array[Pair[String, String]]? column_renames
 		String? replace_values_in_this_column             # if in column_renames, use post-rename name
 		Array[Pair[String, String]]? value_replacements
 	}
@@ -987,9 +990,9 @@ task process_metadata_table {
 					filtered_desired_columns.drop(col)
 			desired_columns = filtered_desired_columns
 
-	if len(column_renames_dict) != 0:
-		df = df.rename(column_renames_dict)
-		print("Renamed columns")
+		if len(column_renames_dict) != 0:
+			df = df.rename(column_renames_dict)
+			print("Renamed columns")
 
 	# Terra data table handling
 	entity_id_columns = [
