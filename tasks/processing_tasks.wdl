@@ -122,12 +122,75 @@ task extract_accessions_from_file {
 	}
 }
 
+task extract_accessions_from_file_with_fake_optional_input {
+	# Same as extract_accessions_from_file except this task deviously declares accessions_file
+	# optional. This is a ridiculous workaround for the fact that WDL does not understand
+	# mutual exclusivity. TLDR myco_sra calls this from within a block that only runs if accessions_file
+	# is defined, so this is fine and dandy.
+	input {
+		File? accessions_file
+		Int preempt = 1
+		Boolean filter_na = true
+		Boolean sort_and_uniq = true
+	}
+	Int disk_size = ceil(size(accessions_file, "GB")) * 2
+
+	command <<<
+	if [[ "~{accessions_file}" = "" ]]
+	then
+		echo "Accessions file is actually required, this task just pretends it isn't as a workaround for myco_sra."
+		echo "Within myco_sra this task is called only from a defined() block that checks accessions_file exists."
+		echo "No, I don't like it either, but such is life."
+		exit 1
+	fi
+
+	if [[ "~{sort_and_uniq}" = "true" ]]
+	then
+		sort "~{accessions_file}" | uniq -u > likely_valid.txt
+	else
+		cp "~{accessions_file}" ./likely_valid.txt
+	fi
+	python3 << CODE
+	import os
+	f = open("likely_valid.txt", "r")
+	valid = []
+	for line in (f.readlines()):
+		if line == "":
+			pass
+		elif line == "NA" and "~{filter_na}" == "true":
+			print("WARNING -- NA found")
+			pass
+		else:
+			split = line.split("\t")
+			for accession in split:
+				valid.append(accession.strip("\n")+"\n")
+	f.close()
+	os.system("touch valid.txt")
+	g = open("valid.txt", "a")
+	g.writelines(valid)
+	g.close()
+	CODE
+	>>>
+
+	runtime {
+		cpu: 4
+		disks: "local-disk " + disk_size + " SSD"
+		docker: "ashedpotatoes/sranwrp:1.1.6"
+		memory: "8 GB"
+		preemptible: preempt
+	}
+
+	output {
+		Array[String] accessions = read_lines("valid.txt")
+	}
+}
+
 task extract_accessions_from_file_or_string {
 	# Either:
 	#  - extract accessions from file as per extract_accessions_from_file
 	#  - just pass the string along
 	# If both are provided, the string array takes priority.
-	# This is useful for allowing myco_sra to run on a Terra data table.
+	# This was going to be for allowing myco_sra to run on a Terra data table but we now take a different approach.
 	input {
 		Array[String]? accessions_array
 		File? accessions_file
