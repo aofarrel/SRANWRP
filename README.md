@@ -14,6 +14,10 @@ The combination of e-direct and sra-tools allows it do basically anything you ca
 ### Getting Organism + TaxID from a list of BioProject/BioSample accessions
 There's a lot of BioProjects on SRA, and some of them are multi-species. Use [this workflow](./workflows/get_organisms_from_bioproject.wdl) to get a list of all run accessions, and said run accessions' species and TaxIDs, from a list of BioProject accessions. If you instead have a list of BioSamples, use [this workflow](./workflows/get_organisms_from_biosample.wdl) to get species and taxid (as well as a list of all run accessions).
 
+> [!TIP]
+> A very small number of BioSamples, such as [SAMEA968096](https://www.ncbi.nlm.nih.gov/sra/?term=SAMEA968096), are in "sample pools." Running fasterq-dump on such samples will return all run accessions for all BioSamples in that sample pool, often including a generic barcode sample. This may cause issues with downstream analysis; such samples should likely be avoided.
+> Samples in a sample pool are marked on SRA's UI: <img width="382" height="26" alt="Screenshot 2026-08-06 at 3 21 58 PM" src="https://github.com/user-attachments/assets/2622ba59-3040-4492-a442-4638f83fee8f" />
+
 ### Getting sample accessions from run accessions (SRR/ERR/DRR)
 If you have a list of run accessions, [this workflow](./workflows/get_samples_from_runs.wdl) will get a list of sample accessions that they cover. Some samples have more than one run -- those samples will only appear in the output once.
 
