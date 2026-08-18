@@ -1,5 +1,8 @@
 FROM ubuntu:jammy
 
+# This builds ashedpotatoes/sranwrp:1.2.3 and barring something wild will be the last version of
+# the SRANWRP Docker image to be based on Jammy Jellyfish and Python 3.12
+
 # hard prereqs
 # autoconf:        install samtools/htslib/bcftools
 # gcc:             install samtools/htslib/bcftools
@@ -31,7 +34,7 @@ apt-get install -y make && \
 apt-get install -y sudo && \
 apt-get install -y wget && \
 apt-get install -y zlib1g-dev && \
-apt-get clean
+apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # general utilities: bc, cpan, curl, fd-find, pigz, screen, tree, vim
 # bc is used by parsevcf, but the others are just for good measure
@@ -41,18 +44,19 @@ apt-get install -y cpanminus && \
 apt-get install -y curl && \
 apt-get install -y fd-find && \
 apt-get install -y pigz && \
+apt-get install -y python-is-python3 && \
 apt-get install -y screen && \
 apt-get install -y tree && \
 apt-get install -y vim && \
-apt-get clean
+apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# install python and friends (warning: this takes about 15 minutes)
+# install python and friends (warning: this can take about 15 minutes)
 RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0rc3.tgz && tar -xf Python-3.12.0rc3.tgz && cd Python-3.12.0rc3 && ./configure --disable-test-modules --enable-optimizations && make && sudo make install 
-RUN pip3 install ranchero   # includes polars, tqdm, pyyaml, numpy, pandas, xmltodict
+RUN pip3 install ranchero    # includes polars, tqdm, pyyaml, numpy, pandas, xmltodict
 RUN pip3 install ete3
 RUN pip3 install Matplotlib
 RUN pip3 install taxoniumtools
-#RUN pip3 install firecloud # no longer works: https://github.com/broadinstitute/fiss/issues/192
+RUN pip3 install firecloud   # adds about 800 MB, install fixed in April 2026: https://github.com/broadinstitute/fiss/issues/192
 
 # install entrez direct
 RUN sh -c "$(wget -q ftp://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh -O -)"
@@ -76,31 +80,28 @@ RUN git clone https://github.com/lh3/seqtk.git && cd seqtk && make && cd .. && m
 #    sra-tools 3.0.5 supports PacBio downloads, which we don't want!
 RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.1-ubuntu64.tar.gz
 
-# fix some perl stuff (might not be needed but I'm taking no chances)
+# old workaround for a Perl issue, might not be needed anymore
 RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recursive && cd ..
 ENV PERL5LIB=/perlstuff:
 
-# throw in the TB reference while we're at it (used by tree_nine, matches ref in clockwork-plus)
+# throw in the TB reference while we're at it (matches ref in clockwork-plus)
 # see gs://topmed_workflow_testing/tb/ref/index_H37Rv_reference_output/Ref.H37Rv.tar
 # md5sum should be fca996be5de559f5f9f789c715f1098b
 RUN mkdir ref
 COPY ./Ref.H37Rv.tar ./ref/
 RUN cd ./ref/ && tar -xvf Ref.H37Rv.tar
 
-# add typical TB masked sites (used by tree_nine)
+# add typical TB masked sites
 RUN mkdir mask
 RUN wget https://raw.githubusercontent.com/iqbal-lab-org/cryptic_tb_callable_mask/master/R00000039_repregions.bed && mv R00000039_repregions.bed ./mask/
 
-# set path variable and some aliases
-RUN echo 'alias python="python3"' >> ~/.bashrc
-RUN echo 'alias pip="pip3"' >> ~/.bashrc
+# set path variable (another old workaround)
 ENV PATH=/bin:/bin/seqtk:/root/edirect/:/bin/sratoolkit.3.0.1-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # throw in some scripts
 RUN mkdir scripts
+RUN wget https://raw.githubusercontent.com/aofarrel/diffdiff/0.1.0/diffdiff.py && mv diffdiff.py ./scripts/
 RUN wget https://raw.githubusercontent.com/aofarrel/parsevcf/refs/tags/1.4.3/distancematrix_nwk.py && mv distancematrix_nwk.py ./scripts/
-RUN wget https://gist.githubusercontent.com/aofarrel/a638f2ff05f579193632f7921832a957/raw/baa77b4f6afefd78ae8b6a833121a413bd359a5e/marcs_incredible_script && \
-    mv marcs_incredible_script marcs_incredible_script.pl && mv marcs_incredible_script.pl ./scripts/
 
 # cleanup
 RUN sudo rm /bin/bcftools-1.16.tar.bz2 && sudo rm /bin/samtools-1.16.1.tar.bz2 && sudo rm /bin/sratoolkit.3.0.1-ubuntu64.tar.gz && sudo rm Python-3.12.0rc3.tgz && sudo rm -rf Python-3.12.0rc3
