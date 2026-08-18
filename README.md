@@ -42,7 +42,7 @@ The image is built and pushed manually. If you want to roll your own, you'll nee
 
 ### Why does this image exist?
 At the time this Docker image was first developed in October 2022:
-* The latest version of staphb/sratoolkit on Docker Hub [ran version 2.9.2 (see command 15) of sra-tools](https://hub.docker.com/layers/staphb/sratoolkit/latest/images/sha256-84fc990e6d04f263d7bea82dcbff7f5dd9182ab5234314bb0daf2e2db977e4a0?context=explore), which [doesn't work at all anymore](https://github.com/ncbi/sra-tools/issues/714)
+* The latest version of staphb/sratoolkit on Docker Hub at the time [ran version 2.9.2 (see command 15) of sra-tools](https://hub.docker.com/layers/staphb/sratoolkit/latest/images/sha256-84fc990e6d04f263d7bea82dcbff7f5dd9182ab5234314bb0daf2e2db977e4a0?context=explore), which [doesn't work at all anymore](https://github.com/ncbi/sra-tools/issues/714)
 * Other existing Docker images tend to contain either the SRA toolkit or Entrez Direct, not both
 * Building SRA Toolkit on your own, without conda, was not intuitive
 * Building SRA Toolkit on your own, with conda, was also not intuitive (you usually end up with v2.10 which only sometimes works)
