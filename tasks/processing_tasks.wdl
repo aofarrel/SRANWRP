@@ -112,7 +112,7 @@ task extract_accessions_from_file {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.6"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -175,7 +175,7 @@ task extract_accessions_from_file_with_fake_optional_input {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.6"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -253,7 +253,7 @@ task extract_accessions_from_file_or_string {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.6"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -319,7 +319,7 @@ task strings_to_csv {
 	runtime {
 		cpu: 4
 		disks: "local-disk 10 HDD"
-		docker: "ashedpotatoes/sranwrp:1.1.27"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: 1
 		maxRetries: 1
@@ -349,7 +349,7 @@ task cat_strings {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.6"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: 2
 	}
@@ -719,7 +719,7 @@ task cat_files {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.6"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -766,7 +766,7 @@ task compare_files {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + 10 + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.1.8"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: 2
 	}
@@ -834,7 +834,7 @@ task map_to_tsv_or_csv {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + 10 + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.1.15"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: 2
 	}
@@ -939,7 +939,7 @@ task several_arrays_to_tsv {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + 10 + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.1.15"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: 2
 	}
@@ -1101,7 +1101,7 @@ task process_metadata_table {
 	>>>
 
 	runtime {
-		docker: "ashedpotatoes/sranwrp:1.1.27"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		# this should be able to run on a shoebox (as long it's not ARM, thanks Polars)
 		cpu: 4
 		disk: "local-disk " + 50 + " HDD"
@@ -1140,7 +1140,7 @@ task process_metadata_table {
 #	runtime {
 #		cpu: 4
 #		disks: "local-disk " + disk_size + " SSD"
-#		docker: "ashedpotatoes/sranwrp:1.0.8"
+#		docker: "ashedpotatoes/sranwrp:1.3.0"
 #		memory: "8 GB"
 #		preemptible: preempt
 #	}

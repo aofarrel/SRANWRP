@@ -1,7 +1,6 @@
-FROM ubuntu:jammy
+FROM ubuntu:resolute
 
-# This builds ashedpotatoes/sranwrp:1.2.3 and barring something wild will be the last version of
-# the SRANWRP Docker image to be based on Jammy Jellyfish and Python 3.12
+# This builds ashedpotatoes/sranwrp:1.3.0
 
 # hard prereqs
 # autoconf:        install samtools/htslib/bcftools
@@ -44,29 +43,40 @@ apt-get install -y cpanminus && \
 apt-get install -y curl && \
 apt-get install -y fd-find && \
 apt-get install -y pigz && \
-apt-get install -y python-is-python3 && \
+apt-get install -y python3.14 && \
+apt-get install -y python3.14-venv && \
 apt-get install -y screen && \
 apt-get install -y tree && \
 apt-get install -y vim && \
 apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# install python and friends (warning: this can take about 15 minutes)
-RUN wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0rc3.tgz && tar -xf Python-3.12.0rc3.tgz && cd Python-3.12.0rc3 && ./configure --disable-test-modules --enable-optimizations && make && sudo make install 
-RUN pip3 install ranchero    # includes polars, tqdm, pyyaml, numpy, pandas, xmltodict
-RUN pip3 install ete3
-RUN pip3 install Matplotlib
-RUN pip3 install taxoniumtools
-RUN pip3 install firecloud   # adds about 800 MB, install fixed in April 2026: https://github.com/broadinstitute/fiss/issues/192
+# very silly hack to get pip to work in the way I want it to
+RUN ln -sf /usr/bin/python3.14 /usr/bin/python && \
+    ln -sf /usr/bin/python3.14 /usr/bin/python3
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.14 get-pip.py --break-system-packages && \
+    rm get-pip.py
+
+# install python friend
+RUN python -m pip install --break-system-packages --no-cache-dir ranchero  # includes polars, tqdm, pyyaml, numpy, pandas, xmltodict
+
+# install python enemy
+# FISS's installation bug was fixed April 2026: https://github.com/broadinstitute/fiss/issues/192
+# Unfortunately as of mid-August 2026, FISS still relies upon SafeConfigParser, which was deprecated in 
+# February 2011 with Python 3.2. This package doesn't exist in Python 3.12+ so the version of FISS shipped
+# with this Docker image is a little bit broken. It can submit workflows, which is what we need it for, but
+# I don't recommend using it for much else.
+RUN python -m pip install --break-system-packages --no-cache-dir firecloud
 
 # install entrez direct
 RUN sh -c "$(wget -q ftp://ftp.ncbi.nlm.nih.gov/entrez/entrezdirect/install-edirect.sh -O -)"
 
 # install bedtools
-RUN apt-get update && apt-get install -y bedtools && apt-get clean
+RUN apt-get update && apt-get install -y bedtools && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # install the samtools trinity (htslib will get installed with samtools)
-RUN cd bin && wget https://github.com/samtools/samtools/releases/download/1.16.1/samtools-1.16.1.tar.bz2 && tar -xf samtools-1.16.1.tar.bz2 && cd samtools-1.16.1 && ./configure && make && make install
-RUN cd bin && wget https://github.com/samtools/bcftools/releases/download/1.16/bcftools-1.16.tar.bz2 && tar -xf bcftools-1.16.tar.bz2 && cd bcftools-1.16 && ./configure && make && make install
+RUN cd bin && wget https://github.com/samtools/samtools/releases/download/1.24/samtools-1.24.tar.bz2 && tar -xf samtools-1.24.tar.bz2 && cd samtools-1.24 && ./configure && make && make install && cd .. && rm /bin/samtools-1.24.tar.bz2
+RUN cd bin && wget https://github.com/samtools/bcftools/releases/download/1.24/bcftools-1.24.tar.bz2 && tar -xf bcftools-1.24.tar.bz2 && cd bcftools-1.24 && ./configure && make && make install && cd .. && rm /bin/bcftools-1.24.tar.bz2 
 
 # install seqtk
 RUN git clone https://github.com/lh3/seqtk.git && cd seqtk && make && cd .. && mv seqtk bin/seqtk
@@ -78,15 +88,18 @@ RUN git clone https://github.com/lh3/seqtk.git && cd seqtk && make && cd .. && m
 # A: sranwrp is designed for myco_sra first and foremost. myco_sra uses clockwork, which strictly only supports
 #    Illumina PE. sra-tools 3.0.1 throws an error (which sranwrp catches gracefully) when it encounters PacBio data.
 #    sra-tools 3.0.5 supports PacBio downloads, which we don't want!
-RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.1-ubuntu64.tar.gz
+RUN cd bin && wget https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.0.1/sratoolkit.3.0.1-ubuntu64.tar.gz && tar -xf sratoolkit.3.0.1-ubuntu64.tar.gz && rm sratoolkit.3.0.1-ubuntu64.tar.gz
 
 # old workaround for a Perl issue, might not be needed anymore
 RUN mkdir perlstuff && cd perlstuff && cpan Time::HiRes && cpan File::Copy::Recursive && cd ..
 ENV PERL5LIB=/perlstuff:
 
+# set path variable (another old workaround)
+ENV PATH=/bin:/bin/seqtk:/root/edirect/:/bin/sratoolkit.3.0.1-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 # throw in the TB reference while we're at it (matches ref in clockwork-plus)
-# see gs://topmed_workflow_testing/tb/ref/index_H37Rv_reference_output/Ref.H37Rv.tar
-# md5sum should be fca996be5de559f5f9f789c715f1098b
+# see gs://ucsc-pathogen-genomics-public/tb/ref/
+# You want Ref.H37Rv.tar, md5sum should be fca996be5de559f5f9f789c715f1098b
 RUN mkdir ref
 COPY ./Ref.H37Rv.tar ./ref/
 RUN cd ./ref/ && tar -xvf Ref.H37Rv.tar
@@ -95,13 +108,8 @@ RUN cd ./ref/ && tar -xvf Ref.H37Rv.tar
 RUN mkdir mask
 RUN wget https://raw.githubusercontent.com/iqbal-lab-org/cryptic_tb_callable_mask/master/R00000039_repregions.bed && mv R00000039_repregions.bed ./mask/
 
-# set path variable (another old workaround)
-ENV PATH=/bin:/bin/seqtk:/root/edirect/:/bin/sratoolkit.3.0.1-ubuntu64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
 # throw in some scripts
 RUN mkdir scripts
+RUN wget https://raw.githubusercontent.com/aofarrel/parsevcf/1.3.1/vcf_to_diff_script.py && mv vcf_to_diff_script.py ./scripts/
 RUN wget https://raw.githubusercontent.com/aofarrel/diffdiff/0.1.0/diffdiff.py && mv diffdiff.py ./scripts/
 RUN wget https://raw.githubusercontent.com/aofarrel/parsevcf/refs/tags/1.4.3/distancematrix_nwk.py && mv distancematrix_nwk.py ./scripts/
-
-# cleanup
-RUN sudo rm /bin/bcftools-1.16.tar.bz2 && sudo rm /bin/samtools-1.16.1.tar.bz2 && sudo rm /bin/sratoolkit.3.0.1-ubuntu64.tar.gz && sudo rm Python-3.12.0rc3.tgz && sudo rm -rf Python-3.12.0rc3

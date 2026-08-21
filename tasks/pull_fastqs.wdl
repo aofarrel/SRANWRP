@@ -173,7 +173,7 @@ task pull_fq_from_SRA_accession {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size_GB + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.6"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -464,7 +464,7 @@ task pull_fq_from_biosample {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.6"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -498,7 +498,7 @@ task pull_fq_from_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " SSD"
-		docker: "ashedpotatoes/sranwrp:1.1.6"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
