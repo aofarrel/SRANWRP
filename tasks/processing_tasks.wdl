@@ -24,7 +24,12 @@ task gather_files {
 task write_csv {
 	input {
 		Array[String] headings
+		# ["biosamples", "fastq_tarball"]
+		
 		Array[Array[String]] stuff_to_write
+		# [["SAMN12345", "gs://foo/SAMN12345.fq.tar"],
+		#  ["SAMN12345", "gs://foo/SAMN12345.fq.tar"]]
+		
 		Int lines_of_data = length(stuff_to_write)
 		String outfile = "reports.csv"
 		Boolean tsv = false
@@ -36,15 +41,15 @@ task write_csv {
 	
 	sep="\t" if "~{tsv}" == "true" else ","
 	
-	def write_array(array)
+	def write_array(array):
+		print(f"array is {array}")
 		with open("~{outfile}", "a") as f:
-			f.write(thing+sep for thing in array)
+			f.write(f'{sep}'.join(thing for thing in array)+"\n")
 	
-	write_array(["~{sep='","' headings}"])
-	if ~{lines_of_data} == 1:
-		write_array(["~{sep='","' stuff_to_write}[0]"])
-	else:
-		pass
+	heading = ["~{sep='","' headings}"]
+	write_array(heading)
+	for i in range(0, ~{lines_of_data}):
+		write_array([~{sep=',' stuff_to_write}][i])
 
 	CODE
 	>>>
