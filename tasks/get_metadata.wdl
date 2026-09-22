@@ -37,7 +37,7 @@ task get_biosample_from_read_or_ENA_without_elink {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -78,7 +78,7 @@ task get_biosample_from_read_or_ENA_via_elink {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -145,7 +145,7 @@ task get_SRA_accession_IDs_by_biosample_classic {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -216,7 +216,7 @@ task get_SRA_accession_IDs_by_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -251,7 +251,7 @@ task get_all_accession_IDs_by_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "8 GB"
 		preemptible: preempt
 	}
@@ -288,7 +288,7 @@ task get_organism_per_SRA_accession_from_bioproject {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "4 GB"
 		preemptible: preempt
 	}
@@ -314,7 +314,7 @@ task get_organism_per_biosample_single {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "4 GB"
 		preemptible: preempt
 	}
@@ -351,7 +351,7 @@ task get_organism_per_biosample_multiple {
 	runtime {
 		cpu: 4
 		disks: "local-disk " + disk_size + " HDD"
-		docker: "ashedpotatoes/sranwrp:1.0.8"
+		docker: "ashedpotatoes/sranwrp:1.3.0"
 		memory: "4 GB"
 		preemptible: preempt
 	}
