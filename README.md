@@ -33,7 +33,7 @@ SRAnwrp also features [several miscellanous WDL tasks](./tasks/processing_tasks.
 
 ## Docker Image
 * The last version of the SRAnwrp Docker image to be based on Jammy Jellyfish and Python 3.12 was ashedpotatoes/sranwrp:1.2.3
-* In attempt to future-proof some WDLs prior to handoff, ashedpotatoes/sranwrp:1.3.0 is built on Resolute Raccoon and uses Python 3.14, but as these are less well-tested, ashedpotatoes/sranwrp:1.2.3 will remain on Docker Hub
+* In attempt to future-proof some WDLs prior to handoff, ashedpotatoes/sranwrp:1.3.1 is built on Resolute Raccoon and uses Python 3.14, but as these are less well-tested, ashedpotatoes/sranwrp:1.2.3 will remain on Docker Hub
 * As noted above, SRAnwrp's fastq-pulling WDLs rely on sra-tools 3.0.1 specifically, so that is what is pinned in the Docker image
 * Also included: [bedtools](https://github.com/arq5x/bedtools2), [seqtk](https://github.com/lh3/seqtk), [entrez-direct (aka edirect)](https://www.ncbi.nlm.nih.gov/books/NBK179288/), the samtools/bcftools/htslib trinity, [FISS](https://github.com/broadinstitute/fiss), and [Ranchero](https://github.com/aofarrel/ranchero). See the Dockerfile for more information.
 
