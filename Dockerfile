@@ -1,6 +1,6 @@
 FROM ubuntu:resolute
 
-# This builds ashedpotatoes/sranwrp:1.3.0
+# This builds ashedpotatoes/sranwrp:1.3.1
 
 # hard prereqs
 # autoconf:        install samtools/htslib/bcftools
@@ -111,5 +111,5 @@ RUN wget https://raw.githubusercontent.com/iqbal-lab-org/cryptic_tb_callable_mas
 # throw in some scripts
 RUN mkdir scripts
 RUN wget https://raw.githubusercontent.com/aofarrel/parsevcf/1.3.1/vcf_to_diff_script.py && mv vcf_to_diff_script.py ./scripts/
-RUN wget https://raw.githubusercontent.com/aofarrel/diffdiff/0.1.0/diffdiff.py && mv diffdiff.py ./scripts/
+RUN wget https://raw.githubusercontent.com/aofarrel/diffdiff/0.2.1/diffdiff.py && mv diffdiff.py ./scripts/
 RUN wget https://raw.githubusercontent.com/aofarrel/parsevcf/refs/tags/1.4.3/distancematrix_nwk.py && mv distancematrix_nwk.py ./scripts/
