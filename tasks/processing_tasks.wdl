@@ -1095,6 +1095,23 @@ task process_metadata_table {
 					.alias("~{replace_values_in_this_column}"))
 			print("Renamed values in ~{replace_values_in_this_column}")
 
+	# sometimes we have columns that are fully null and they don't get written properly, we have to fill those
+	# in with a bogus value. not using empty string because that might drop random quotation marks into Microreact
+	null_counts = df.select([pl.col(c).null_count() for c in final_cols_to_keep]).row(0)
+	fully_null_cols = [
+		col for col, count in zip(final_cols_to_keep, null_counts) 
+		if count == df.height]
+	if len(fully_null_cols) > 0:
+		print(f"Found some columns full of nulls: {fully_null_cols}, will add a bogus literal space to first and last row so df writes properly")
+	df = df.with_columns(
+		pl.when(
+		(pl.int_range(0, pl.len()) == 0) | 
+		(pl.int_range(0, pl.len()) == pl.len() - 1))
+		.then(pl.lit(" "))
+		.otherwise(pl.col(col))
+		.alias(col)
+		for col in fully_null_cols)
+
 	df_final = df.select([col for col in df.columns if col in final_cols_to_keep])
 	df_final.write_csv("processed_metadata_table.tsv", separator="\t")
 	print("Finished")
