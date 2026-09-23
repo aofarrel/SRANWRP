@@ -1008,6 +1008,7 @@ task process_metadata_table {
 		return None
 
 	# convert WDL cringe types into Python cool types
+	# if no renames exist, these will print None but not crash
 	column_renames_raw = ('~{sep="," column_renames}')
 	column_renames_dict = deserialize_array_of_pairs_to_dict(column_renames_raw)
 	print("Successfully built column renames dictionary:", column_renames_dict)
@@ -1060,7 +1061,7 @@ task process_metadata_table {
 	# Terra data table handling
 	entity_id_columns = [
 		col for col in df.columns 
-		if col.startswith("entity:") and col.endswith("_id")
+		if col.startswith("entity") and col.endswith("_id")
 	]
 	if len(entity_id_columns) == 1:
 		print(f"Found apparent Terra entity ID column named {entity_id_columns[0]}, will rename to sample_id")
