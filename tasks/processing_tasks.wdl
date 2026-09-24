@@ -1068,12 +1068,21 @@ task process_metadata_table {
 		df = df.rename({entity_id_columns[0]: "sample_id"})
 
 	# account for the entity ID rename if it was requested as 'sample_id' and do final slicing
+	# and if some columns are missing, since downstream tasks can't handle that
 	final_cols_to_keep = []
 	for col in desired_columns:
 		if col in df.columns:
 			final_cols_to_keep.append(col)
 		elif col == "sample_id" and "sample_id" in df.columns:
 			final_cols_to_keep.append("sample_id")
+		else:
+			df = df.with_columns(
+				pl.when(pl.int_range(0, pl.len()) == 0)
+				.then(pl.lit("0"))
+				.otherwise(None)
+				.cast(pl.String)
+				.alias(col)
+			)
 
 	# if entity ID was renamed to sample_id but wasn't explicitly requested, keep it
 	if "sample_id" in df.columns and "sample_id" not in final_cols_to_keep:
@@ -1118,7 +1127,7 @@ task process_metadata_table {
 	print(f"Final dataframe has columns {df_final.columns}")
 	for column in final_cols_to_keep:
 		assert column in df_final
-		print("Column {column} is in dataframe")
+		print(f"Column {column} is in dataframe")
 	df_final.write_csv("processed_metadata_table.tsv", separator="\t")
 	print("Finished")
 	CODE
