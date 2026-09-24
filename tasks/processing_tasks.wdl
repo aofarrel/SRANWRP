@@ -1103,16 +1103,22 @@ task process_metadata_table {
 		if count == df.height]
 	if len(fully_null_cols) > 0:
 		print(f"Found some columns full of nulls: {fully_null_cols}, will add a bogus literal space to first and last row so df writes properly")
-	df = df.with_columns(
-		pl.when(
-		(pl.int_range(0, pl.len()) == 0) | 
-		(pl.int_range(0, pl.len()) == pl.len() - 1))
-		.then(pl.lit(" "))
-		.otherwise(pl.col(col))
-		.alias(col)
-		for col in fully_null_cols)
+		df = df.with_columns(
+			pl.when(
+			(pl.int_range(0, pl.len()) == 0) | 
+			(pl.int_range(0, pl.len()) == pl.len() - 1))
+			.then(pl.lit(" "))
+			.otherwise(pl.col(col))
+			.alias(col)
+			for col in fully_null_cols)
+	else:
+	print("No columns seem to be fully null")
 
 	df_final = df.select([col for col in df.columns if col in final_cols_to_keep])
+	print(f"Final dataframe has columns {df_final.columns}")
+	for column in final_cols_to_keep:
+		assert column in df_final
+		print("Column {column} is in dataframe")
 	df_final.write_csv("processed_metadata_table.tsv", separator="\t")
 	print("Finished")
 	CODE
