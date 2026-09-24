@@ -1112,7 +1112,7 @@ task process_metadata_table {
 			.alias(col)
 			for col in fully_null_cols)
 	else:
-	print("No columns seem to be fully null")
+		print("No columns seem to be fully null")
 
 	df_final = df.select([col for col in df.columns if col in final_cols_to_keep])
 	print(f"Final dataframe has columns {df_final.columns}")
