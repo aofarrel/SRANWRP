@@ -1016,7 +1016,7 @@ task process_metadata_table {
 	value_renames_dict = deserialize_array_of_pairs_to_dict(value_renames_raw)
 	print("Successfully built value replacements dictionary:", value_renames_dict)
 
-	df = pl.read_csv("~{table}", separator="\t")
+	df = pl.read_csv("~{table}", separator="\t", infer_schema_length=None)
 	print("Read dataframe")
 	
 	raw_cols = "~{sep=',' desired_columns}"
