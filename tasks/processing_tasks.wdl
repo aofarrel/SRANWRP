@@ -1083,6 +1083,7 @@ task process_metadata_table {
 				.cast(pl.String)
 				.alias(col)
 			)
+			final_cols_to_keep.append(col)
 
 	# if entity ID was renamed to sample_id but wasn't explicitly requested, keep it
 	if "sample_id" in df.columns and "sample_id" not in final_cols_to_keep:
